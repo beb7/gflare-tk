@@ -1,5 +1,5 @@
 from threading import Thread, Event
-from gflare_db import GFlareDB
+from GFlareDB import GFlareDB
 from GFlareResponse import GFlareResponse as gf
 from requests import Session, exceptions
 from requests.adapters import HTTPAdapter
