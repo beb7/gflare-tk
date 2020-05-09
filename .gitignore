@@ -1,0 +1,8 @@
+__pycache__
+*.csv
+*.db
+*.db-journal
+*.gflaredb
+tests/
+build/
+dist/
