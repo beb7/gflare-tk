@@ -1,6 +1,6 @@
 from threading import Thread, Event
-from GFlareDB import GFlareDB
-from GFlareResponse import GFlareResponse as gf
+from .gflaredb import GFlareDB
+from .gflareresponse import GFlareResponse as gf
 from requests import Session, exceptions
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry

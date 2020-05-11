@@ -1,5 +1,5 @@
 from tkinter import Tk, Frame
-from GFlareCrawler import GFlareCrawler
+from core.gflarecrawler import GFlareCrawler
 
 
 class GreenflareTk(Frame):

@@ -1,5 +1,5 @@
 from lxml.html import fromstring
-from GFlareRobots import GFlareRobots
+from .gflarerobots import GFlareRobots
 import urllib.parse
 # import grobots
 import re
