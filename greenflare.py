@@ -17,6 +17,6 @@ class mainWindow(Frame):
 if __name__ == "__main__":
 	root = tk.Tk()
 	root.geometry("1024x768")
-	root.iconphoto(False, tk.PhotoImage(file='icons/greenflare-icon-64x64.png'))
+	root.iconphoto(False, tk.PhotoImage(file='greenflare-icon-64x64.png'))
 	app = mainWindow()
 	root.mainloop()

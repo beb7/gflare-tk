@@ -2,7 +2,7 @@ import sys
 from cx_Freeze import setup, Executable
 
 # Dependencies are automatically detected, but it might need fine tuning.
-build_exe_options = {"include_files": ["icons/greenflare-icon-64x64.png", "icons/greenflare-icon-256x256.ico"]}
+build_exe_options = {"include_files": ["greenflare-icon-64x64.png", "greenflare-icon-256x256.ico"]}
 
 
 
