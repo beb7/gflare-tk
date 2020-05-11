@@ -45,7 +45,7 @@ else:
 target = Executable(
     script="greenflare.py",
     base=base,
-    icon="icons/greenflare-icon-256x256.ico",
+    icon="greenflare-icon-256x256.ico",
     targetName=targetName
     )
 
