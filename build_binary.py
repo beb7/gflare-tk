@@ -30,7 +30,7 @@ bdist_msi_options = {'data': msi_data, 'install_icon': "icons/greenflare-icon-25
 
 # MacOS
 bdist_mac_options = {'iconfile': 'icons/greenflare-icon-64x64.icns', 'bundle_name': 'greenflare'}
-bdist_dmg_options = {'applications_shortcut': True}
+bdist_dmg_options = {'applications_shortcut': True, "volume_label": "Greenflare SEO Crawler"}
 
 # GUI applications require a different base on Windows (the default is for a
 # console application).
