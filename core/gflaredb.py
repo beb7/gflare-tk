@@ -54,6 +54,7 @@ class GFlareDB:
 	@exception_handler
 	def create_data_table(self):
 		query = f"CREATE TABLE IF NOT EXISTS crawl(id INTEGER PRIMARY KEY, url TEXT type UNIQUE, content_type TEXT, status_code INT, redirect_url, {self.items_to_sql(self.crawl_items, 'TEXT')})"
+		print(query)
 		self.cur.execute(query)
 		self.cur.execute("CREATE INDEX IF NOT EXISTS url_index ON crawl (url);")
 
