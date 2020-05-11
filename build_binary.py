@@ -29,7 +29,8 @@ msi_data = {"Shortcut": shortcut_table}
 bdist_msi_options = {'data': msi_data, 'install_icon': "icons/greenflare-icon-256x256.ico"}
 
 # MacOS
-bdist_mac_options = {'iconfile': 'icons/greenflare-icon-64x64.icns', 'bundle_name': 'greenflare', 'applications_shortcut': True}
+bdist_mac_options = {'iconfile': 'icons/greenflare-icon-64x64.icns', 'bundle_name': 'greenflare'}
+bdist_dmg_options = {'applications_shortcut': True}
 
 # GUI applications require a different base on Windows (the default is for a
 # console application).
@@ -52,5 +53,5 @@ setup(  name = "Greenflare SEO Crawler",
         version = "0.64",
         author = "Geenflare",
         description = "Scalable, low memory SEO crawler",
-        options = {"build_exe": build_exe_options, "bdist_msi": bdist_msi_options, "bdist_mac": bdist_mac_options},
+        options = {"build_exe": build_exe_options, "bdist_msi": bdist_msi_options, "bdist_mac": bdist_mac_options, "bdist_dmg": bdist_dmg_options},
         executables = [target])
