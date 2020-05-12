@@ -31,15 +31,15 @@ class GFlareRobots:
 			if d_match:= re.match(exp_disallow_rule, row): self.disallows.append(d_match.group(1))
 			if a_match:= re.match(exp_allow_rule, row): self.allows.append(a_match.group(1))
 
-		self.allow_lines = self.allows.copy()
-		self.disallow_lines = self.disallows.copy()
+		self.allow_lines = sorted(self.allows.copy(), key=len, reverse=True)
+		self.disallow_lines = sorted(self.disallows.copy(), key=len, reverse=True)
 
 	def process_rules(self, rules):
 		rules = [re.escape(l).replace("\*", ".*").replace("\$", "$") for l in rules]
 		for i, r in enumerate(rules):
 			if not re.match(r"^\.\*.*", r): rules[i] = f"^{r}"
 			if not re.match(r".*\$|.*\.\*$", r): rules[i] = f"{r}.*"
-		return "|".join([f"({r})" for r in rules])
+		return re.compile("|".join([f"({r})" for r in rules]))
 
 	def is_allowed(self, url):
 		scheme, netloc, path, query, frag = urllib.parse.urlsplit(url)

@@ -13,6 +13,7 @@ class GFlareDB:
 		self.columns_total = len(self.crawl_items) + 4
 	
 	def create(self, crawl_items):
+		self.crawl_items = crawl_items
 		self.create_data_table()
 		self.create_config_table()
 		self.create_inlinks_table()
