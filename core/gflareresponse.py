@@ -5,9 +5,8 @@ import urllib.parse
 import re
 
 class GFlareResponse:
-	def __init__(self, settings, essential_items=[ "url", "content_type", "status_code", "redirect_url"]):
+	def __init__(self, settings):
 		self.settings = settings
-		self.essential_items = essential_items
 		self.all_items = None
 		self.response = None
 		self.url = None
@@ -32,7 +31,8 @@ class GFlareResponse:
 		self.data = None
 
 	def get_all_items(self):
-		items = self.essential_items + self.settings.get("CRAWL_ITEMS", []) + self.settings.get("CUSTOM_ITEMS", []) + self.settings.get("CRAWL_DIRECTIVES", [])
+		items = [i[0] for i in self.settings["CRAWL_ITEMS"]]
+		items = items + self.settings.get("CUSTOM_ITEMS", []) + self.settings.get("CRAWL_DIRECTIVES", [])
 		if "report_on_status" in self.settings.get("ROBOTS_SETTINGS", ""): items += ["robots_txt"]
 		return items
 

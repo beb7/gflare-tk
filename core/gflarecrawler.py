@@ -19,11 +19,8 @@ class GFlareCrawler:
 		self.lock = lock
 
 		self.gui_url_queue = None
-		if self.gui_mode == True:
-			self.gui_url_queue = queue.Queue()
+		if self.gui_mode: self.gui_url_queue = queue.Queue()
 
-		self.default_crawl_items = ["indexability", "h1", "h2","page_title", "meta_description", "canonical_tag", "robots_txt", "meta_robots", "x_robots_tag", "unique_inlinks"]
-		self.essential_items = [ "url", "content_type", "status_code", "redirect_url"]
 		self.settings = settings
 		self.gf = gf(self.settings)
 		self.crawl_running = Event()
@@ -46,7 +43,7 @@ class GFlareCrawler:
 		return items
 
 	def connect_to_db(self):
-		return GFlareDB(self.db_file, crawl_items=self.get_all_items())
+		return GFlareDB(self.db_file, crawl_items=self.settings.get("CRAWL_ITEMS"))
 	
 	def init_crawl_headers(self):
 		ua = "Greenflare SEO Spider/1.0"
@@ -67,7 +64,7 @@ class GFlareCrawler:
 			self.url_per_second_limit = (1 / int(self.settings["URLS_PER_SECOND"])) * int(self.settings["THREADS"])
 
 		db = self.connect_to_db()
-		db.create(self.settings.get("CRAWL_ITEMS", self.default_crawl_items))
+		db.create(self.settings.get("CRAWL_ITEMS", None))
 
 		if self.settings["MODE"] == "Spider":
 			if not self.settings["STARTING_URL"].endswith("/"): self.settings["STARTING_URL"] += "/"
@@ -97,11 +94,15 @@ class GFlareCrawler:
 		self.crawl_running.clear()
 
 		self.request_robots_txt()
+		
 		# Reinit URL queue
 		self.add_to_url_queue(db.get_url_queue())
 		self.urls_crawled = db.get_urls_crawled()
 		self.urls_total = db.get_total_urls()
 
+		# Reset response object
+		self.gf = gf(self.settings)
+		
 		db.close()
 
 		self.start_consumer()
@@ -125,8 +126,7 @@ class GFlareCrawler:
 		for t in ts:
 			if "worker-" in t.name:
 				t.join()
-		if self.gui_mode == True:
-			self.gui_url_queue.put("END")
+		if self.gui_mode: self.gui_url_queue.put("END")
 		print("All workers joined ...")
 	
 	def crawl_url(self, url):
@@ -164,7 +164,7 @@ class GFlareCrawler:
 			print(f"{url} has too many redirects")
 			return header
 		except Exception as e:
-			return [tuple([url, '', 'Timed Out', ''] + [''] * len(self.get_all_items()))]
+			return [tuple([url, '', 'Timed Out', ''] + [''] * len(self.settings.get("CRAWL_ITEMS", None) - 4 ))]
 	
 	def add_to_gui_queue(self, data):
 		self.gui_url_queue.put(data)
@@ -223,8 +223,7 @@ class GFlareCrawler:
 				if "data" in data:
 					url = data["url"]
 					if self.robots_txt_found.is_set() == False:
-						if url == self.gf.get_robots_txt_url(url):
-							self.robots_txt_found.set()
+						if url == self.gf.get_robots_txt_url(url): self.robots_txt_found.set()
 					else:
 						db.insert_crawl_data(data["data"], new=new)
 						with self.lock:
@@ -251,7 +250,7 @@ class GFlareCrawler:
 						db.insert_new_urls(new_urls)
 						self.add_to_url_queue(new_urls)
 						inserted_urls += len(new_urls)
-					if "unique_inlinks" in self.settings.get("CRAWL_LINKS"): db.insert_inlinks(extracted_links, data["url"])
+					if "unique_inlinks" in self.settings.get("CRAWL_LINKS", ""): db.insert_inlinks(extracted_links, data["url"])
 
 				if inserted_urls >= (100 * threads):
 					db.commit()
@@ -266,13 +265,13 @@ class GFlareCrawler:
 						self.url_queue.put("END")
 				if self.gui_mode: self.add_to_gui_queue("CRAWL_TIMED_OUT")
 				break
-			except Exception as e:
-				print("Consumer thread crashed ...")
-				exc_type, exc_obj, exc_tb = sys.exc_info()
-				fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-				print(exc_type, fname, exc_tb.tb_lineno)
-				print(e)
-				self.crawl_running.set()			
+			# except Exception as e:
+			# 	print("Consumer thread crashed ...")
+			# 	exc_type, exc_obj, exc_tb = sys.exc_info()
+			# 	fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+			# 	print(exc_type, fname, exc_tb.tb_lineno)
+			# 	print(e)
+			# 	self.crawl_running.set()			
 
 		# Always commit to db at the very end
 		db.commit()
@@ -288,7 +287,7 @@ class GFlareCrawler:
 
 	def save_config(self, settings):
 		if self.db_file:
-			db = GFlareDB(self.db_file)
+			db = self.connect_to_db()
 			db.insert_config(settings)
 			db.commit()
 			db.close()
