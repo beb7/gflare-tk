@@ -9,7 +9,7 @@ class CrawlTab(Frame):
 		self.crawler = crawler
 		self.lock = crawler.lock
 
-		self.topframe = Frame(self, width=500)
+		self.topframe = Frame(self, width=400)
 		self.topframe.pack(anchor='center', padx=20, pady=20)
 
 		self.entry_url_input = ttk.Entry(self.topframe, width=100)
