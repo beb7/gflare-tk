@@ -9,6 +9,10 @@ class CrawlTab(Frame):
 		self.crawler = crawler
 		self.lock = crawler.lock
 
+		self.style = ttk.Style(self)
+		self.style.layout('text.Horizontal.TProgressbar', [('Horizontal.Progressbar.trough', {'children': [('Horizontal.Progressbar.pbar', {'side': 'left', 'sticky': 'ns'})], 'sticky': 'nswe'}), ('Horizontal.Progressbar.label', {'sticky': ''})])
+		self.style.configure('text.Horizontal.TProgressbar', text='0 %')
+
 		self.topframe = Frame(self, width=400)
 		self.topframe.pack(anchor='center', padx=20, pady=20)
 
@@ -20,9 +24,9 @@ class CrawlTab(Frame):
 		self.button_crawl = ttk.Button(self.topframe, text="Start", command=self.btn_crawl_pushed)
 		self.button_crawl.pack(side=LEFT, padx=(0, 20))
 
-		self.progressbar = ttk.Progressbar(self.topframe, orient="horizontal", length=90, mode="determinate", maximum=100, value=0)
+		self.progressbar = ttk.Progressbar(self.topframe, orient="horizontal", length=90, mode="determinate", maximum=100, value=0, style='text.Horizontal.TProgressbar')
 		self.progressbar.pack(side=LEFT, fill="x")
-		self.progressbar.start()
+		# self.progressbar.start()
 
 		self.y_scrollbar = ttk.Scrollbar(self)
 		self.y_scrollbar.pack(side="right", fill="y")
@@ -103,4 +107,9 @@ class CrawlTab(Frame):
 				with self.lock: self.row_counter += 1
 
 		self.treeview_table.yview_moveto(1)
+		with self.lock:
+			if self.crawler.urls_total > 0:
+				percentage = int((self.crawler.urls_crawled / self.crawler.urls_total) * 100)
+			self.progressbar["value"] = percentage
+			self.style.configure('text.Horizontal.TProgressbar', text=f'{percentage} %')
 		self.after(200, self.add_to_outputtable)
