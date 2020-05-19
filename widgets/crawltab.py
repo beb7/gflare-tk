@@ -7,6 +7,7 @@ class CrawlTab(Frame):
 	def __init__(self, crawler=None):
 		Frame.__init__(self)
 		self.crawler = crawler
+		self.lock = crawler.lock
 
 		self.topframe = Frame(self, width=700)
 		self.topframe.pack(anchor='center', padx=20, pady=20)
@@ -82,8 +83,14 @@ class CrawlTab(Frame):
 		elif self.button_crawl["text"] == "Resume": self.button_crawl["text"] = "Pause"
 
 	def add_to_outputtable(self):
+		items = []
 		try:
-			item = self.crawler.gui_url_queue.get_nowait()
+			while not self.crawler.gui_url_queue.empty():
+				items.append(self.crawler.gui_url_queue.get_nowait())
+		except queue.Empty:
+			pass
+		
+		for item in items:
 			if item == "CRAWL_COMPLETED":
 				return
 			if item == "CRAWL_TIMED_OUT":
@@ -93,8 +100,7 @@ class CrawlTab(Frame):
 
 			for row in item:
 				self.treeview_table.insert('', 'end', text=self.row_counter, values=row)
-				self.treeview_table.yview_moveto(1)
-				self.row_counter += 1
-		except queue.Empty:
-			pass
-		self.after(10, self.add_to_outputtable)
+				with self.lock: self.row_counter += 1
+
+		self.treeview_table.yview_moveto(1)
+		self.after(200, self.add_to_outputtable)
