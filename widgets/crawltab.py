@@ -110,6 +110,6 @@ class CrawlTab(Frame):
 		with self.lock:
 			if self.crawler.urls_total > 0:
 				percentage = int((self.crawler.urls_crawled / self.crawler.urls_total) * 100)
-			self.progressbar["value"] = percentage
-			self.style.configure('text.Horizontal.TProgressbar', text=f'{percentage} %')
+				self.progressbar["value"] = percentage
+				self.style.configure('text.Horizontal.TProgressbar', text=f'{percentage} %')
 		self.after(200, self.add_to_outputtable)
