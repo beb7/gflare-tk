@@ -2,6 +2,9 @@ import tkinter as tk
 from tkinter import Frame, ttk, Menu
 from core.gflarecrawler import GFlareCrawler
 from widgets.crawltab import CrawlTab
+from widgets.settingstab import SettingsTab
+from widgets.exclusionstab import ExclusionsTab
+from widgets.extractionstab import ExtractionsTab
 from threading import Lock
 from os import path
 import sys
@@ -13,8 +16,14 @@ class mainWindow(Frame):
 		
 		self.tab_parent = ttk.Notebook()
 		self.tab_crawl = CrawlTab(crawler)
+		self.tab_settings = SettingsTab(crawler)
+		self.tab_exclusions = ExclusionsTab(crawler)
+		self.tab_extractions = ExtractionsTab(crawler)
 
 		self.tab_parent.add(self.tab_crawl, text="Crawl")
+		self.tab_parent.add(self.tab_settings, text="Settings")
+		self.tab_parent.add(self.tab_exclusions, text="Exclusions")
+		self.tab_parent.add(self.tab_extractions, text="Extractions")
 		self.tab_parent.pack(expand=1, fill="both")
 		self.master.title("Greenflare SEO Crawler")
 
