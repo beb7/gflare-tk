@@ -31,8 +31,7 @@ class GFlareResponse:
 		self.data = None
 
 	def get_all_items(self):
-		items = [i[0] for i in self.settings["CRAWL_ITEMS"]]
-		items = items + self.settings.get("CUSTOM_ITEMS", []) + self.settings.get("CRAWL_DIRECTIVES", [])
+		items = self.settings["CRAWL_ITEMS"] + self.settings.get("CUSTOM_ITEMS", []) + self.settings.get("CRAWL_DIRECTIVES", [])
 		if "report_on_status" in self.settings.get("ROBOTS_SETTINGS", ""): items += ["robots_txt"]
 		return items
 

@@ -11,12 +11,13 @@ import threading
 import sys, os 
 
 class GFlareCrawler:
-	def __init__(self, settings=None, gui_mode=False, lock=None):
+	def __init__(self, settings=None, gui_mode=False, lock=None, columns=None):
 		self.data_queue = queue.Queue()
 		self.url_queue = queue.Queue()
 		self.gui_url_queue = None
 		self.gui_mode = gui_mode
 		self.lock = lock
+		self.columns = columns
 
 		self.gui_url_queue = None
 		if self.gui_mode: self.gui_url_queue = queue.Queue()
@@ -37,10 +38,10 @@ class GFlareCrawler:
 
 		self.consumer_thread = None
 
-	def get_all_items(self):
-		items = self.settings.get("CRAWL_ITEMS", []) + self.settings.get("CUSTOM_ITEMS", []) + self.settings.get("CRAWL_DIRECTIVES", [])
-		if "report_on_status" in self.settings.get("ROBOTS_SETTINGS", ""): items += ["robots_txt"]
-		return items
+	# def get_all_items(self):
+	# 	items = self.settings.get("CRAWL_ITEMS", []) + self.settings.get("CUSTOM_ITEMS", []) + self.settings.get("CRAWL_DIRECTIVES", [])
+	# 	if "report_on_status" in self.settings.get("ROBOTS_SETTINGS", ""): items += ["robots_txt"]
+	# 	return items
 
 	def connect_to_db(self):
 		return GFlareDB(self.db_file, crawl_items=self.settings.get("CRAWL_ITEMS"))
@@ -64,7 +65,7 @@ class GFlareCrawler:
 			self.url_per_second_limit = (1 / int(self.settings["URLS_PER_SECOND"])) * int(self.settings["THREADS"])
 
 		db = self.connect_to_db()
-		db.create(self.settings.get("CRAWL_ITEMS", None))
+		db.create(self.columns)
 
 		if self.settings["MODE"] == "Spider":
 			if not self.settings["STARTING_URL"].endswith("/"): self.settings["STARTING_URL"] += "/"
@@ -82,6 +83,18 @@ class GFlareCrawler:
 		self.start_consumer()
 		Thread(target=self.spawn_threads).start()
 
+	
+	def load_crawl(self, db_file):
+		self.db_file = db_file
+		db = self.connect_to_db()
+
+		self.urls_crawled = db.get_urls_crawled()
+		self.urls_total = db.get_total_urls()
+		self.settings = db.get_settings()
+
+		db.close()
+
+
 	def resume_crawl(self):
 		print("Resuming crawl ...")
 		self.init_crawl_headers()
@@ -97,8 +110,6 @@ class GFlareCrawler:
 		
 		# Reinit URL queue
 		self.add_to_url_queue(db.get_url_queue())
-		self.urls_crawled = db.get_urls_crawled()
-		self.urls_total = db.get_total_urls()
 
 		# Reset response object
 		self.gf = gf(self.settings)

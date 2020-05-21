@@ -9,11 +9,12 @@ class GFlareDB:
 		self.db_name = db_name
 		self.con, self.cur = self.db_connect()
 		self.con.create_function("REGEXP", 2, self.regexp)
+		self.columns = None
 		self.crawl_items = crawl_items
 		self.columns_total = len(self.crawl_items)
 	
-	def create(self, crawl_items):
-		self.crawl_items = crawl_items
+	def create(self, columns):
+		self.columns = columns
 		self.create_data_table()
 		self.create_config_table()
 		self.create_inlinks_table()
@@ -50,12 +51,13 @@ class GFlareDB:
 	
 	@exception_handler
 	def items_to_sql(self, items, op=None, remove=None):
-		if op and remove: return ", ".join(f"{i[0]} {op}" for i in items if i[0] != remove)
+		if op and not remove: return ", ".join(f"{i} {op}" for i in items)
+		elif op and remove: return ", ".join(f"{i} {op}" for i in items if i != remove)
 		return ", ".join(f"{i[0]} {i[1]}" for i in items)
 
 	@exception_handler
 	def create_data_table(self):
-		query = f"CREATE TABLE IF NOT EXISTS crawl(id INTEGER PRIMARY KEY, {self.items_to_sql(self.crawl_items)})"
+		query = f"CREATE TABLE IF NOT EXISTS crawl(id INTEGER PRIMARY KEY, {self.items_to_sql(self.columns)})"
 		self.cur.execute(query)
 		self.cur.execute("CREATE INDEX IF NOT EXISTS url_index ON crawl (url);")
 
@@ -74,7 +76,7 @@ class GFlareDB:
 	@exception_handler
 	def insert_config(self, inp):
 		settings = inp.copy()
-		if "CRAWL_ITEMS" in settings: settings["CRAWL_ITEMS"] = [i[0] for i in settings["CRAWL_ITEMS"]]
+		# if "CRAWL_ITEMS" in settings: settings["CRAWL_ITEMS"] = [i[0] for i in settings["CRAWL_ITEMS"]]
 		to_list = {key:",".join(value) for (key, value) in settings.items() if isinstance(value, list)}
 		settings = {**settings, **to_list}
 
@@ -270,7 +272,7 @@ class GFlareDB:
 	def insert_crawl_data(self, data, new=False):
 		if new == False:
 			rows = [self.tuple_front_to_end(t) for t in data]
-			query = f"UPDATE crawl SET {self.items_to_sql(self.crawl_items, '= ?', remove='url')} WHERE url = ?"
+			query = f"UPDATE crawl SET {self.items_to_sql(self.crawl_items, op='= ?', remove='url')} WHERE url = ?"
 			self.cur.executemany(query, rows)
 		else:
 			query = f"INSERT INTO crawl VALUES(NULL, {','.join(['?'] * self.columns_total)})"

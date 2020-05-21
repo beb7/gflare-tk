@@ -107,9 +107,24 @@ class CrawlTab(Frame):
 				with self.lock: self.row_counter += 1
 
 		self.treeview_table.yview_moveto(1)
+		self.update_progressbar()
+		self.after(200, self.add_to_outputtable)
+
+	def update_progressbar(self):
 		with self.lock:
 			if self.crawler.urls_total > 0:
 				percentage = int((self.crawler.urls_crawled / self.crawler.urls_total) * 100)
 				self.progressbar["value"] = percentage
 				self.style.configure('text.Horizontal.TProgressbar', text=f'{percentage} %')
-		self.after(200, self.add_to_outputtable)
+
+	def update(self):
+
+		self.button_crawl["text"] = "Resume"
+		self.entry_url_input.delete(0, 'end')
+		self.entry_url_input.insert(0, self.crawler.settings["STARTING_URL"])
+		self.row_counter = self.crawler.urls_crawled
+		self.populate_columns()
+		self.update_progressbar()
+
+
+		# self.counter_label.setText(f"{urls_discovered} / {urls_total}")

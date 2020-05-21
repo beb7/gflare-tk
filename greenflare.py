@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import Frame, ttk, Menu
+from tkinter import Frame, ttk, Menu, filedialog as fd
 from core.gflarecrawler import GFlareCrawler
 from widgets.crawltab import CrawlTab
 from widgets.settingstab import SettingsTab
@@ -14,6 +14,8 @@ class mainWindow(Frame):
 	def __init__(self, crawler=None):
 		Frame.__init__(self)
 		
+		self.crawler = crawler
+		print(self.crawler.settings)
 		self.tab_parent = ttk.Notebook()
 		self.tab_crawl = CrawlTab(crawler)
 		self.tab_settings = SettingsTab(crawler)
@@ -48,7 +50,16 @@ class mainWindow(Frame):
 
 
 	def load_crawl(self):
-		pass
+		files = [('Greenflare DB', '*.gflaredb'), ('All files', '.*')]
+		db_file = fd.askopenfilename(filetypes=files)
+		if not db_file: return
+		self.crawler.load_crawl(db_file)
+		print(self.crawler.settings)
+
+		if self.crawler.settings["MODE"] == "Spider": self.spider_mode()
+		elif self.crawler.settings["MODE"] == "List": self.list_mode()
+
+		self.update_gui()
 
 	def full_export(self):
 		pass
@@ -61,6 +72,15 @@ class mainWindow(Frame):
 
 	def show_about(self):
 		pass
+
+	def update_gui(self):
+
+		self.master.title(f"{self.crawler.settings['ROOT_DOMAIN']} - Greenflare SEO Crawler")
+
+		self.tab_crawl.update()
+		self.tab_settings.update()
+		self.tab_exclusions.update()
+		self.tab_extractions.update()
 		
 if __name__ == "__main__":
 	if getattr(sys, 'frozen', False): WorkingDir = path.dirname(sys.executable)
@@ -72,8 +92,9 @@ if __name__ == "__main__":
 
 	globalLock = Lock()
 	columns = [("url", "TEXT type UNIQUE"), ("content_type" , "TEXT"), ("status_code", "INT"), ("indexability", "TEXT"), ("h1", "TEXT"), ("h2", "TEXT"), ("page_title", "TEXT"), ("meta_description", "TEXT"), ("canonical_tag", "TEXT"), ("robots_txt", "TEXT"), ("redirect_url", "TEXT"), ("meta_robots", "TEXT"), ("x_robots_tag", "TEXT"), ("unique_inlinks", "INT")]
-	Settings  = {"MODE": "Spider", "THREADS": 5, "URLS_PER_SECOND": 15, "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36", "UA_SHORT": "Windows Chrome", "MAX_RETRIES": 3, "CRAWL_ITEMS": columns}
-	Crawler = GFlareCrawler(settings=Settings, gui_mode=True, lock=globalLock)
+	crawl_items = [t[0] for t in columns]
+	Settings  = {"MODE": "Spider", "THREADS": 5, "URLS_PER_SECOND": 15, "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36", "UA_SHORT": "Windows Chrome", "MAX_RETRIES": 3, "CRAWL_ITEMS": crawl_items}
+	Crawler = GFlareCrawler(settings=Settings, gui_mode=True, lock=globalLock, columns=columns)
 
-	app = mainWindow(Crawler)
+	app = mainWindow(crawler=Crawler)
 	root.mainloop()
