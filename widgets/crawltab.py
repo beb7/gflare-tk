@@ -13,18 +13,18 @@ class CrawlTab(Frame):
 		self.style.layout('text.Horizontal.TProgressbar', [('Horizontal.Progressbar.trough', {'children': [('Horizontal.Progressbar.pbar', {'side': 'left', 'sticky': 'ns'})], 'sticky': 'nswe'}), ('Horizontal.Progressbar.label', {'sticky': ''})])
 		self.style.configure('text.Horizontal.TProgressbar', text='0 %')
 
-		self.topframe = Frame(self, width=400)
-		self.topframe.pack(anchor='center', padx=20, pady=20)
+		self.topframe = Frame(self)
+		self.topframe.pack(anchor='center', padx=20, pady=20, fill="x")
 
-		self.entry_url_input = ttk.Entry(self.topframe, width=100)
+		self.entry_url_input = ttk.Entry(self.topframe)
 		self.entry_url_input.insert(0, "Enter URL to crawl")
 		self.entry_url_input.bind('<Return>', self.enter_hit)
-		self.entry_url_input.pack(side=LEFT, padx=(0, 20))
+		self.entry_url_input.pack(side=LEFT, padx=(0, 20), expand=True, fill="x")
 
 		self.button_crawl = ttk.Button(self.topframe, text="Start", command=self.btn_crawl_pushed)
 		self.button_crawl.pack(side=LEFT, padx=(0, 20))
 
-		self.progressbar = ttk.Progressbar(self.topframe, orient="horizontal", length=90, mode="determinate", maximum=100, value=0, style='text.Horizontal.TProgressbar')
+		self.progressbar = ttk.Progressbar(self.topframe, orient="horizontal", length=150, mode="determinate", maximum=100, value=0, style='text.Horizontal.TProgressbar')
 		self.progressbar.pack(side=LEFT, fill="x")
 		# self.progressbar.start()
 
