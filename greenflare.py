@@ -15,7 +15,6 @@ class mainWindow(Frame):
 		Frame.__init__(self)
 		
 		self.crawler = crawler
-		print(self.crawler.settings)
 		self.tab_parent = ttk.Notebook()
 		self.tab_crawl = CrawlTab(crawler)
 		self.tab_settings = SettingsTab(crawler)
@@ -54,7 +53,6 @@ class mainWindow(Frame):
 		db_file = fd.askopenfilename(filetypes=files)
 		if not db_file: return
 		self.crawler.load_crawl(db_file)
-		print(self.crawler.settings)
 
 		if self.crawler.settings["MODE"] == "Spider": self.spider_mode()
 		elif self.crawler.settings["MODE"] == "List": self.list_mode()
