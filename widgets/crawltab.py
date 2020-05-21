@@ -50,7 +50,7 @@ class CrawlTab(Frame):
 			if "url" in i.lower():
 				self.treeview_table.column(i, width=250, stretch=NO)
 			else:
-				self.treeview_table.column(i, width=100)
+				self.treeview_table.column(i, width=100, stretch=NO)
 
 	def enter_hit(self, event=None):
 		self.btn_crawl_pushed()
