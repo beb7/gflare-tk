@@ -9,3 +9,4 @@ Requirements
 * urllib3 >= 1.25
 * lxml >= 4.4
 * cssselect >= 1.1.0
+* tkinter >= 8.5
