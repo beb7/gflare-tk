@@ -91,7 +91,10 @@ if __name__ == "__main__":
 	globalLock = Lock()
 	columns = [("url", "TEXT type UNIQUE"), ("content_type" , "TEXT"), ("status_code", "INT"), ("indexability", "TEXT"), ("h1", "TEXT"), ("h2", "TEXT"), ("page_title", "TEXT"), ("meta_description", "TEXT"), ("canonical_tag", "TEXT"), ("robots_txt", "TEXT"), ("redirect_url", "TEXT"), ("meta_robots", "TEXT"), ("x_robots_tag", "TEXT"), ("unique_inlinks", "INT")]
 	crawl_items = [t[0] for t in columns]
-	Settings  = {"MODE": "Spider", "THREADS": 5, "URLS_PER_SECOND": 15, "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36", "UA_SHORT": "Windows Chrome", "MAX_RETRIES": 3, "CRAWL_ITEMS": crawl_items}
+	crawl_links= ["unique_inlinks", "canonicals"]
+	crawl_directives = ["canonical_tag", "meta_robots"]
+	robots_settings = ["respect_robots_txt", "report_on_status", "follow_blocked_redirects"]
+	Settings  = {"MODE": "Spider", "THREADS": 5, "URLS_PER_SECOND": 15, "USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36", "UA_SHORT": "Windows Chrome", "MAX_RETRIES": 3, "CRAWL_ITEMS": crawl_items, "CRAWL_LINKS": crawl_links, "CRAWL_DIRECTIVES": crawl_directives, "ROBOTS_SETTINGS": robots_settings}
 	Crawler = GFlareCrawler(settings=Settings, gui_mode=True, lock=globalLock, columns=columns)
 
 	app = mainWindow(crawler=Crawler)
