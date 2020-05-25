@@ -144,6 +144,11 @@ class GFlareCrawler:
 		retries = self.settings.get("MAX_RETRIES", 0)
 		timeout = int(self.settings.get("TIMEOUT", 5))
 		header_only = False
+		if self.settings.get("PROXY_HOST", "") != "":
+			if self.settings.get("PROXY_USER", "") == "":
+				session.proxies = {"https": f"{self.settings['PROXY_HOST']}"}
+			else:
+				session.proxies = { 'https' : f"https://{self.settings['PROXY_USER']}:{self.settings['PROXY_PASSWORD']}@{self.settings['PROXY_HOST']}"}
 
 		if self.gf.is_robots_txt(url): 
 			retries = 0
