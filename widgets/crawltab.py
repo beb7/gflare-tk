@@ -38,8 +38,8 @@ class CrawlTab(Frame):
 		self.populate_columns()
 		self.row_counter = 1
 
-	def populate_columns(self):
-		items = [i.title().replace("_", " ") for i in self.crawler.gf.get_all_items()]
+	def populate_columns(self, columns=["url", "content_type", "indexability", "status_code", "h1", "page_title", "canonical_tag", "robots_txt", "redirect_url"]):
+		items = [i.title().replace("_", " ") for i in columns]
 		items[items.index("Url")] = "URL"
 		items[items.index("Redirect Url")] = "Redirect URL"
 		self.treeview_table["columns"] = tuple(items)
@@ -66,6 +66,7 @@ class CrawlTab(Frame):
 				self.crawler.db_file = db_file
 				self.crawler.settings["STARTING_URL"] = url
 				self.crawler.start_crawl()
+				self.populate_columns(columns=self.crawler.columns)
 
 				self.after(10, self.add_to_outputtable)
 				self.after(10, self.change_btn_text)

@@ -11,19 +11,18 @@ import threading
 import sys, os 
 
 class GFlareCrawler:
-	def __init__(self, settings=None, gui_mode=False, lock=None, columns=None):
+	def __init__(self, settings=None, gui_mode=False, lock=None):
 		self.data_queue = queue.Queue()
 		self.url_queue = queue.Queue()
 		self.gui_url_queue = None
 		self.gui_mode = gui_mode
 		self.lock = lock
-		self.columns = columns
 
 		self.gui_url_queue = None
 		if self.gui_mode: self.gui_url_queue = queue.Queue()
 
 		self.settings = settings
-		self.gf = gf(self.settings)
+		self.gf = gf(self.settings, columns=None)
 		self.crawl_running = Event()
 		self.robots_txt_found = Event()
 		self.robots_thread = None
@@ -35,16 +34,12 @@ class GFlareCrawler:
 		self.urls_total = 0
 		self.HEADERS = ""
 		self.robots_txt = ""
+		self.columns = None
 
 		self.consumer_thread = None
 
-	# def get_all_items(self):
-	# 	items = self.settings.get("CRAWL_ITEMS", []) + self.settings.get("CUSTOM_ITEMS", []) + self.settings.get("CRAWL_DIRECTIVES", [])
-	# 	if "report_on_status" in self.settings.get("ROBOTS_SETTINGS", ""): items += ["robots_txt"]
-	# 	return items
-
 	def connect_to_db(self):
-		return GFlareDB(self.db_file, crawl_items=self.settings.get("CRAWL_ITEMS"))
+		return GFlareDB(self.db_file, crawl_items=self.settings.get("CRAWL_ITEMS"), extractions=self.settings.get("EXTRACTIONS", None))
 	
 	def init_crawl_headers(self):
 		ua = "Greenflare SEO Spider/1.0"
@@ -65,7 +60,9 @@ class GFlareCrawler:
 			self.url_per_second_limit = (1 / int(self.settings["URLS_PER_SECOND"])) * int(self.settings["THREADS"])
 
 		db = self.connect_to_db()
-		db.create(self.columns)
+		db.create()
+		self.columns = db.columns
+		self.gf.all_items = self.columns
 
 		if self.settings["MODE"] == "Spider":
 			if not self.settings["STARTING_URL"].endswith("/"): self.settings["STARTING_URL"] += "/"
@@ -91,6 +88,7 @@ class GFlareCrawler:
 		self.urls_crawled = db.get_urls_crawled()
 		self.urls_total = db.get_total_urls()
 		self.settings = db.get_settings()
+		self.columns = db.columns
 
 		db.close()
 
@@ -112,7 +110,7 @@ class GFlareCrawler:
 		self.add_to_url_queue(db.get_url_queue())
 
 		# Reset response object
-		self.gf = gf(self.settings)
+		self.gf = gf(self.settings, db.columns)
 		
 		db.close()
 

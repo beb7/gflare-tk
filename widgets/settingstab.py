@@ -51,6 +51,30 @@ class SettingsTab(Frame):
 		self.combobox_ua.current(0)
 		self.combobox_ua.grid(row=3, column=1, padx=15, pady=5, sticky=E)
 
+		self.group_network = LabelFrame(self.frame_first, text="Proxy", padx=5, pady=5)
+		self.group_network.grid(row=0, column=1, sticky=W, padx=10, pady=10)
+
+		self.label_host = ttk.Label(self.group_network, text="Host")
+		self.label_host.grid(row=0, column=0, sticky=W)
+
+		self.entry_host = ttk.Entry(self.group_network)
+		self.entry_host.insert(0, "Hostname/IP")
+		self.entry_host.grid(row=0, column=1, sticky=E, padx=15, pady=5)
+		
+		self.label_user = ttk.Label(self.group_network, text="User")
+		self.label_user.grid(row=1, column=0, sticky=W)
+
+		self.entry_user = ttk.Entry(self.group_network)
+		self.entry_user.insert(0, "")
+		self.entry_user.grid(row=1, column=1, sticky=E, padx=15, pady=5)
+		
+		self.label_password = ttk.Label(self.group_network, text="Password")
+		self.label_password.grid(row=2, column=0, sticky=W)
+
+		self.entry_password = ttk.Entry(self.group_network, show="*")
+		self.entry_password.insert(0, "")
+		self.entry_password.grid(row=2, column=1, sticky=E, padx=15, pady=5)
+
 		"""
 		Second row
 		"""
@@ -66,19 +90,19 @@ class SettingsTab(Frame):
 		"""
 		Links Group
 		"""
-		self.checkboxgroup_links = CheckboxGroup(self.frame_second, "Links", ["Unique Inlinks", "External Links", "Canonicals", "Pagination", "Hreflang"], self.crawler.settings, "CRAWL_LINKS")
+		self.checkboxgroup_links = CheckboxGroup(self.frame_second, "Links", ["Unique Inlinks", "External Links", "Canonicals", "Pagination", "Hreflang"], self.crawler.settings, "CRAWL_ITEMS")
 		self.checkboxgroup_links.grid(row=0, column=1, sticky=NW, padx=10, pady=10)
 		
 		"""
 		Directives Group
 		"""
-		self.checkboxgroup_directives = CheckboxGroup(self.frame_second, "Directives", ["Canonical Tag", "Canonical HTTP Header", "Meta Robots", "X-Robots-Tag"], self.crawler.settings, "CRAWL_DIRECTIVES")
+		self.checkboxgroup_directives = CheckboxGroup(self.frame_second, "Directives", ["Canonical Tag", "Canonical HTTP Header", "Meta Robots", "X-Robots-Tag"], self.crawler.settings, "CRAWL_ITEMS")
 		self.checkboxgroup_directives.grid(row=0, column=2, sticky=NW, padx=10, pady=10)
 
 		"""
 		robots.txt Group
 		"""
-		self.checkboxgroup_robots_txt = CheckboxGroup(self.frame_second, "robots.txt", ["Respect robots.txt", "Report on status", "Check blocked URLs", "Follow blocked redirects"], self.crawler.settings, "ROBOTS_SETTINGS")
+		self.checkboxgroup_robots_txt = CheckboxGroup(self.frame_second, "robots.txt", ["Respect robots.txt", "Report on status", "Check blocked URLs", "Follow blocked redirects"], self.crawler.settings, "CRAWL_ITEMS")
 		self.checkboxgroup_robots_txt.grid(row=0, column=3, sticky=NW, padx=10, pady=10)
 
 	def update(self):
