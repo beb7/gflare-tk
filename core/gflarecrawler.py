@@ -38,6 +38,9 @@ class GFlareCrawler:
 
 		self.consumer_thread = None
 
+		self.session = None
+		self.header_only = False
+
 	def connect_to_db(self):
 		return GFlareDB(self.db_file, crawl_items=self.settings.get("CRAWL_ITEMS"), extractions=self.settings.get("EXTRACTIONS", None))
 	
@@ -55,6 +58,8 @@ class GFlareCrawler:
 	def start_crawl(self):
 		print("Crawl started")
 		self.init_crawl_headers()
+		self.init_session()
+		
 		# Set speed limit
 		if int(self.settings.get("URLS_PER_SECOND", 0)) > 0:
 			self.url_per_second_limit = (1 / int(self.settings["URLS_PER_SECOND"])) * int(self.settings["THREADS"])
@@ -96,6 +101,9 @@ class GFlareCrawler:
 	def resume_crawl(self):
 		print("Resuming crawl ...")
 		self.init_crawl_headers()
+		# Reinit session
+		self.init_session()
+
 		db = self.connect_to_db()
 		db.add_remove_columns()
 
@@ -111,7 +119,7 @@ class GFlareCrawler:
 
 		# Reset response object
 		self.gf = gf(self.settings, db.columns)
-		
+
 		db.close()
 
 		self.start_consumer()
@@ -137,41 +145,40 @@ class GFlareCrawler:
 				t.join()
 		if self.gui_mode: self.gui_url_queue.put("END")
 		print("All workers joined ...")
-	
-	def crawl_url(self, url):
-		session = Session()
+
+
+	def init_session(self):
+		"""
+		All worker threads share the same session object.
+		This is only thread-safe as long as no session object attributes are being altered (headers, proxies etc.)
+		"""
+
+		self.session = Session()
 		status_forcelist = (500, 502, 504)
 		retries = self.settings.get("MAX_RETRIES", 0)
-		timeout = int(self.settings.get("TIMEOUT", 5))
-		header_only = False
+		self.header_only = False
+		
 		if self.settings.get("PROXY_HOST", "") != "":
 			if self.settings.get("PROXY_USER", "") == "":
-				session.proxies = {"https": f"{self.settings['PROXY_HOST']}"}
+				self.session.proxies = {"https": f"{self.settings['PROXY_HOST']}"}
 			else:
-				session.proxies = { 'https' : f"https://{self.settings['PROXY_USER']}:{self.settings['PROXY_PASSWORD']}@{self.settings['PROXY_HOST']}"}
-
-		if self.gf.is_robots_txt(url): 
-			retries = 0
-			timeout = 5
-
-		if self.settings["MODE"] == "Spider" and self.gf.is_external(url):
-			retries = 0
-			timeout = 3
-			header_only = True
+				self.session.proxies = { 'https' : f"https://{self.settings['PROXY_USER']}:{self.settings['PROXY_PASSWORD']}@{self.settings['PROXY_HOST']}"}
 
 		retry = Retry(total=retries, read=retries, connect=retries, backoff_factor=0.3, status_forcelist=status_forcelist)
 		adapter = HTTPAdapter(max_retries=retry)
-		session.mount("http://", adapter)
-		session.mount("https://", adapter)
+		self.session.mount("http://", adapter)
+		self.session.mount("https://", adapter)
+	
+	def crawl_url(self, url):
 
 		header = None
 		body = None
 
 		try:
-			if header_only: return session.head(url, headers=self.HEADERS, timeout=3) 
-			header = session.head(url, headers=self.HEADERS, timeout=timeout)
+			if self.header_only: return self.session.head(url, headers=self.HEADERS, timeout=3) 
+			header = self.session.head(url, headers=self.HEADERS, timeout=5)
 			if "text" in header.headers.get("content-type", ""):
-				body = session.get(url, headers=self.HEADERS, timeout=timeout)
+				body = self.session.get(url, headers=self.HEADERS, timeout=5)
 				return body
 			return header
 		except exceptions.TooManyRedirects:
