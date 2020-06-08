@@ -27,7 +27,7 @@ class CrawlTab(Frame):
 		self.progressbar = ttk.Progressbar(self.topframe, orient="horizontal", length=150, mode="determinate", maximum=100, value=0, style='text.Horizontal.TProgressbar')
 		self.progressbar.pack(side=LEFT, fill="x")
 
-		self.treeview_table = ttk.Treeview(self)
+		self.treeview_table = ttk.Treeview(self, selectmode="browse")
 		self.scrollbar_vertical = ttk.Scrollbar(self, orient="vertical", command=self.treeview_table.yview)
 		self.scrollbar_vertical.pack(side="right", fill="y")
 		self.scrollbar_horizontal = ttk.Scrollbar(self, orient="horizontal", command=self.treeview_table.xview)
