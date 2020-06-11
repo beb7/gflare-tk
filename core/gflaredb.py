@@ -5,16 +5,34 @@ from time import perf_counter
 import re
 
 class GFlareDB:
-	def __init__(self, db_name, crawl_items=None):
+	def __init__(self, db_name, crawl_items=None, extractions=None):
 		self.db_name = db_name
 		self.con, self.cur = self.db_connect()
 		self.con.create_function("REGEXP", 2, self.regexp)
-		self.columns = None
 		self.crawl_items = crawl_items
-		self.columns_total = len(self.crawl_items)
+		self.columns_map = {"url": "TEXT type UNIQUE",
+							"content_type": "TEXT",
+							"status_code": "INT",
+							"indexability": "TEXT",
+							"h1": "TEXT",
+							"h2": "TEXT",
+							"page_title": "TEXT",
+							"meta_description": "TEXT",
+							"canonical_tag": "TEXT",
+							"robots_txt": "TEXT",
+							"redirect_url": "TEXT",
+							"meta_robots": "TEXT",
+							"x_robots_tag": "TEXT",
+							"unique_inlinks": "INT"
+							}
+
+		self.sql_columns = [(k, v) for k,v in self.columns_map.items() if k in self.crawl_items]
+		self.columns = [k for k in self.columns_map.keys() if k in self.crawl_items]
+		self.columns_total = len(self.columns)
 	
-	def create(self, columns):
-		self.columns = columns
+	def create(self):
+		self.columns = [k for k in self.columns_map.keys() if k in self.crawl_items]
+		self.columns_total = len(self.columns)
 		self.create_data_table()
 		self.create_config_table()
 		self.create_inlinks_table()
@@ -57,7 +75,7 @@ class GFlareDB:
 
 	@exception_handler
 	def create_data_table(self):
-		query = f"CREATE TABLE IF NOT EXISTS crawl(id INTEGER PRIMARY KEY, {self.items_to_sql(self.columns)})"
+		query = f"CREATE TABLE IF NOT EXISTS crawl(id INTEGER PRIMARY KEY, {self.items_to_sql(self.sql_columns)})"
 		self.cur.execute(query)
 		self.cur.execute("CREATE INDEX IF NOT EXISTS url_index ON crawl (url);")
 
@@ -76,7 +94,7 @@ class GFlareDB:
 	@exception_handler
 	def insert_config(self, inp):
 		settings = inp.copy()
-		# if "CRAWL_ITEMS" in settings: settings["CRAWL_ITEMS"] = [i[0] for i in settings["CRAWL_ITEMS"]]
+
 		to_list = {key:",".join(value) for (key, value) in settings.items() if isinstance(value, list)}
 		settings = {**settings, **to_list}
 
@@ -108,7 +126,6 @@ class GFlareDB:
 		self.cur.execute('SELECT SQLITE_VERSION()')
 		data = self.cur.fetchone()[0]
 		print(f"SQLite version: {data}")
-
 
 	@exception_handler
 	def url_in_db(self, url):
@@ -272,7 +289,9 @@ class GFlareDB:
 	def insert_crawl_data(self, data, new=False):
 		if new == False:
 			rows = [self.tuple_front_to_end(t) for t in data]
-			query = f"UPDATE crawl SET {self.items_to_sql(self.crawl_items, op='= ?', remove='url')} WHERE url = ?"
+			query = f"UPDATE crawl SET {self.items_to_sql(self.columns, op='= ?', remove='url')} WHERE url = ?"
+			# print("columns:", self.columns)
+			# print("query:", query)
 			self.cur.executemany(query, rows)
 		else:
 			query = f"INSERT INTO crawl VALUES(NULL, {','.join(['?'] * self.columns_total)})"
