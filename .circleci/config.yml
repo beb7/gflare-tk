@@ -14,7 +14,8 @@ jobs:
       - run:
           command: python build_binary.py build_exe
           name: Build Test
-
+      - store_artifacts:
+      path: build/
 workflows:
   main:
     jobs:
