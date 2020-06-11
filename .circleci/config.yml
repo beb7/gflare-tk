@@ -12,10 +12,10 @@ jobs:
       - python/install-deps
       - python/save-cache
       - run:
-          command: python build_binary.py build_exe
+          command: python build_binary.py build_exe && tar -zcvf build.tar.gz build/ && mkdir results/ && mv build.tar.gz results/ 
           name: Build Test
       - store_artifacts:
-          path: build/
+          path: results/
 workflows:
   main:
     jobs:
