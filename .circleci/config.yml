@@ -12,7 +12,7 @@ jobs:
       - python/install-deps
       - python/save-cache
       - run:
-          command: ./build_binary.py bdist_exe
+          command: python build_binary.py bdist_exe
           name: Build Test
 
 workflows:
