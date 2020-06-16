@@ -26,8 +26,8 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            pip install pip --upgrade
-            pip install -r requirements.txt
+            pip install --user pip --upgrade
+            pip install --user -r requirements.txt
       - run:
           name: run cxfreeze
           command: |
