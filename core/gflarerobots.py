@@ -28,8 +28,13 @@ class GFlareRobots:
 
 		for row in self.robots_txt.splitlines():
 			row = self.remove_spaces(row)
-			if d_match:= re.match(exp_disallow_rule, row): self.disallows.append(d_match.group(1))
-			if a_match:= re.match(exp_allow_rule, row): self.allows.append(a_match.group(1))
+			
+			# Avoid := walrus operator for now to allow Python 3.7 compatibility
+			d_match = re.match(exp_disallow_rule, row)
+			if d_match: self.disallows.append(d_match.group(1))
+			
+			a_match = re.match(exp_allow_rule, row)
+			if a_match: self.allows.append(a_match.group(1))
 
 		self.allow_lines = sorted(self.allows.copy(), key=len, reverse=True)
 		self.disallow_lines = sorted(self.disallows.copy(), key=len, reverse=True)
@@ -48,14 +53,16 @@ class GFlareRobots:
 		disallow = None
 
 		if self.allow_lines:
-			if a_match:= re.match(self.allows, url):
+			a_match = re.match(self.allows, url)
+			if a_match:
 				group = 0
 				for m in a_match.groups():
 					group += 1
 					if m: break
 				allow = self.allow_lines[group -1]
 		if self.disallow_lines:
-			if d_match:= re.match(self.disallows, url):
+			d_match = re.match(self.disallows, url)
+			if d_match:
 				group = 0
 				for m in d_match.groups():
 					group += 1
