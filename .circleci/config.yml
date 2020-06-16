@@ -22,8 +22,12 @@ jobs:
     steps:
       - checkout
       - python/load-cache
-      - python/install-deps
       - python/save-cache
+      - run:
+          name: install dependencies
+          command: |
+            pip install pip --upgrade
+            pip install -r requirements.txt
       - run:
           command: python build_binary.py build_exe && tar -zcvf windows-build.tar.gz build/ && mkdir results/ && mv windows-build.tar.gz results/ 
           name: Build Test
