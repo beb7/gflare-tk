@@ -5,7 +5,7 @@ orbs:
   win: circleci/windows@2.2.0
 
 jobs:
-  ubuntu-16.04:
+  ubuntu-build:
     executor: python/default
     steps:
       - checkout
@@ -33,5 +33,5 @@ jobs:
 workflows:
   main:
     jobs:
-      - ubuntu-16.04
+      - ubuntu-build
       - windows-build
