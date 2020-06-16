@@ -2,9 +2,10 @@ version: 2.1
 
 orbs:
   python: circleci/python@0.2.1
+  win: circleci/windows@2.2.0
 
 jobs:
-  build-and-test:
+  ubuntu-16.04:
     executor: python/default
     steps:
       - checkout
@@ -12,11 +13,25 @@ jobs:
       - python/install-deps
       - python/save-cache
       - run:
-          command: python build_binary.py build_exe && tar -zcvf build.tar.gz build/ && mkdir results/ && mv build.tar.gz results/ 
+          command: python build_binary.py build_exe && tar -zcvf linux-build.tar.gz build/ && mkdir results/ && mv linux-build.tar.gz results/ 
           name: Build Test
       - store_artifacts:
           path: results/
+  windows-build:
+    executor: win/default
+    steps:
+      - checkout
+      - python/load-cache
+      - python/install-deps
+      - python/save-cache
+      - run:
+          command: python build_binary.py build_exe && tar -zcvf windows-build.tar.gz build/ && mkdir results/ && mv windows-build.tar.gz results/ 
+          name: Build Test
+      - store_artifacts:
+          path: results/      
+
 workflows:
   main:
     jobs:
-      - build-and-test
+      - ubuntu-16.04
+      - windows-build
