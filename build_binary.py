@@ -37,7 +37,7 @@ bdist_dmg_options = {'applications_shortcut': True, "volume_label": "Greenflare 
 # console application).
 base = None
 if sys.platform == "win32":
-	base = "Win32GUI"
+	# base = "Win32GUI"
 	targetName="greenflare.exe"
 else:
 	targetName="greenflare"
