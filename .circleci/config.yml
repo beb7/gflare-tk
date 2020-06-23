@@ -24,6 +24,11 @@ jobs:
       - python/load-cache
       - python/save-cache
       - run:
+          name: upgrade python
+          command: |
+            choco install python --version=3.8.2
+            python --version
+      - run:
           name: install dependencies
           command: |
             pip install --user pip --upgrade
