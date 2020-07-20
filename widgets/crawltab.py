@@ -38,10 +38,18 @@ class CrawlTab(Frame):
 		self.populate_columns()
 		self.row_counter = 1
 
-	def populate_columns(self, columns=["url", "content_type", "indexability", "status_code", "h1", "page_title", "canonical_tag", "robots_txt", "redirect_url"]):
+	def populate_columns(self):
+		
+		columns = ["url", "content_type", "indexability", "status_code", "h1", "page_title", "canonical_tag", "robots_txt", "redirect_url"]
+		if self.crawler.columns: columns = self.crawler.columns
+
 		items = [i.title().replace("_", " ") for i in columns]
 		items[items.index("Url")] = "URL"
 		items[items.index("Redirect Url")] = "Redirect URL"
+
+
+		print("items", items)
+
 		self.treeview_table["columns"] = tuple(items)
 		self.treeview_table.heading("#0", text="id", anchor=W)
 		self.treeview_table.column("#0", width=50, stretch=NO)
@@ -66,7 +74,7 @@ class CrawlTab(Frame):
 				self.crawler.db_file = db_file
 				self.crawler.settings["STARTING_URL"] = url
 				self.crawler.start_crawl()
-				self.populate_columns(columns=self.crawler.columns)
+				self.populate_columns()
 
 				self.after(10, self.add_to_outputtable)
 				self.after(10, self.change_btn_text)
@@ -124,7 +132,7 @@ class CrawlTab(Frame):
 		self.entry_url_input.delete(0, 'end')
 		self.entry_url_input.insert(0, self.crawler.settings["STARTING_URL"])
 		self.row_counter = self.crawler.urls_crawled
-		self.populate_columns(columns=self.crawler.columns)
+		self.populate_columns()
 		self.update_progressbar()
 
 

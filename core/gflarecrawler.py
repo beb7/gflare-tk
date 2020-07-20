@@ -93,8 +93,10 @@ class GFlareCrawler:
 		self.urls_crawled = db.get_urls_crawled()
 		self.urls_total = db.get_total_urls()
 		self.settings = db.get_settings()
+		db.extractions = self.settings.get("EXTRACTIONS", "")
+		db.populate_columns()
 		self.columns = db.columns
-
+		print("Loaded settings:\n", self.settings)
 		db.close()
 
 
