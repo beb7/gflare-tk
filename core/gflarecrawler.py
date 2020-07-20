@@ -68,6 +68,7 @@ class GFlareCrawler:
 		db.create()
 		self.columns = db.columns
 		self.gf.all_items = self.columns
+		print("settings:\n", self.settings)
 
 		if self.settings["MODE"] == "Spider":
 			if not self.settings["STARTING_URL"].endswith("/"): self.settings["STARTING_URL"] += "/"
@@ -242,6 +243,7 @@ class GFlareCrawler:
 				data = self.gf.get_data()
 
 				if "data" in data:
+					# print("data", data)
 					url = data["url"]
 					if self.robots_txt_found.is_set() == False:
 						if url == self.gf.get_robots_txt_url(url): self.robots_txt_found.set()

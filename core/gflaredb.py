@@ -25,14 +25,24 @@ class GFlareDB:
 							"x_robots_tag": "TEXT",
 							"unique_inlinks": "INT"
 							}
+		self.extractions = extractions
 
+		self.populate_columns()
+	
+	def populate_columns(self):
 		self.sql_columns = [(k, v) for k,v in self.columns_map.items() if k in self.crawl_items]
 		self.columns = [k for k in self.columns_map.keys() if k in self.crawl_items]
+
+		# Add extractions
+		if self.extractions: 
+			extraction_columns = [k.lower().replace(' ', '_') for k in self.extractions.keys()]
+			self.columns += extraction_columns
+			self.sql_columns += [(k, 'TEXT') for k in extraction_columns]
+
 		self.columns_total = len(self.columns)
-	
+
 	def create(self):
-		self.columns = [k for k in self.columns_map.keys() if k in self.crawl_items]
-		self.columns_total = len(self.columns)
+		self.populate_columns()
 		self.create_data_table()
 		self.create_config_table()
 		self.create_inlinks_table()

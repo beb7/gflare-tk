@@ -56,7 +56,7 @@ class ExclusionsTab(Frame):
 
 	def save_inexes(self, event):
 		
-		if len(self.widgets) == 1 and self.widgets[0].winfo_children()[3] == "": return
+		if len(self.widgets) == 1 and self.widgets[0].winfo_children()[3] == "": self.crawler.settings["EXCLUSIONS"] = ""
 		
 		rules = []
 
@@ -81,7 +81,6 @@ class ExclusionsTab(Frame):
 			elif operator == self.operators[4]:
 				rules.append(value)
 
-		print("save_inexes evoked:", self.crawler.settings)
 		self.crawler.settings["EXCLUSIONS"] = "|".join(rules)
 
 	def update(self):

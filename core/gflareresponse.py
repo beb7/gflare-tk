@@ -19,20 +19,14 @@ class GFlareResponse:
 		self.spider_links = "Spider" in self.settings.get("MODE", "")
 		if self.robots_txt_status == "BLOCKED": self.spider_links = False
 
-		self.extractions = self.settings.get("EXTRACTIONS", {})
-
 		self.CHECK_REDIRECTS_BLOCKED_BY_ROBOTS = False
 		self.CHECK_NOFOLLOW = False
 
 		self.data = None
 
-	# def get_all_items(self):
-	# 	return self.settings["CRAWL_ITEMS"] + self.settings.get("CUSTOM_ITEMS", [])
-
 	def set_response(self, response):
 		self.response = response
 		self.data = {}
-		# self.all_items = self.settings["CRAWL_ITEMS"] + self.settings.get("CUSTOM_ITEMS", [])
 		self.url = self.get_initial_url()
 
 	def response_to_robots_txt(self, response):
@@ -122,7 +116,9 @@ class GFlareResponse:
 		return self.get_domain(url) != self.settings.get("ROOT_DOMAIN", "")
 
 	def is_excluded(self, url):
-		return bool(re.match(self.settings.get("EXCLUSIONS", ""), url))
+		pattern = self.settings.get("EXCLUSIONS", "")
+		if not pattern: return False
+		return bool(re.match(pattern, url))
 
 	def is_robots_txt(self, url):
 		if self.is_external(url): return False
@@ -174,6 +170,7 @@ class GFlareResponse:
 					continue
 
 				if self.is_excluded(onpage_url) == True:
+					print("excluded:", onpage_url)
 					continue
 
 				# Do not check and report on on-page links 
@@ -189,6 +186,7 @@ class GFlareResponse:
 
 				valid_links.append(onpage_url)
 
+		print("valid links:", valid_links)
 		return valid_links
 	
 	def get_txt_by_selector(self, selector, method="css", get="txt"):
@@ -236,13 +234,15 @@ class GFlareResponse:
 	def custom_extractions(self):
 		d = {}
 		
-		for extraction_name, settings in self.extractions.items():
+		for extraction_name, settings in self.settings.get("EXTRACTIONS", {}).items():
 			method = settings.get("selector", "")
 			if method == "CSS Selector": method = "css"
 			elif method == "XPath": method = "xpath"
 			else: method = "regex" 
 
 			d[extraction_name] = self.get_txt_by_selector(settings['value'], method=method, get="txt")
+
+		print("extraction", d)	
 
 		return d
 
