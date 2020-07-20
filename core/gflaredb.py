@@ -112,7 +112,7 @@ class GFlareDB:
 		self.cur.execute("SELECT * FROM config")
 		result = dict(self.cur.fetchall())
 		for k,v in result.items():
-			if "CRAWL" in k or "ROBOTS_SETTINGS" in k or "CUSTOM_ITEMS" in k:
+			if "CRAWL" in k or "ROBOTS_SETTINGS" in k or "CUSTOM_ITEMS" in k or "EXCLUSIONS" in  k:
 				result[k] = result[k].split(",")
 
 		self.cur.execute("SELECT * FROM extractions")

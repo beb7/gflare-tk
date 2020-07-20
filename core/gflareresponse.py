@@ -19,10 +19,6 @@ class GFlareResponse:
 		self.spider_links = "Spider" in self.settings.get("MODE", "")
 		if self.robots_txt_status == "BLOCKED": self.spider_links = False
 
-		self.exclusions = None
-		if bool(self.settings.get("EXCLUSIONS", False)):
-			self.exclusions = re.compile(self.settings["EXCLUSIONS"])
-
 		self.extractions = self.settings.get("EXTRACTIONS", {})
 
 		self.CHECK_REDIRECTS_BLOCKED_BY_ROBOTS = False
@@ -126,7 +122,7 @@ class GFlareResponse:
 		return self.get_domain(url) != self.settings.get("ROOT_DOMAIN", "")
 
 	def is_excluded(self, url):
-		return bool(re.match(self.exclusions, url))
+		return bool(re.match(self.settings.get("EXCLUSIONS", ""), url))
 
 	def is_robots_txt(self, url):
 		if self.is_external(url): return False
@@ -177,9 +173,8 @@ class GFlareResponse:
 				if onpage_url in valid_links:
 					continue
 
-				if bool(self.exclusions) == True:
-					if self.is_excluded(onpage_url) == True:
-						continue
+				if self.is_excluded(onpage_url) == True:
+					continue
 
 				# Do not check and report on on-page links 
 				if "check_blocked_urls" not in self.settings.get("ROBOTS_SETTINGS", ""):
