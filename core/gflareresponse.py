@@ -169,8 +169,7 @@ class GFlareResponse:
 				if onpage_url in valid_links:
 					continue
 
-				if self.is_excluded(onpage_url) == True:
-					print("excluded:", onpage_url)
+				if self.is_excluded(onpage_url):
 					continue
 
 				# Do not check and report on on-page links 
@@ -240,8 +239,6 @@ class GFlareResponse:
 			else: method = "regex" 
 
 			d[extraction_name] = self.get_txt_by_selector(settings['value'], method=method, get="txt")
-
-		print("extraction", d)	
 
 		return d
 
