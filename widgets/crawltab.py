@@ -124,7 +124,7 @@ class CrawlTab(Frame):
 		self.entry_url_input.delete(0, 'end')
 		self.entry_url_input.insert(0, self.crawler.settings["STARTING_URL"])
 		self.row_counter = self.crawler.urls_crawled
-		self.populate_columns()
+		self.populate_columns(columns=self.crawler.columns)
 		self.update_progressbar()
 
 

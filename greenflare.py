@@ -57,7 +57,7 @@ class mainWindow(Frame):
 		if self.crawler.settings["MODE"] == "Spider": self.spider_mode()
 		elif self.crawler.settings["MODE"] == "List": self.list_mode()
 
-		print(self.crawler.settings)
+		# print(self.crawler.settings)
 
 		self.update_gui()
 

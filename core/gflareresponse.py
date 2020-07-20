@@ -186,7 +186,6 @@ class GFlareResponse:
 
 				valid_links.append(onpage_url)
 
-		print("valid links:", valid_links)
 		return valid_links
 	
 	def get_txt_by_selector(self, selector, method="css", get="txt"):
