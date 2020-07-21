@@ -48,9 +48,6 @@ class CrawlTab(Frame):
 		items[items.index("Url")] = "URL"
 		items[items.index("Redirect Url")] = "Redirect URL"
 
-
-		print("items", items)
-
 		self.treeview_table["columns"] = tuple(items)
 		self.treeview_table.heading("#0", text="id", anchor=W)
 		self.treeview_table.column("#0", width=50, stretch=NO)
@@ -103,7 +100,7 @@ class CrawlTab(Frame):
 				items.append(self.crawler.gui_url_queue.get_nowait())
 		except queue.Empty:
 			pass
-		print("> items:", items)
+
 		for item in items:
 			if item == "CRAWL_COMPLETED":
 				self.update_progressbar()
@@ -140,6 +137,3 @@ class CrawlTab(Frame):
 		self.row_counter = self.crawler.urls_crawled
 		self.populate_columns()
 		self.update_progressbar()
-
-
-		# self.counter_label.setText(f"{urls_discovered} / {urls_total}")
