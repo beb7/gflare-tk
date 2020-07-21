@@ -1,4 +1,4 @@
-from tkinter import Frame, LEFT, ttk, W, NO, filedialog as fd
+from tkinter import Frame, LEFT, ttk, W, NO, filedialog as fd, messagebox
 from os import path, remove
 from threading import Thread
 import queue
@@ -103,12 +103,16 @@ class CrawlTab(Frame):
 				items.append(self.crawler.gui_url_queue.get_nowait())
 		except queue.Empty:
 			pass
-		
+		print("> items:", items)
 		for item in items:
-			print(">", item)
 			if item == "CRAWL_COMPLETED":
+				self.update_progressbar()
+				self.button_crawl["text"] = "Restart"
+				messagebox.showinfo(title='Crawl completed', message=f'Crawl of {self.crawler.settings.get("ROOT_DOMAIN", "")} has been completed successfully!')
 				return
 			if item == "CRAWL_TIMED_OUT":
+				messagebox.showerror(title='Error - Timed Out', message=f'Crawl timed out!')
+				self.button_crawl["text"] = "Restart"
 				return
 			if item == "END":
 				return
@@ -119,6 +123,7 @@ class CrawlTab(Frame):
 
 		self.treeview_table.yview_moveto(1)
 		self.update_progressbar()
+		
 		self.after(200, self.add_to_outputtable)
 
 	def update_progressbar(self):
@@ -129,7 +134,6 @@ class CrawlTab(Frame):
 				self.style.configure('text.Horizontal.TProgressbar', text=f'{percentage} %')
 
 	def update(self):
-
 		self.button_crawl["text"] = "Resume"
 		self.entry_url_input.delete(0, 'end')
 		self.entry_url_input.insert(0, self.crawler.settings["STARTING_URL"])
