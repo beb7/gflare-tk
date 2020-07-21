@@ -274,7 +274,7 @@ class GFlareCrawler:
 						db.insert_new_urls(new_urls)
 						self.add_to_url_queue(new_urls)
 						inserted_urls += len(new_urls)
-					if "unique_inlinks" in self.settings.get("CRAWL_LINKS", ""): db.insert_inlinks(extracted_links, data["url"])
+					if "unique_inlinks" in self.settings.get("CRAWL_ITEMS", ""): db.insert_inlinks(extracted_links, data["url"])
 
 				if inserted_urls >= (100 * threads):
 					db.commit()
