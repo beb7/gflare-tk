@@ -244,19 +244,21 @@ class GFlareCrawler:
 
 				self.gf.set_response(response)
 				data = self.gf.get_data()
+				if self.robots_txt_found.is_set() == False and "url" in data:
+					url = data["url"]
+					if url == self.gf.get_robots_txt_url(url): self.robots_txt_found.set()
+					continue
 
 				if "data" in data:
-					print("url:", data["url"])
-					print("data:", data["data"])
+					# print("url:", data["url"])
+					# print("data:", data["data"])
 					url = data["url"]
-					if self.robots_txt_found.is_set() == False:
-						if url == self.gf.get_robots_txt_url(url): self.robots_txt_found.set()
-					else:
-						db.insert_crawl_data(data["data"], new=new)
-						with self.lock:
-							inserted_urls += 1
-							self.urls_crawled += 1
-						if self.gui_mode: self.add_to_gui_queue(data["data"])
+
+					db.insert_crawl_data(data["data"], new=new)
+					with self.lock:
+						inserted_urls += 1
+						self.urls_crawled += 1
+					if self.gui_mode: self.add_to_gui_queue(data["data"])
 
 				if "redirects" in data:
 					redirect_urls = [data[0] for data in data["redirects"]]

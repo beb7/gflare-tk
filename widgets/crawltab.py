@@ -105,6 +105,7 @@ class CrawlTab(Frame):
 			pass
 		
 		for item in items:
+			print(">", item)
 			if item == "CRAWL_COMPLETED":
 				return
 			if item == "CRAWL_TIMED_OUT":

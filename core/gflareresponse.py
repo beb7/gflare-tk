@@ -42,7 +42,8 @@ class GFlareResponse:
 		return str(self.response.history[0].url).strip()
 
 	def get_data(self):
-		if not self.response: return {}
+		# The below is equal to if self.response.status_code != 200: which is not what we want
+		# if not self.response: return {}
 
 		self.url = self.get_initial_url()
 		self.url_components = urllib.parse.urlsplit(self.url)
@@ -77,9 +78,6 @@ class GFlareResponse:
 		except Exception as e:
 			print("Error parsing", self.url, "with lxml")
 			print(e)
-	
-	# def set_robots_txt(self, robots_txt):
-	# 	self.robots_txt = robots_txt
 
 	def parse_url(self, url):
 		scheme, netloc, path, query, frag = urllib.parse.urlsplit(url)
@@ -202,8 +200,6 @@ class GFlareResponse:
 		if len(tree_result) > 0:
 			if get == "href":
 				txt = tree_result[0].attrib['href']
-				# print(txt)
-
 			elif get != "txt":
 				txt = tree_result[0].get(get)
 			else:
@@ -240,7 +236,6 @@ class GFlareResponse:
 
 			d[extraction_name] = self.get_txt_by_selector(settings['value'], method=method, get="txt")
 
-		print("custom_extractions:", d)
 		return d
 
 	def get_crawl_data(self):
@@ -290,9 +285,7 @@ class GFlareResponse:
 		return data
 
 	def dict_to_row(self, data):
-		print("> dict_to_row:", data)
 		out = tuple(data.get(item, "") for item in self.all_items)
-		print("< dict_to_row:", out)
 		return out
 
 	def has_redirected(self):
