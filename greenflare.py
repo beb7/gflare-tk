@@ -1,12 +1,12 @@
 import tkinter as tk
-from tkinter import Frame, ttk, Menu, filedialog as fd
+from tkinter import Frame, ttk, Menu, filedialog as fd, messagebox
 from core.gflarecrawler import GFlareCrawler
 from widgets.crawltab import CrawlTab
 from widgets.settingstab import SettingsTab
 from widgets.exclusionstab import ExclusionsTab
 from widgets.extractionstab import ExtractionsTab
 from threading import Lock
-from os import path
+from os import path, remove
 import sys
 
 
@@ -62,7 +62,15 @@ class mainWindow(Frame):
 		self.update_gui()
 
 	def full_export(self):
-		pass
+		files = [('CSV files', '*.csv')]
+		export_file = fd.asksaveasfilename(filetypes=files)
+		if not export_file: return
+		if not export_file.endswith(".csv"): export_file += ".csv"
+		if path.isfile(export_file): remove(export_file)
+		db = self.crawler.connect_to_db()
+		db.to_csv(export_file, columns=self.crawler.columns)
+		db.close()
+		messagebox.showinfo(title='Export completed', message=f'All data has been successfully saved to {export_file}!')
 
 	def spider_mode(self):
 		pass

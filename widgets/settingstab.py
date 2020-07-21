@@ -59,7 +59,7 @@ class SettingsTab(Frame):
 
 		self.var_host = StringVar()
 		self.entry_host = ttk.Entry(self.group_network, textvariable=self.var_host, validatecommand=self.save_proxy, validate="focusout")
-		self.entry_host.insert(0, "Hostname/IP")
+		self.entry_host.insert(0, "hostname/ip:port")
 		self.entry_host.grid(row=0, column=1, sticky=E, padx=15, pady=5)
 		
 		self.label_user = ttk.Label(self.group_network, text="User")
