@@ -68,9 +68,8 @@ class ExtractionsTab(Frame):
 			col_name = name.lower().replace(" ", "_")
 			
 			# Do not allow to name a custom extraction like an existing crawl item
-			if col_name in self.crawler.settings.get("CRAWL_ITEMS", ""):
-				name += "_custom"
-			extractions[name] = {"selector": selector, "value": value}
+			if col_name in self.crawler.settings.get("CRAWL_ITEMS", ""): col_name += "_custom"
+			extractions[col_name] = {"selector": selector, "value": value}
 
 		self.crawler.settings["EXTRACTIONS"] = extractions		
 

@@ -240,6 +240,7 @@ class GFlareResponse:
 
 			d[extraction_name] = self.get_txt_by_selector(settings['value'], method=method, get="txt")
 
+		print("custom_extractions:", d)
 		return d
 
 	def get_crawl_data(self):
@@ -289,7 +290,10 @@ class GFlareResponse:
 		return data
 
 	def dict_to_row(self, data):
-		return tuple(data.get(item, "") for item in self.all_items)
+		print("> dict_to_row:", data)
+		out = tuple(data.get(item, "") for item in self.all_items)
+		print("< dict_to_row:", out)
+		return out
 
 	def has_redirected(self):
 		return len(self.response.history) > 0

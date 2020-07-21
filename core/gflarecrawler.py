@@ -244,7 +244,8 @@ class GFlareCrawler:
 				data = self.gf.get_data()
 
 				if "data" in data:
-					# print("data", data)
+					print("url:", data["url"])
+					print("data:", data["data"])
 					url = data["url"]
 					if self.robots_txt_found.is_set() == False:
 						if url == self.gf.get_robots_txt_url(url): self.robots_txt_found.set()
