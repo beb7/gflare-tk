@@ -107,7 +107,9 @@ class GFlareCrawler:
 		self.init_session()
 
 		db = self.connect_to_db()
-		db.add_remove_columns()
+		db.extractions = self.settings.get("EXTRACTIONS", "")
+		db.populate_columns()
+		# db.add_remove_columns()
 
 		# Reset queue
 		self.data_queue = queue.Queue()

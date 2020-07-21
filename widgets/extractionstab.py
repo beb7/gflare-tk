@@ -36,7 +36,7 @@ class ExtractionsTab(Frame):
 		self.combobox_selector_type.current(0)
 		self.combobox_selector_type.pack(side=LEFT, padx=pad_x)
 
-		self.entry_input_selector_value = ttk.Entry(self.widgets[-1], width=50)
+		self.entry_input_selector_value = ttk.Entry(self.widgets[-1], width=75)
 		self.entry_input_selector_value.pack(side=LEFT, padx=pad_x)
 
 		if len(self.widgets) > 10: self.button_add["state"] = "disabled"
