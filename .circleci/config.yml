@@ -52,7 +52,7 @@ jobs:
   
   macos-build:
     macos: 
-      xcode: 9.0.1
+      xcode: 9.4.1
     steps:
       - checkout
       - restore_cache:
@@ -64,7 +64,7 @@ jobs:
           command: |
             if [ ! -d "/usr/local/Cellar/tcl-tk/" ]; then
               brew uninstall python@2
-              # brew uninstall python
+              brew uninstall python
               brew update
               brew install tcl-tk
               brew list
