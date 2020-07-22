@@ -82,6 +82,7 @@ jobs:
           command: |
             pyenv global 3.8.2
             python --version
+            $Env:Path
       - run: 
           name: install dependencies
           command: |
