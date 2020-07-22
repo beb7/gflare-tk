@@ -62,10 +62,10 @@ jobs:
           name: install tkinter
           command: |
             if [ ! -d "/usr/local/Cellar/tcl-tk/" ]; then
-              # brew uninstall python@2
-              # brew uninstall python@3
-              # brew update
-              # brew install tcl-tk
+              brew uninstall python@2
+              brew uninstall python
+              brew update
+              brew install tcl-tk
               brew list
             else
               echo "Already cached"
