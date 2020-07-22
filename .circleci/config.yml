@@ -52,7 +52,7 @@ jobs:
   
   macos-build:
     macos: 
-      xcode: 9.4.1
+      xcode: 9.0.1
     steps:
       - checkout
       - restore_cache:
@@ -120,4 +120,4 @@ workflows:
     jobs:
       # - ubuntu-build
       # - windows-build
-      # - macos-build
+      - macos-build
