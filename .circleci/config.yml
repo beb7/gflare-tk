@@ -119,6 +119,6 @@ jobs:
 workflows:
   main:
     jobs:
-      # - ubuntu-build
+      - ubuntu-build
       # - windows-build
-      - macos-build
+      # - macos-build
