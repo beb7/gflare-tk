@@ -58,7 +58,12 @@ jobs:
             - tkinter
       - run:
           name: install tkinter
-          command: if [ ! -d "/usr/local/Cellar/tcl-tk/" ]; then brew install tcl-tk; else echo "Already cached"; fi
+          command: |
+            if [ ! -d "/usr/local/Cellar/tcl-tk/" ]; then
+              brew install tcl-tk
+            else
+              echo "Already cached"
+            fi
       - save_cache:
           key: tkinter
           paths:
