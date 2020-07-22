@@ -52,46 +52,46 @@ jobs:
   
   macos-build:
     macos: 
-      xcode: 9.3.1
+      xcode: 9.4.1
     steps:
       - checkout
       - restore_cache:
           keys:
             - tkinter
-      # - run:
-      #     name: install tkinter
-      #     command: |
-      #       if [ ! -d "/usr/local/Cellar/tcl-tk/" ]; then
-      #         brew update
-      #         brew install tcl-tk
-      #       else
-      #         echo "Already cached"
-      #       fi
-      # - save_cache:
-      #     key: tkinter
-      #     paths:
-      #       - "/usr/local/Cellar/tcl-tk/"
-      #       - "/usr/local/Cellar/openssl@1.1"
-      # - run:
-      #     name: install pyenv
-      #     command: brew install pyenv
-      # - run:
-      #     name: compile python 3.8.2 with tkinter
-      #     command: PYTHON_CONFIGURE_OPTS="--with-tcltk-includes='-I/usr/local/opt/tcl-tk/include' --with-tcltk-libs='-L/usr/local/opt/tcl-tk/lib -ltcl8.6 -ltk8.6'" MACOSX_DEPLOYMENT_TARGET=10.9 pyenv install 3.8.2
-      # - run:
-      #     name: set pyenv installation to global
-      #     command: |
-      #       pyenv global 3.8.2
-      #       python --version
+      - run:
+          name: install tkinter
+          command: |
+            if [ ! -d "/usr/local/Cellar/tcl-tk/" ]; then
+              brew update
+              brew install tcl-tk
+            else
+              echo "Already cached"
+            fi
+      - save_cache:
+          key: tkinter
+          paths:
+            - "/usr/local/Cellar/tcl-tk/"
+            - "/usr/local/Cellar/openssl@1.1"
+      - run:
+          name: install pyenv
+          command: brew install pyenv
+      - run:
+          name: compile python 3.8.2 with tkinter
+          command: PYTHON_CONFIGURE_OPTS="--with-tcltk-includes='-I/usr/local/opt/tcl-tk/include' --with-tcltk-libs='-L/usr/local/opt/tcl-tk/lib -ltcl8.6 -ltk8.6'" MACOSX_DEPLOYMENT_TARGET=10.9 pyenv install 3.8.2
+      - run:
+          name: set pyenv installation to global
+          command: |
+            pyenv global 3.8.2
+            python --version
       - run: 
           name: install dependencies
           command: |
-            python3 -m pip install pip --upgrade
-            python3 -m pip install -r requirements.txt
+            python -m pip install pip --upgrade
+            python -m pip install -r requirements.txt
       - run:
           name: run cxfreeze
           command: |
-            python3 build_binary.py bdist_mac
+            python build_binary.py bdist_mac
             tar -zcvf macos-build.tar.gz build/
             mkdir results/ 
             mv macos-build.tar.gz results/
