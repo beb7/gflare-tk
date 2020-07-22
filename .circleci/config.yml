@@ -91,7 +91,7 @@ jobs:
       - run:
           name: run cxfreeze
           command: |
-            python build_binary.py bdist_mac
+            python3 build_binary.py bdist_mac
             tar -zcvf macos-build.tar.gz build/
             mkdir results/ 
             mv macos-build.tar.gz results/
@@ -102,6 +102,6 @@ jobs:
 workflows:
   main:
     jobs:
-      - ubuntu-build
-      - windows-build
+      # - ubuntu-build
+      # - windows-build
       - macos-build
