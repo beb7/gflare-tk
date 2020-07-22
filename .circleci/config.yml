@@ -55,7 +55,7 @@ jobs:
       - checkout
       - run:
           name: install tkinter
-          command: brew install tkinter
+          command: brew install tcl-tk
       - run:
           name: install pyenv
           command: brew install pyenv
