@@ -31,6 +31,7 @@ jobs:
           name: upgrade python
           command: |
             choco install python --version=3.8.2
+            refreshenv
             python --version
       - run:
           name: install dependencies
@@ -60,6 +61,7 @@ jobs:
           name: install tkinter
           command: |
             if [ ! -d "/usr/local/Cellar/tcl-tk/" ]; then
+              brew update
               brew install tcl-tk
             else
               echo "Already cached"
