@@ -13,7 +13,11 @@ jobs:
       - python/install-deps
       - python/save-cache
       - run:
-          command: python build_binary.py build_exe && tar -zcvf linux-build.tar.gz build/ && mkdir results/ && mv linux-build.tar.gz results/ 
+          command: |
+            python build_binary.py build_exe
+            tar -zcvf linux-build.tar.gz build/
+            mkdir results/ 
+            mv linux-build.tar.gz results/ 
           name: Build Test
       - store_artifacts:
           path: results/
@@ -42,10 +46,42 @@ jobs:
             move windows-build.zip results/ 
           
       - store_artifacts:
-          path: results/      
+          path: results/
+    macos-build:
+      macos: 
+        xcode: 9.0.1
+      steps:
+      - checkout
+      - run:
+        name: install tkinter
+        command: brew install tkinter
+      - run:
+        name: install pyenv
+        command: brew install pyenv
+      - run:
+        name: compile python 3.8.2 with tkinter
+        command: PYTHON_CONFIGURE_OPTS="--with-tcltk-includes='-I/usr/local/opt/tcl-tk/include' --with-tcltk-libs='-L/usr/local/opt/tcl-tk/lib -ltcl8.6 -ltk8.6'" MACOSX_DEPLOYMENT_TARGET=10.9 pyenv install 3.8.2
+      - run:
+        name: set pyenv installation to global
+        command: |
+          pyenv global 3.8.2
+          python --version
+      - run: 
+        name: install dependencies
+        command: |
+          python -m pip install pip --upgrade
+          python -m pip install -r requirements.txt
+      - run:
+        name: run cxfreeze
+        command: |
+          python build_binary.py bdist_mac
+          tar -zcvf macos-build.tar.gz build/
+          mkdir results/ 
+          mv macos-build.tar.gz results/
+      - store_artifacts:
+          path: results/
 
 workflows:
   main:
     jobs:
-      - ubuntu-build
-      - windows-build
+      - macos-build
