@@ -58,6 +58,7 @@ jobs:
       - restore_cache:
           keys:
             - tkinter
+            - pyenv
       - run:
           name: install tkinter
           command: |
@@ -80,7 +81,16 @@ jobs:
           command: brew install pyenv
       - run:
           name: compile python 3.8.2 with tkinter
-          command: PYTHON_CONFIGURE_OPTS="--with-tcltk-includes='-I/usr/local/opt/tcl-tk/include' --with-tcltk-libs='-L/usr/local/opt/tcl-tk/lib -ltcl8.6 -ltk8.6'" MACOSX_DEPLOYMENT_TARGET=10.9 pyenv install 3.8.2
+          command: |
+            if [ ! -d "~/.pyenv" ]; then
+              PYTHON_CONFIGURE_OPTS="--with-tcltk-includes='-I/usr/local/opt/tcl-tk/include' --with-tcltk-libs='-L/usr/local/opt/tcl-tk/lib -ltcl8.6 -ltk8.6'" MACOSX_DEPLOYMENT_TARGET=10.9 pyenv install 3.8.2
+            else
+              echo "Using cached version of pyenv"
+            fi
+      - save_cache:
+          key: pyenv
+          paths:
+            - "~/.pyenv"
       - run:
           name: set pyenv installation to global
           command: |
@@ -101,8 +111,7 @@ jobs:
             python build_binary.py bdist_mac
             tar -zcvf macos-build.tar.gz build/
             mkdir results/ 
-            mv macos-build.tar.gz results/
-    
+            mv macos-build.tar.gz results/    
       - store_artifacts:
           path: results/
 
@@ -111,4 +120,4 @@ workflows:
     jobs:
       # - ubuntu-build
       # - windows-build
-      - macos-build
+      # - macos-build
