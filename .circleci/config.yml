@@ -105,7 +105,7 @@ jobs:
           command: curl -O https://www.python.org/ftp/python/3.8.5/python-3.8.5-macosx10.9.pkg
       - run:
           name: install python
-          command: sudo installer -pkg python-3.8.5-macosx10.9.pkt -target /
+          command: sudo installer -pkg python-3.8.5-macosx10.9.pkg -target /
       - run: 
           name: install dependencies
           command: |
