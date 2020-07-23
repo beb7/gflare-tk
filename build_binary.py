@@ -28,7 +28,7 @@ bdist_msi_options = {'data': msi_data, 'install_icon': "greenflare-icon-256x256.
 
 # MacOS
 # bdist_mac_options = {'iconfile': 'greenflare-icon-64x64.icns', 'bundle_name': 'greenflare', 'codesign_identity': 'ben@lavabyte.net', 'codesign_deep': True, 'custom_info_plist': 'Info.plist'}
-bdist_mac_options = {'iconfile': 'greenflare-icon-64x64.icns', 'bundle_name': 'greenflare', 'custom_info_plist': 'Info.plist', 'include_resources': [('/Library/Frameworks/Python.framework/Versions/3.8/lib/tk8.6', 'tk8.6'), ('/Library/Frameworks/Python.framework/Versions/3.8/lib/tcl8.6/', 'tcl8.6')]}
+bdist_mac_options = {'iconfile': 'greenflare-icon-64x64.icns', 'bundle_name': 'greenflare', 'custom_info_plist': 'Info.plist'}
 bdist_dmg_options = {'applications_shortcut': True, "volume_label": "Greenflare SEO Crawler"}
 
 # GUI applications require a different base on Windows (the default is for a

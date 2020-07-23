@@ -101,20 +101,25 @@ jobs:
       #       source ~/.bash_profile
       #       python --version
       - run:
+          name: remove previous python installations
+          command: |
+            brew list
+            brew uninstall python3
+      - run:
           name: download python
-          command: curl -O https://www.python.org/ftp/python/3.9.0/python-3.9.0b4-macosx10.9.pkg
+          command: curl -O https://www.python.org/ftp/python/3.8.5/python-3.8.5-macosx10.9.pkg
       - run:
           name: install python
-          command: sudo installer -pkg python-3.9.0b4-macosx10.9.pkg -target /
+          command: sudo installer -pkg python-3.8.5-macosx10.9.pkg -target /
       - run: 
           name: install dependencies
           command: |
-            python3.9 -m pip install pip --upgrade
-            python3.9 -m pip install -r requirements.txt
+            python3.8 -m pip install pip --upgrade
+            python3.8 -m pip install -r requirements.txt
       - run:
           name: run cxfreeze
           command: |
-            python3.9 build_binary.py bdist_mac
+            python3.8 build_binary.py bdist_mac
             tar -zcvf macos-build.tar.gz build/
             mkdir results/ 
             # mv build/*.dmg results/
