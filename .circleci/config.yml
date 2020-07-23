@@ -104,7 +104,6 @@ jobs:
           name: remove previous python installations
           command: |
             brew list
-            brew uninstall python3
             brew uninstall python
       - run:
           name: download python
