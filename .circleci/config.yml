@@ -127,4 +127,4 @@ workflows:
     jobs:
       # - ubuntu-build
       # - windows-build
-     g - macos-build
+      - macos-build
