@@ -52,54 +52,32 @@ jobs:
   
   macos-build:
     macos: 
-      xcode: 11.5.0
+      xcode: 9.4.1
     steps:
       - checkout
-      # - restore_cache:
-      #     keys:
-      #       - tkinter
-      #       - pyenv
-      # - run:
-      #     name: install tkinter
-      #     command: |
-      #       if [ ! -d "/usr/local/Cellar/tcl-tk/" ]; then
-      #         brew uninstall python@2
-      #         brew uninstall python
-      #         brew update
-      #         brew install tcl-tk
-      #         brew list
-      #       else
-      #         echo "Already cached"
-      #       fi
-      # - save_cache:
-      #     key: tkinter
-      #     paths:
-      #       - "/usr/local/Cellar/tcl-tk/"
-      #       - "/usr/local/Cellar/openssl@1.1"
-      # - run:
-      #     name: install pyenv
-      #     command: brew install pyenv
-      # - run:
-      #     name: compile python 3.8.2 with tkinter
-      #     command: |
-      #       if [ ! -d "~/.pyenv" ]; then
-      #         PYTHON_CONFIGURE_OPTS="--with-tcltk-includes='-I/usr/local/opt/tcl-tk/include' --with-tcltk-libs='-L/usr/local/opt/tcl-tk/lib -ltcl8.6 -ltk8.6'" MACOSX_DEPLOYMENT_TARGET=10.9 pyenv install 3.8.2
-      #       else
-      #         echo "Using cached version of pyenv"
-      #       fi
-      # - save_cache:
-      #     key: pyenv
-      #     paths:
-      #       - "~/.pyenv"
-      # - run:
-      #     name: set pyenv installation to global
-      #     command: |
-      #       pyenv global 3.8.2
-      #       echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n  eval "$(pyenv init -)"\nfi' >> ~/.zshrc
-      #       echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n  eval "$(pyenv init -)"\nfi' >> ~/.bash_profile
-      #       source ~/.zshrc
-      #       source ~/.bash_profile
-      #       python --version
+      - restore_cache:
+          keys:
+            - tkinter
+            - pyenv
+      - run:
+          name: install tkinter
+          command: |
+            if [ ! -d "/usr/local/Cellar/tcl-tk/" ]; then
+              brew uninstall python@2
+              brew uninstall python
+              brew update
+              brew install tcl-tk
+              echo 'export PATH="/usr/local/opt/tcl-tk/bin:$PATH"' >> ~/.bash_profile
+              echo 'export PATH="/usr/local/opt/tcl-tk/bin:$PATH"' >> ~/.zshrc
+              brew list
+            else
+              echo "Already cached"
+            fi
+      - save_cache:
+          key: tkinter
+          paths:
+            - "/usr/local/Cellar/tcl-tk/"
+            - "/usr/local/Cellar/openssl@1.1"
       - run:
           name: remove previous python installations
           command: |
@@ -107,20 +85,44 @@ jobs:
             brew uninstall python
             brew cleanup
       - run:
-          name: download python
-          command: curl -O https://www.python.org/ftp/python/3.8.5/python-3.8.5-macosx10.9.pkg
+          name: install pyenv
+          command: brew install pyenv
       - run:
-          name: install python
-          command: sudo installer -pkg python-3.8.5-macosx10.9.pkg -target /
+          name: compile python 3.8.2 with tkinter
+          command: |
+            if [ ! -d "~/.pyenv" ]; then
+              PYTHON_CONFIGURE_OPTS="--with-tcltk-includes='-I/usr/local/opt/tcl-tk/include' --with-tcltk-libs='-L/usr/local/opt/tcl-tk/lib -ltcl8.6 -ltk8.6'" MACOSX_DEPLOYMENT_TARGET=10.9 pyenv install 3.8.2
+            else
+              echo "Using cached version of pyenv"
+            fi
+      - save_cache:
+          key: pyenv
+          paths:
+            - "~/.pyenv"
+      - run:
+          name: set pyenv installation to global
+          command: |
+            pyenv global 3.8.2
+            echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n  eval "$(pyenv init -)"\nfi' >> ~/.zshrc
+            echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n  eval "$(pyenv init -)"\nfi' >> ~/.bash_profile
+            source ~/.zshrc
+            source ~/.bash_profile
+            python --version
+      # - run:
+      #     name: download python
+      #     command: curl -O https://www.python.org/ftp/python/3.8.5/python-3.8.5-macosx10.9.pkg
+      # - run:
+      #     name: install python
+      #     command: sudo installer -pkg python-3.8.5-macosx10.9.pkg -target /
       - run: 
           name: install dependencies
           command: |
-            python3.8 -m pip install pip --upgrade
-            python3.8 -m pip install -r requirements.txt
+            python -m pip install pip --upgrade
+            python -m pip install -r requirements.txt
       - run:
           name: run cxfreeze
           command: |
-            python3.8 build_binary.py bdist_mac
+            python build_binary.py bdist_mac
             tar -zcvf macos-build.tar.gz build/
             mkdir results/ 
             # mv build/*.dmg results/
