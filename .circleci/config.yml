@@ -105,6 +105,7 @@ jobs:
           command: |
             brew list
             brew uninstall python
+            brew cleanup
       - run:
           name: download python
           command: curl -O https://www.python.org/ftp/python/3.8.5/python-3.8.5-macosx10.9.pkg
