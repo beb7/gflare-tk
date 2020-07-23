@@ -65,6 +65,7 @@ jobs:
             if [ ! -d "/usr/local/Cellar/tcl-tk/" ]; then
               brew uninstall python@2
               brew uninstall python
+              brew cleanup
               brew update
               brew install tcl-tk
               echo 'export PATH="/usr/local/opt/tcl-tk/bin:$PATH"' >> ~/.bash_profile
@@ -78,12 +79,12 @@ jobs:
           paths:
             - "/usr/local/Cellar/tcl-tk/"
             - "/usr/local/Cellar/openssl@1.1"
-      - run:
-          name: remove previous python installations
-          command: |
-            brew list
-            brew uninstall python
-            brew cleanup
+      # - run:
+      #     name: remove previous python installations
+      #     command: |
+      #       brew list
+      #       brew uninstall python
+      #       brew cleanup
       - run:
           name: install pyenv
           command: brew install pyenv
