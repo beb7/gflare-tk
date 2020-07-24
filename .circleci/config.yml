@@ -62,28 +62,28 @@ jobs:
             brew uninstall python@2
             brew uninstall python
             brew update
-            brew install tcl-tk
+            brew install python@3.8
             brew list
-      - run:
-          name: install pyenv
-          command: brew install pyenv
-      - run:
-          name: compile python with tkinter
-          command: PYTHON_CONFIGURE_OPTS="--with-tcltk-includes='-I/usr/local/opt/tcl-tk/include' --with-tcltk-libs='-L/usr/local/opt/tcl-tk/lib -ltcl8.6 -ltk8.6'" MACOSX_DEPLOYMENT_TARGET=10.9 pyenv install 3.8.5
+      # - run:
+      #     name: install pyenv
+      #     command: brew install pyenv
+      # - run:
+      #     name: compile python with tkinter
+      #     command: PYTHON_CONFIGURE_OPTS="--with-tcltk-includes='-I/usr/local/opt/tcl-tk/include' --with-tcltk-libs='-L/usr/local/opt/tcl-tk/lib -ltcl8.6 -ltk8.6'" MACOSX_DEPLOYMENT_TARGET=10.9 pyenv install 3.8.5
 
       # - save_cache:
       #     key: pyenv
       #     paths:
       #       - "~/.pyenv"
-      - run:
-          name: set pyenv installation to global
-          command: |
-            pyenv global 3.8.5
-            echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n  eval "$(pyenv init -)"\nfi' >> ~/.zshrc
-            echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n  eval "$(pyenv init -)"\nfi' >> ~/.bash_profile
-            source ~/.zshrc
-            source ~/.bash_profile
-            python --version
+      # - run:
+      #     name: set pyenv installation to global
+      #     command: |
+      #       pyenv global 3.8.5
+      #       echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n  eval "$(pyenv init -)"\nfi' >> ~/.zshrc
+      #       echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n  eval "$(pyenv init -)"\nfi' >> ~/.bash_profile
+      #       source ~/.zshrc
+      #       source ~/.bash_profile
+      #       python --version
       # - run:
       #     name: download python
       #     command: curl -O https://www.python.org/ftp/python/3.8.5/python-3.8.5-macosx10.9.pkg
@@ -93,12 +93,12 @@ jobs:
       - run: 
           name: install dependencies
           command: |
-            python -m pip install pip --upgrade
-            python -m pip install -r requirements.txt
+            python3 -m pip install pip --upgrade
+            python3 -m pip install -r requirements.txt
       - run:
           name: run cxfreeze
           command: |
-            python build_binary.py bdist_mac
+            python3 build_binary.py bdist_mac
             tar -zcvf macos-build.tar.gz build/
             mkdir results/ 
             # mv build/*.dmg results/
