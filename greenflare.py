@@ -94,7 +94,7 @@ if __name__ == "__main__":
 		if sys.platform == "darwin":
 			environ['TK_LIBRARY'] = WorkingDir + '/tk8.6/'
 			environ['TCL_LIBRARY'] = WorkingDir + '/tcl8.6/' 
-	else: 
+	else:
 		WorkingDir = path.dirname(path.realpath(__file__))
 
 	root = tk.Tk()
