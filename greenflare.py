@@ -6,7 +6,7 @@ from widgets.settingstab import SettingsTab
 from widgets.exclusionstab import ExclusionsTab
 from widgets.extractionstab import ExtractionsTab
 from threading import Lock
-from os import path, remove
+from os import path, remove, environ
 import sys
 
 
@@ -89,8 +89,13 @@ class mainWindow(Frame):
 		self.tab_extractions.update()
 		
 if __name__ == "__main__":
-	if getattr(sys, 'frozen', False): WorkingDir = path.dirname(sys.executable)
-	else: WorkingDir = path.dirname(path.realpath(__file__))
+	if getattr(sys, 'frozen', False): 
+		WorkingDir = path.dirname(sys.executable)
+		if sys.platform == "darwin":
+			environ['TK_LIBRARY'] = WorkingDir + '/tk8.6/'
+			environ['TCL_LIBRARY'] = WorkingDir + '/tcl8.6/' 
+	else: 
+		WorkingDir = path.dirname(path.realpath(__file__))
 
 	root = tk.Tk()
 	root.geometry("1024x768")
