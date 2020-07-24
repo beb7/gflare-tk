@@ -42,8 +42,8 @@ if sys.platform == "win32":
 	targetName="greenflare.exe"
 elif sys.platform == "darwin":
     print("Applying tcl-tk hack ...")
-    environ['TK_LIBRARY'] = '/usr/local/opt/tcl-tk/lib/tk8.6/'
-    environ['TCL_LIBRARY'] = '/usr/local/opt/tcl-tk/lib/tcl8.6/'   
+    environ['TK_LIBRARY'] = '/usr/local/Cellar/tcl-tk/8.6.10/lib/tk8.6/'
+    environ['TCL_LIBRARY'] = '/usr/local/Cellar/tcl-tk/8.6.10/lib/tcl8.6/'   
 
 target = Executable(
     script="greenflare.py",
