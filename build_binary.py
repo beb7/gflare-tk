@@ -42,7 +42,7 @@ if sys.platform == "win32":
 	targetName="greenflare.exe"
 elif sys.platform == "darwin":
     print("Exclude tkinter on macos and rely on an external install ...")
-    build_exe_options["exclude": ["tkinter"]]
+    build_exe_options["exclude"] = ["tkinter"]
 #     print("Applying tcl-tk hack ...")
 #     environ['TK_LIBRARY'] = '/usr/local/Cellar/tcl-tk/8.6.10/lib/tk8.6/'
 #     environ['TCL_LIBRARY'] = '/usr/local/Cellar/tcl-tk/8.6.10/lib/tcl8.6/' 
