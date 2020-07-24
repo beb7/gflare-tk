@@ -99,7 +99,7 @@ jobs:
           name: run cxfreeze
           command: |
             python3 build_binary.py bdist_mac
-            tar -zcvf macos-build.tar.gz build/
+            tar -zcvf macos-build.tar.gz build/greenflare.app
             mkdir results/ 
             # mv build/*.dmg results/
             mv macos-build.tar.gz results/    
