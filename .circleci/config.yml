@@ -98,9 +98,6 @@ jobs:
           name: run cxfreeze
           command: |
             python build_binary.py bdist_mac
-            mkdir -p build/greenflare.app/Contents/lib/
-            cp -r /usr/local/Cellar/tcl-tk/8.6.10/lib/tcl8.6 build/greenflare.app/Contents/lib/
-            cp -r /usr/local/Cellar/tcl-tk/8.6.10/lib/tk8.6 build/greenflare.app/Contents/lib/
             tar -zcvf macos-build.tar.gz build/
             mkdir results/ 
             # mv build/*.dmg results/
