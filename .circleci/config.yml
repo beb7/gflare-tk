@@ -98,14 +98,12 @@ jobs:
       - run:
           name: run cxfreeze
           command: |
-            python3 build_binary.py bdist_dmg
-            # tar -zcvf macos-build.tar.gz build/greenflare.app
+            python3 build_binary.py bdist_mac
+            tar -zcvf macos-build.tar.gz build/greenflare.app
             mkdir results/ 
-            mv build/*.dmg results/
-            # mv macos-build.tar.gz results/    
+            mv macos-build.tar.gz results/    
       - store_artifacts:
           path: results/
-
 workflows:
   main:
     jobs:
