@@ -93,7 +93,9 @@ if __name__ == "__main__":
 		WorkingDir = path.dirname(sys.executable)
 		if sys.platform == "darwin":
 			environ['TK_LIBRARY'] = WorkingDir + '/tk8.6/'
-			environ['TCL_LIBRARY'] = WorkingDir + '/tcl8.6/' 
+			environ['TCL_LIBRARY'] = WorkingDir + '/tcl8.6/'
+			print(environ['TCL_LIBRARY'])
+			print(environ['TK_LIBRARY'])
 	else:
 		WorkingDir = path.dirname(path.realpath(__file__))
 
