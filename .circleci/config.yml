@@ -14,6 +14,7 @@ jobs:
       - python/save-cache
       - run:
           command: |
+            python --version
             python build_binary.py build_exe
             tar -zcvf linux-build.tar.gz build/
             mkdir results/ 
@@ -110,4 +111,4 @@ workflows:
     jobs:
       # - ubuntu-build
       # - windows-build
-      # - macos-build
+      - macos-build
