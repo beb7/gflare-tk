@@ -1,5 +1,6 @@
 import sys
 from cx_Freeze import setup, Executable
+from os import environ
 
 # Dependencies are automatically detected, but it might need fine tuning.
 build_exe_options = {"include_files": ["greenflare-icon-64x64.png", "greenflare-icon-256x256.ico"]}
@@ -41,8 +42,8 @@ if sys.platform == "win32":
 	targetName="greenflare.exe"
 elif sys.platform == "darwin":
     print("Applying tcl-tk hack ...")
-    os.environ['TK_LIBRARY'] = '/usr/local/opt/tcl-tk/lib/tk8.6/'
-    os.environ['TCL_LIBRARY'] = '/usr/local/opt/tcl-tk/lib/tcl8.6/'   
+    environ['TK_LIBRARY'] = '/usr/local/opt/tcl-tk/lib/tk8.6/'
+    environ['TCL_LIBRARY'] = '/usr/local/opt/tcl-tk/lib/tcl8.6/'   
 
 target = Executable(
     script="greenflare.py",
