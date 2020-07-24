@@ -7,6 +7,7 @@ from widgets.exclusionstab import ExclusionsTab
 from widgets.extractionstab import ExtractionsTab
 from threading import Lock
 from os import path, remove, environ
+from pathlib import Path
 import sys
 
 
