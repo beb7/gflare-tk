@@ -61,9 +61,9 @@ jobs:
           command: |
             brew uninstall python@2
             brew uninstall python
-            brew update
-            brew install python@3.8
-            brew list
+            # brew update
+            # brew install python@3.8
+            # brew list
       # - run:
       #     name: install pyenv
       #     command: brew install pyenv
@@ -84,17 +84,17 @@ jobs:
       #       source ~/.zshrc
       #       source ~/.bash_profile
       #       python --version
-      # - run:
-      #     name: download python
-      #     command: curl -O https://www.python.org/ftp/python/3.8.5/python-3.8.5-macosx10.9.pkg
-      # - run:
-      #     name: install python
-      #     command: sudo installer -pkg python-3.8.5-macosx10.9.pkg -target /
+      - run:
+          name: download python
+          command: curl -O https://www.python.org/ftp/python/3.8.5/python-3.8.5-macosx10.9.pkg
+      - run:
+          name: install python
+          command: sudo installer -pkg python-3.8.5-macosx10.9.pkg -target /
       - run: 
           name: install dependencies
           command: |
-            python3 -m pip install pip --upgrade
-            python3 -m pip install -r requirements.txt
+            python3.8 -m pip install pip --upgrade
+            python3.8 -m pip install -r requirements.txt
       - run:
           name: run cxfreeze
           command: |
