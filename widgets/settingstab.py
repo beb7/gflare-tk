@@ -123,10 +123,8 @@ class SettingsTab(Frame):
 
 	def save_ua(self, e):
 		value = self.combobox_ua.get()
-		print("value", value)
 		self.crawler.settings["USER_AGENT"] = self.user_agents[value]
 		self.crawler.settings["UA_SHORT"] = value
-		print("USER_AGENT", self.crawler.settings["USER_AGENT"])
 
 	def save_proxy(self):
 		self.crawler.settings["PROXY_HOST"] = self.var_host.get()

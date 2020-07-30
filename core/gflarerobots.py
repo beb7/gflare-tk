@@ -24,7 +24,6 @@ class GFlareRobots:
 		parsed_ua = user_agent_parser.Parse(ua)
 		if 'user_agent' in parsed_ua: ua = parsed_ua['user_agent']['family']
 
-		print("GFlareRobots", ua)
 		pattern = self.get_ua_pattern(ua)
 		match = re.match(pattern, robots_txt, re.DOTALL)
 		if match: 
