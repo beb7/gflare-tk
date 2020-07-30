@@ -66,6 +66,10 @@ class GFlareCrawler:
 
 		db = self.connect_to_db()
 		db.create()
+
+		# Reset response object
+		self.gf = gf(self.settings, db.columns)
+		
 		self.columns = db.columns
 		self.gf.all_items = self.columns
 
@@ -100,6 +104,16 @@ class GFlareCrawler:
 		db.close()
 
 
+	def reset_crawl(self):
+		# Reset queue
+		self.data_queue = queue.Queue()
+		self.url_queue = queue.Queue()
+		self.crawl_running.clear()
+		self.robots_txt_found.clear()
+		
+		self.urls_crawled = 0
+		self.urls_total = 0
+
 	def resume_crawl(self):
 		print("Resuming crawl ...")
 		self.init_crawl_headers()
@@ -111,18 +125,12 @@ class GFlareCrawler:
 		db.populate_columns()
 		# db.add_remove_columns()
 
-		# Reset queue
-		self.data_queue = queue.Queue()
-		self.url_queue = queue.Queue()
-		self.crawl_running.clear()
+		self.reset_crawl()
 
 		self.request_robots_txt()
 		
 		# Reinit URL queue
 		self.add_to_url_queue(db.get_url_queue())
-
-		# Reset response object
-		self.gf = gf(self.settings, db.columns)
 
 		db.close()
 

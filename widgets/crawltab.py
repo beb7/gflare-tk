@@ -40,6 +40,9 @@ class CrawlTab(Frame):
 		self.row_counter = 1
 
 	def populate_columns(self):
+		# Clear table
+		self.treeview_table.delete(*self.treeview_table.get_children())
+		self.row_counter = 1
 		
 		columns = ["url", "content_type", "indexability", "status_code", "h1", "page_title", "canonical_tag", "robots_txt", "redirect_url"]
 		if self.crawler.columns: columns = self.crawler.columns
@@ -60,23 +63,27 @@ class CrawlTab(Frame):
 
 	def enter_hit(self, event=None):
 		self.btn_crawl_pushed()
+	
+	def start_new_crawl(self, url):
+		files = [('Greenflare DB', '*.gflaredb'), ('All files', '.*')]
+		db_file = fd.asksaveasfilename(filetypes=files)
+		if db_file:
+			if not db_file.endswith(".gflaredb"): db_file += ".gflaredb"
+			if path.isfile(db_file): remove(db_file)
+			self.crawler.reset_crawl()
+			self.crawler.db_file = db_file
+			self.crawler.settings["STARTING_URL"] = url
+			self.entry_url_input["state"] = "disabled"
+			self.crawler.start_crawl()
+			self.populate_columns()
+
+			self.after(10, self.add_to_outputtable)
+			self.after(10, self.change_btn_text)
 
 	def btn_crawl_pushed(self):
 		url = self.entry_url_input.get()
 		if self.button_crawl["text"] == "Start" and url != "":
-			files = [('Greenflare DB', '*.gflaredb'), ('All files', '.*')]
-			db_file = fd.asksaveasfilename(filetypes=files)
-			if db_file:
-				if not db_file.endswith(".gflaredb"): db_file += ".gflaredb"
-				if path.isfile(db_file): remove(db_file)
-				self.crawler.db_file = db_file
-				self.crawler.settings["STARTING_URL"] = url
-				self.entry_url_input["state"] = "disabled"
-				self.crawler.start_crawl()
-				self.populate_columns()
-
-				self.after(10, self.add_to_outputtable)
-				self.after(10, self.change_btn_text)
+			self.start_new_crawl(url)
 
 		elif self.button_crawl["text"] == "Pause":
 			self.crawler.end_crawl_gracefully()
@@ -87,12 +94,15 @@ class CrawlTab(Frame):
 			self.crawler.resume_crawl()
 			self.after(10, self.add_to_outputtable)
 			self.after(10, self.change_btn_text)
-
+		elif self.button_crawl["text"] == "Restart":
+			self.start_new_crawl(url)
 
 	def change_btn_text(self):
-		if self.button_crawl["text"] == "Start": self.button_crawl["text"] = "Pause"
-		elif self.button_crawl["text"] == "Pause": self.button_crawl["text"] = "Resume"
-		elif self.button_crawl["text"] == "Resume": self.button_crawl["text"] = "Pause"
+		btn_txt = self.button_crawl["text"]
+		if btn_txt == "Start": self.button_crawl["text"] = "Pause"
+		elif btn_txt == "Pause": self.button_crawl["text"] = "Resume"
+		elif btn_txt == "Resume": self.button_crawl["text"] = "Pause"
+		elif btn_txt == "Restart": self.button_crawl["text"] = "Pause"
 
 	def add_to_outputtable(self):
 		items = []
