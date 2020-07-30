@@ -45,8 +45,8 @@ class GFlareCrawler:
 		return GFlareDB(self.db_file, crawl_items=self.settings.get("CRAWL_ITEMS"), extractions=self.settings.get("EXTRACTIONS", None))
 	
 	def init_crawl_headers(self):
-		ua = "Greenflare SEO Spider/1.0"
-		self.HEADERS = {'User-Agent': self.settings.get("USER_AGENT", ua), 'Accept-Language': 'en-gb', 'Accept-Encoding': 'gzip', 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Cache-Control': 'no-cache', 'Pragma': 'no-cache'}
+		if not self.settings.get('USER_AGENT', ''): self.settings['USER_AGENT'] = "Greenflare SEO Spider/1.0"
+		self.HEADERS = {'User-Agent': self.settings['USER_AGENT'], 'Accept-Language': 'en-gb', 'Accept-Encoding': 'gzip', 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Cache-Control': 'no-cache', 'Pragma': 'no-cache'}
 
 	def request_robots_txt(self):
 		start_url = self.settings["STARTING_URL"]

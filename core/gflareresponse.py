@@ -13,7 +13,7 @@ class GFlareResponse:
 		self.url_components = None
 		self.robots_txt_ua = "Googlebot"
 		self.robots_txt = ""
-		self.gfrobots = GFlareRobots(self.robots_txt)
+		self.gfrobots = GFlareRobots(self.robots_txt, self.settings.get("USER_AGENT", ''))
 		self.robots_txt_status = None
 		
 		self.spider_links = "Spider" in self.settings.get("MODE", "")
@@ -34,7 +34,7 @@ class GFlareResponse:
 		self.settings["ROOT_DOMAIN"] = self.get_domain(self.url)
 		if self.data["data"]["status_code"] == 200:
 			self.robots_txt = self.response.text
-			self.gfrobots.set_robots_txt(self.robots_txt)
+			self.gfrobots.set_robots_txt(self.robots_txt, user_agent=self.settings.get("USER_AGENT", ''))
 
 	def get_initial_url(self):
 		if len(self.response.history) == 0:

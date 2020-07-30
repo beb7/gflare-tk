@@ -48,6 +48,7 @@ class SettingsTab(Frame):
 
 		self.ua_names = [k for k in self.user_agents.keys()]
 		self.combobox_ua = ttk.Combobox(self.group_crawler, values=self.ua_names, state="readonly")
+		self.combobox_ua.bind("<<ComboboxSelected>>", self.save_ua)
 		self.combobox_ua.current(0)
 		self.combobox_ua.grid(row=3, column=1, padx=15, pady=5, sticky=E)
 
@@ -120,10 +121,12 @@ class SettingsTab(Frame):
 	def save_urls(self):
 		self.crawler.settings["URLS_PER_SECOND"] = int(self.spinbox_urls.get())
 
-	def save_ua(self):
+	def save_ua(self, e):
 		value = self.combobox_ua.get()
+		print("value", value)
 		self.crawler.settings["USER_AGENT"] = self.user_agents[value]
 		self.crawler.settings["UA_SHORT"] = value
+		print("USER_AGENT", self.crawler.settings["USER_AGENT"])
 
 	def save_proxy(self):
 		self.crawler.settings["PROXY_HOST"] = self.var_host.get()

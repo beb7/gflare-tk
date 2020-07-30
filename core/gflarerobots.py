@@ -1,23 +1,48 @@
 import re
 import urllib.parse
+from ua_parser import user_agent_parser
 
 class GFlareRobots:
-	def __init__(self, robots_txt):
+	def __init__(self, robots_txt, user_agent=None):
 		self.robots_txt = robots_txt
+		self.user_agent = user_agent
 		self.disallows = []
 		self.allows = []
 		self.allow_lines = None
 		self.disallow_lines = None
 		if self.robots_txt:
+			if self.user_agent:
+				self.robots_txt = self.get_ua_rules(self.user_agent, self.robots_txt)
 			self.parse_rules()
 			self.allows = self.process_rules(self.allows)
 			self.disallows = self.process_rules(self.disallows)
 
+	def get_ua_pattern(self, ua):
+		return fr'.*User\-agent\:\s*{re.escape(ua)}\s*(#|\n)(.*?)(User\-agent\:|$)'
+
+	def get_ua_rules(self, ua, robots_txt):
+		parsed_ua = user_agent_parser.Parse(ua)
+		if 'user_agent' in parsed_ua: ua = parsed_ua['user_agent']['family']
+
+		print("GFlareRobots", ua)
+		pattern = self.get_ua_pattern(ua)
+		match = re.match(pattern, robots_txt, re.DOTALL)
+		if match: 
+			return match.group(2).strip()
+		else:
+			pattern = self.get_ua_pattern('*')
+			match = re.match(pattern, robots_txt, re.DOTALL)
+			if match: return match.group(2).strip()
+			return ''
+
 	def remove_spaces(self, inp):
 		return " ".join(inp.split(" "))
 
-	def set_robots_txt(self, robots_txt):
+	def set_robots_txt(self, robots_txt, user_agent=None):
 		self.robots_txt = robots_txt
+		if user_agent:
+				self.user_agent = user_agent
+				self.robots_txt = self.get_ua_rules(self.user_agent, self.robots_txt)
 		self.parse_rules()
 		self.allows = self.process_rules(self.allows)
 		self.disallows = self.process_rules(self.disallows)
