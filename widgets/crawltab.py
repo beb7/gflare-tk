@@ -71,6 +71,7 @@ class CrawlTab(Frame):
 				if path.isfile(db_file): remove(db_file)
 				self.crawler.db_file = db_file
 				self.crawler.settings["STARTING_URL"] = url
+				self.entry_url_input["state"] = "disabled"
 				self.crawler.start_crawl()
 				self.populate_columns()
 
