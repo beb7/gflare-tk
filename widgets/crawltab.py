@@ -76,6 +76,8 @@ class CrawlTab(Frame):
 			self.entry_url_input["state"] = "disabled"
 			self.crawler.start_crawl()
 			self.populate_columns()
+			print("db_file", self.crawler.db_file)
+			print("STARTING_URL", self.crawler.settings["STARTING_URL"])
 
 			self.after(10, self.add_to_outputtable)
 			self.after(10, self.change_btn_text)
@@ -96,6 +98,7 @@ class CrawlTab(Frame):
 			self.after(10, self.change_btn_text)
 		elif self.button_crawl["text"] == "Restart":
 			self.start_new_crawl(url)
+		print(self.crawler.settings)
 
 	def change_btn_text(self):
 		btn_txt = self.button_crawl["text"]
@@ -148,3 +151,11 @@ class CrawlTab(Frame):
 		self.row_counter = self.crawler.urls_crawled
 		self.populate_columns()
 		self.update_progressbar()
+
+	def reset(self):
+		self.entry_url_input["state"] = "enabled"
+		self.entry_url_input.delete(0, 'end')
+		self.entry_url_input.insert(0, "Enter URL to crawl")
+		self.progressbar["value"] = 0
+		self.populate_columns()
+		self.button_crawl["text"] = "Start"

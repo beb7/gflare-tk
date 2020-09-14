@@ -68,7 +68,7 @@ class GFlareCrawler:
 		db.create()
 
 		# Reset response object
-		self.gf = gf(self.settings, db.columns)
+		self.gf = gf(self.settings, columns=None)
 		
 		self.columns = db.columns
 		self.gf.all_items = self.columns
@@ -114,6 +114,8 @@ class GFlareCrawler:
 		self.urls_crawled = 0
 		self.urls_total = 0
 
+		self.settings["ROOT_DOMAIN"] = ""
+
 	def resume_crawl(self):
 		print("Resuming crawl ...")
 		self.init_crawl_headers()
@@ -126,6 +128,9 @@ class GFlareCrawler:
 		# db.add_remove_columns()
 
 		self.reset_crawl()
+
+		# Reset response object
+		self.gf = gf(self.settings, columns=db.columns)
 
 		self.request_robots_txt()
 		
