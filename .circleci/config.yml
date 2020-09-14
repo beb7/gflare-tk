@@ -71,7 +71,7 @@ jobs:
           command: brew install pyenv
       - run:
           name: compile python with tkinter
-          command: PYTHON_CONFIGURE_OPTS="--with-tcltk-includes='-I/usr/local/opt/tcl-tk/include' --with-tcltk-libs='-L/usr/local/opt/tcl-tk/lib -ltcl8.6 -ltk8.6'" MACOSX_DEPLOYMENT_TARGET=10.9 pyenv install 3.8.5
+          command: PYTHON_CONFIGURE_OPTS="--with-tcltk-includes='-I/usr/local/opt/tcl-tk/include' --with-tcltk-libs='-L/usr/local/opt/tcl-tk/lib -ltcl8.6 -ltk8.6' --enable-shared" MACOSX_DEPLOYMENT_TARGET=10.9 pyenv install 3.8.5
 
       # - save_cache:
       #     key: pyenv
