@@ -32,6 +32,7 @@ class mainWindow(Frame):
 		self.menubar = Menu(self)
 
 		self.filemenu = Menu(self.menubar, tearoff=0)
+		self.filemenu.add_command(label="New", command=self.reset_ui)
 		self.filemenu.add_command(label="Load Crawl", command=self.load_crawl)
 		self.filemenu.add_separator()
 		self.filemenu.add_command(label="Full Export", command=self.full_export)
@@ -48,6 +49,9 @@ class mainWindow(Frame):
 
 		root.config(menu=self.menubar)
 
+
+	def reset_ui(self):
+		self.tab_crawl.reset()
 
 	def load_crawl(self):
 		files = [('Greenflare DB', '*.gflaredb'), ('All files', '.*')]
@@ -93,8 +97,8 @@ if __name__ == "__main__":
 	if getattr(sys, 'frozen', False): 
 		WorkingDir = path.dirname(sys.executable)
 		if sys.platform == "darwin":
-			environ['TK_LIBRARY'] = str(Path(WorkingDir).parent) + '/Resources/tk8.6/'
-			environ['TCL_LIBRARY'] = str(Path(WorkingDir).parent) + '/Resources/tcl8.6/'
+			#environ['TK_LIBRARY'] = str(Path(WorkingDir).parent) + '/Resources/tk8.6/'
+			#environ['TCL_LIBRARY'] = str(Path(WorkingDir).parent) + '/Resources/tcl8.6/'
 			print(environ['TCL_LIBRARY'])
 			print(environ['TK_LIBRARY'])
 	else:
@@ -107,7 +111,7 @@ if __name__ == "__main__":
 	globalLock = Lock()
 	crawl_items = ["url", "content_type", "status_code", "indexability", "page_title", "meta_description", "h1", "h2", "unique_inlinks", "canonicals", "canonical_tag", "robots_txt", "redirect_url", "meta_robots", "x_robots_tag", "respect_robots_txt", "report_on_status", "follow_blocked_redirects"]
 	Settings  = {"MODE": "Spider", "THREADS": 5, "URLS_PER_SECOND": 15, "USER_AGENT": "Greenflare SEO Spider/1.0",
-				 "UA_SHORT": "Windows Chrome", "MAX_RETRIES": 3, "CRAWL_ITEMS": crawl_items}
+				 "UA_SHORT": "Greenflare", "MAX_RETRIES": 3, "CRAWL_ITEMS": crawl_items}
 	Crawler = GFlareCrawler(settings=Settings, gui_mode=True, lock=globalLock)
 
 	app = mainWindow(crawler=Crawler)
