@@ -107,7 +107,7 @@ jobs:
       - run:
           name: PyInstaller App Bundle
           command: |
-            python -m PyInstaller greenflare.spec
+            python -m PyInstaller greenflare.spec --noconfirm
             tar -zcvf macos-build.tar.gz dist/greenflare.app
             mkdir results
             mv macos-build.tar.gz results/
