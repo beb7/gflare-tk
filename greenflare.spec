@@ -20,7 +20,7 @@ exe = EXE(pyz,
           [],
           exclude_binaries=True,
           name='greenflare',
-          debug=True,
+          debug=False,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
@@ -50,27 +50,3 @@ app = BUNDLE(coll,
                 ]
              }
             )
-
-## Make app bundle double-clickable
-import plistlib
-from pathlib import Path
-app_path = Path(app.name)
-
-# read Info.plist
-with open(app_path / 'Contents/Info.plist', 'rb') as f:
-    pl = plistlib.load(f)
-
-# write Info.plist
-with open(app_path / 'Contents/Info.plist', 'wb') as f:
-    pl['CFBundleExecutable'] = 'wrapper'
-    plistlib.dump(pl, f)
-
-# write new wrapper script
-shell_script = """#!/bin/bash
-DIR=$(cd "$(dirname "$0")"; pwd)
-open $DIR/greenflare"""
-with open(app_path / 'Contents/MacOS/wrapper', 'w') as f:
-    f.write(shell_script)
-
-# make it executable
-(app_path  / 'Contents/MacOS/wrapper').chmod(0o755)
