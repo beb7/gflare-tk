@@ -56,47 +56,47 @@ jobs:
       xcode: 9.4.1
     steps:
       - checkout
-      - run:
-          name: install tkinter
-          command: |
-            brew uninstall python@2
-            brew uninstall python
-            brew update
-            brew install tcl-tk
-            # brew update
-            # brew install python@3.8
-            # brew list
-      - run:
-          name: install pyenv
-          command: brew install pyenv
-      - run:
-          name: compile python with tkinter
-          command: PYTHON_CONFIGURE_OPTS="--with-tcltk-includes='-I/usr/local/opt/tcl-tk/include' --with-tcltk-libs='-L/usr/local/opt/tcl-tk/lib -ltcl8.6 -ltk8.6' --enable-shared" MACOSX_DEPLOYMENT_TARGET=10.9 pyenv install 3.8.5
+      # - run:
+      #     name: install tkinter
+      #     command: |
+      #       brew uninstall python@2
+      #       brew uninstall python
+      #       brew update
+      #       brew install tcl-tk
+      #       # brew update
+      #       # brew install python@3.8
+      #       # brew list
+      # - run:
+      #     name: install pyenv
+      #     command: brew install pyenv
+      # - run:
+      #     name: compile python with tkinter
+      #     command: PYTHON_CONFIGURE_OPTS="--with-tcltk-includes='-I/usr/local/opt/tcl-tk/include' --with-tcltk-libs='-L/usr/local/opt/tcl-tk/lib -ltcl8.6 -ltk8.6' --enable-shared" MACOSX_DEPLOYMENT_TARGET=10.9 pyenv install 3.8.5
 
       # - save_cache:
       #     key: pyenv
       #     paths:
       #       - "~/.pyenv"
+      # - run:
+      #     name: set pyenv installation to global
+      #     command: |
+      #       pyenv global 3.8.5
+      #       echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n  eval "$(pyenv init -)"\nfi' >> ~/.zshrc
+      #       echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n  eval "$(pyenv init -)"\nfi' >> ~/.bash_profile
+      #       source ~/.zshrc
+      #       source ~/.bash_profile
+      #       python --version
       - run:
-          name: set pyenv installation to global
-          command: |
-            pyenv global 3.8.5
-            echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n  eval "$(pyenv init -)"\nfi' >> ~/.zshrc
-            echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n  eval "$(pyenv init -)"\nfi' >> ~/.bash_profile
-            source ~/.zshrc
-            source ~/.bash_profile
-            python --version
-      # - run:
-      #     name: download python
-      #     command: curl -O https://www.python.org/ftp/python/3.8.5/python-3.8.5-macosx10.9.pkg
-      # - run:
-      #     name: install python
-      #     command: sudo installer -pkg python-3.8.5-macosx10.9.pkg -target /
+          name: download python
+          command: curl -O https://www.python.org/ftp/python/3.7.4/python-3.7.4-macosx10.9.pkg
+      - run:
+          name: install python
+          command: sudo installer -pkg python-3.7.4-macosx10.9.pkg -target /
       - run: 
           name: install dependencies
           command: |
-            python -m pip install pip --upgrade
-            python -m pip install -r requirements.txt
+            python3.7 -m pip install pip --upgrade
+            python3.7 -m pip install -r requirements.txt
       # - run:
       #     name: run cxfreeze
       #     command: |
@@ -108,6 +108,8 @@ jobs:
           name: PyInstaller App Bundle
           command: |
             python -m PyInstaller greenflare.spec --noconfirm
+            cp -r /Library/Frameworks/Python.framework/Versions/3.7/lib/tk8.6 dist/greenflare.app/Contents/MacOS/tk
+            cp -r /Library/Frameworks/Python.framework/Versions/3.7/lib/tcl8.6 dist/greenflare.app/Contents/MacOS/tk
             tar -zcvf macos-build.tar.gz dist/greenflare.app
             mkdir results
             mv macos-build.tar.gz results/
