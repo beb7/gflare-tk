@@ -107,6 +107,7 @@ jobs:
       - run:
           name: PyInstaller App Bundle
           command: |
+            sed -i .bak "s#\[msgcat::mc#\[::tk::msgcat::mc#g" /Library/Frameworks/Python.framework/Versions/3.7/lib/tk8.6/console.tcl
             python3.7 -m PyInstaller greenflare.spec --noconfirm
             cp -r /Library/Frameworks/Python.framework/Versions/3.7/lib/tk8.6 dist/greenflare.app/Contents/MacOS/tk
             cp -r /Library/Frameworks/Python.framework/Versions/3.7/lib/tcl8.6 dist/greenflare.app/Contents/MacOS/tcl
