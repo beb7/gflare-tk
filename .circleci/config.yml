@@ -110,9 +110,10 @@ jobs:
             python3.7 -m PyInstaller greenflare.spec --noconfirm
             cp -r /Library/Frameworks/Python.framework/Versions/3.7/lib/tk8.6 dist/greenflare.app/Contents/MacOS/tk
             cp -r /Library/Frameworks/Python.framework/Versions/3.7/lib/tcl8.6 dist/greenflare.app/Contents/MacOS/tcl
-            tar -zcvf macos-build.tar.gz dist/greenflare.app
-            mkdir results
-            mv macos-build.tar.gz results/
+            mkdir results/
+            cd dist/
+            tar -zcvf macos-build.tar.gz greenflare.app
+            mv macos-build.tar.gz ../results/
       - store_artifacts:
           path: results/
 workflows:
