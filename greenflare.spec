@@ -67,7 +67,7 @@ with open(app_path / 'Contents/Info.plist', 'wb') as f:
 
 # write new wrapper script
 shell_script = """#!/bin/bash
-DIR=$(cd "$(dirname '$0')"; pwd)
+DIR=$(cd "$(dirname "$0")"; pwd)
 open $DIR/greenflare"""
 with open(app_path / 'Contents/MacOS/wrapper', 'w') as f:
     f.write(shell_script)
