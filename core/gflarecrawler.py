@@ -129,6 +129,9 @@ class GFlareCrawler:
 
 		self.reset_crawl()
 
+		self.urls_crawled = db.get_urls_crawled()
+		self.urls_total = db.get_total_urls()
+
 		# Reset response object
 		self.gf = gf(self.settings, columns=db.columns)
 
