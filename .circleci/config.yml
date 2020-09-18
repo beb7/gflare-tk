@@ -114,8 +114,8 @@ jobs:
             cp -r /Library/Frameworks/Python.framework/Versions/3.7/lib/tcl8.6 dist/greenflare.app/Contents/MacOS/tcl
             mkdir results/
             cd dist/
-            tar -zcvf macos-build.tar.gz greenflare.app
-            mv macos-build.tar.gz ../results/greenflare-0.62-macos10.9.tar.gz
+            hdiutil create ./greenflare-v0.62.dmg -srcfolder greenflare.app -ov
+            mv greenflare-*.dmg ../results/
       - store_artifacts:
           path: results/
 workflows:
