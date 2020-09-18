@@ -1,5 +1,8 @@
 version: 2.1
-
+parameters:
+  greenflare-release:
+    type: string
+    default: "0.62"
 orbs:
   python: circleci/python@0.3.0
   win: circleci/windows@2.4.0
@@ -24,6 +27,8 @@ jobs:
           path: results/
   windows-build:
     executor: win/default
+    environment:
+      GFLAREVER: << pipeline.parameters.greenflare-release >>
     steps:
       - checkout
       - python/load-cache
@@ -44,9 +49,9 @@ jobs:
           name: run cxfreeze
           command: |
             python build_binary.py build_exe
-            tar.exe -a -c -f windows-build.zip build
+            tar.exe -a -c -f greenflare-${GFLAREVER}-x86_64-1.zip build
             mkdir results
-            move windows-build.zip results/ 
+            move greenflare-*.zip results/ 
           
       - store_artifacts:
           path: results/
@@ -54,6 +59,8 @@ jobs:
   macos-build:
     macos: 
       xcode: 9.4.1
+    environment:
+      GFLAREVER: << pipeline.parameters.greenflare-release >>
     steps:
       - checkout
       # - run:
@@ -114,7 +121,7 @@ jobs:
             cp -r /Library/Frameworks/Python.framework/Versions/3.7/lib/tcl8.6 dist/greenflare.app/Contents/MacOS/tcl
             mkdir results/
             cd dist/
-            hdiutil create ./greenflare-v0.62-x86_64-1.dmg -srcfolder greenflare.app -ov
+            hdiutil create ./greenflare-${GFLAREVER}-x86_64-1.dmg -srcfolder greenflare.app -ov
             mv greenflare-*.dmg ../results/
       - store_artifacts:
           path: results/
@@ -122,5 +129,5 @@ workflows:
   main:
     jobs:
       # - ubuntu-build
-      # - windows-build
+      - windows-build
       - macos-build
