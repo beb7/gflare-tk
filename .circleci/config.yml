@@ -114,7 +114,7 @@ jobs:
             cp -r /Library/Frameworks/Python.framework/Versions/3.7/lib/tcl8.6 dist/greenflare.app/Contents/MacOS/tcl
             mkdir results/
             cd dist/
-            hdiutil create ./greenflare-v0.62.dmg -srcfolder greenflare.app -ov
+            hdiutil create ./greenflare-v0.62-x86_64-1.dmg -srcfolder greenflare.app -ov
             mv greenflare-*.dmg ../results/
       - store_artifacts:
           path: results/
