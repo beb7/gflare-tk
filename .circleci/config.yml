@@ -107,6 +107,7 @@ jobs:
       - run:
           name: PyInstaller App Bundle
           command: |
+            echo "Fixing tkinter msgcat bug ..."
             sed -i .bak "s#\[msgcat::mc#\[::tk::msgcat::mc#g" /Library/Frameworks/Python.framework/Versions/3.7/lib/tk8.6/console.tcl
             python3.7 -m PyInstaller greenflare.spec --noconfirm
             cp -r /Library/Frameworks/Python.framework/Versions/3.7/lib/tk8.6 dist/greenflare.app/Contents/MacOS/tk
@@ -114,7 +115,7 @@ jobs:
             mkdir results/
             cd dist/
             tar -zcvf macos-build.tar.gz greenflare.app
-            mv macos-build.tar.gz ../results/
+            mv macos-build.tar.gz ../results/greenflare-0.62-macos10.9.tar.gz
       - store_artifacts:
           path: results/
 workflows:
