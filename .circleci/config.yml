@@ -1,8 +1,15 @@
 version: 2.1
+
 parameters:
   greenflare-release:
     type: string
     default: "0.62"
+  python-ver-macos:
+    type: string
+    default: "3.7.4"
+  python-ver-macos-major:
+    type: string
+    default: "3.7"
 orbs:
   python: circleci/python@0.3.0
   win: circleci/windows@2.4.0
@@ -45,14 +52,14 @@ jobs:
           command: |
             pip install --user pip --upgrade
             pip install --user -r requirements.txt
+            pip install cx-freeze==6.1
       - run:
           name: run cxfreeze
           command: |
             python build_binary.py build_exe
             tar.exe -a -c -f greenflare-${GFLAREVER}-x86_64-1.zip build
             mkdir results
-            move greenflare-*.zip results/ 
-          
+            move greenflare-*.zip results/          
       - store_artifacts:
           path: results/
   
@@ -61,6 +68,8 @@ jobs:
       xcode: 9.4.1
     environment:
       GFLAREVER: << pipeline.parameters.greenflare-release >>
+      PYTHONVER: << pipeline.parameters.python-ver-macos >>
+      PYTHONVERMAJOR: << pipeline.parameters.python-ver-macos-major >>
     steps:
       - checkout
       # - run:
@@ -95,30 +104,24 @@ jobs:
       #       python --version
       - run:
           name: download python
-          command: curl -O https://www.python.org/ftp/python/3.7.4/python-3.7.4-macosx10.9.pkg
+          command: curl -O https://www.python.org/ftp/python/${PYTHONVER}/python-${PYTHONVER}-macosx10.9.pkg
       - run:
           name: install python
-          command: sudo installer -pkg python-3.7.4-macosx10.9.pkg -target /
+          command: sudo installer -pkg python-${PYTHONVER}-macosx10.9.pkg -target /
       - run: 
           name: install dependencies
           command: |
-            python3.7 -m pip install pip --upgrade
-            python3.7 -m pip install -r requirements.txt
-      # - run:
-      #     name: run cxfreeze
-      #     command: |
-      #       python3 build_binary.py bdist_mac
-      #       tar -zcvf macos-build.tar.gz build/greenflare.app
-      #       mkdir results/ 
-      #       mv macos-build.tar.gz results/
+            python${PYTHONVERMAJOR} -m pip install pip --upgrade
+            python${PYTHONVERMAJOR} -m pip install -r requirements.txt
+            python${PYTHONVERMAJOR} -m pip install pyinstaller==4.0
       - run:
-          name: PyInstaller App Bundle
+          name: create .dmg app bundle
           command: |
             echo "Fixing tkinter msgcat bug ..."
-            sed -i .bak "s#\[msgcat::mc#\[::tk::msgcat::mc#g" /Library/Frameworks/Python.framework/Versions/3.7/lib/tk8.6/console.tcl
-            python3.7 -m PyInstaller greenflare.spec --noconfirm
-            cp -r /Library/Frameworks/Python.framework/Versions/3.7/lib/tk8.6 dist/greenflare.app/Contents/MacOS/tk
-            cp -r /Library/Frameworks/Python.framework/Versions/3.7/lib/tcl8.6 dist/greenflare.app/Contents/MacOS/tcl
+            sed -i .bak "s#\[msgcat::mc#\[::tk::msgcat::mc#g" /Library/Frameworks/Python.framework/Versions/${PYTHONVERMAJOR}/lib/tk8.6/console.tcl
+            python${PYTHONVERMAJOR} -m PyInstaller greenflare.spec --noconfirm
+            cp -r /Library/Frameworks/Python.framework/Versions/${PYTHONVERMAJOR}/lib/tk8.6 dist/greenflare.app/Contents/MacOS/tk
+            cp -r /Library/Frameworks/Python.framework/Versions/${PYTHONVERMAJOR}/lib/tcl8.6 dist/greenflare.app/Contents/MacOS/tcl
             mkdir results/
             cd dist/
             hdiutil create ./greenflare-${GFLAREVER}-x86_64-1.dmg -srcfolder greenflare.app -ov
