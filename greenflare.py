@@ -106,7 +106,10 @@ if __name__ == "__main__":
 
 	root = tk.Tk()
 	root.geometry("1024x768")
-	# root.iconphoto(False, tk.PhotoImage(file=WorkingDir + path.sep + 'greenflare-icon-64x64.png'))
+	
+	# macOS tkinter cannot handle iconphotos at the time being, disabling it for now
+	if sys.platform != "darwin":
+		root.iconphoto(False, tk.PhotoImage(file=WorkingDir + path.sep + 'greenflare-icon-64x64.png'))
 
 	globalLock = Lock()
 	crawl_items = ["url", "content_type", "status_code", "indexability", "page_title", "meta_description", "h1", "h2", "unique_inlinks", "canonicals", "canonical_tag", "robots_txt", "redirect_url", "meta_robots", "x_robots_tag", "respect_robots_txt", "report_on_status", "follow_blocked_redirects"]
