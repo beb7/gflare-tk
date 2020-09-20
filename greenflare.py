@@ -79,7 +79,7 @@ class mainWindow(Frame):
 		pass
 
 	def list_mode(self):
-		pass
+		print("FIXME: Not yet implemented")
 
 	def show_about(self):
 		pass
