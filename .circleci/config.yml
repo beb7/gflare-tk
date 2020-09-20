@@ -6,10 +6,10 @@ parameters:
     default: "0.62"
   python-ver-macos:
     type: string
-    default: "3.7.4"
+    default: "3.8.5"
   python-ver-macos-major:
     type: string
-    default: "3.7"
+    default: "3.8"
 orbs:
   python: circleci/python@0.3.0
   win: circleci/windows@2.4.0
@@ -65,7 +65,7 @@ jobs:
   
   macos-build:
     macos: 
-      xcode: 9.4.1
+      xcode: 12.0.0
     environment:
       GFLAREVER: << pipeline.parameters.greenflare-release >>
       PYTHONVER: << pipeline.parameters.python-ver-macos >>
@@ -113,19 +113,29 @@ jobs:
           command: |
             python${PYTHONVERMAJOR} -m pip install pip --upgrade
             python${PYTHONVERMAJOR} -m pip install -r requirements.txt
-            python${PYTHONVERMAJOR} -m pip install pyinstaller==4.0
+            python${PYTHONVERMAJOR} -m pip install py2app==0.22
+      # - run:
+      #     name: create .dmg app bundle
+      #     command: |
+      #       echo "Fixing tkinter msgcat bug ..."
+      #       sed -i .bak "s#\[msgcat::mc#\[::tk::msgcat::mc#g" /Library/Frameworks/Python.framework/Versions/${PYTHONVERMAJOR}/lib/tk8.6/console.tcl
+      #       python${PYTHONVERMAJOR} -m PyInstaller greenflare.spec --noconfirm
+      #       cp -r /Library/Frameworks/Python.framework/Versions/${PYTHONVERMAJOR}/lib/tk8.6 dist/greenflare.app/Contents/MacOS/tk
+      #       cp -r /Library/Frameworks/Python.framework/Versions/${PYTHONVERMAJOR}/lib/tcl8.6 dist/greenflare.app/Contents/MacOS/tcl
+      #       mkdir results/
+      #       cd dist/
+      #       hdiutil create ./greenflare-${GFLAREVER}-x86_64-1.dmg -srcfolder greenflare.app -ov
+      #       mv greenflare-*.dmg ../results/
       - run:
-          name: create .dmg app bundle
+          name: freeze macos app
+          command: python${PYTHONVERMAJOR} setup-p2app.py py2app
+      - run:
+          name: package .dmg app bundle
           command: |
-            echo "Fixing tkinter msgcat bug ..."
-            sed -i .bak "s#\[msgcat::mc#\[::tk::msgcat::mc#g" /Library/Frameworks/Python.framework/Versions/${PYTHONVERMAJOR}/lib/tk8.6/console.tcl
-            python${PYTHONVERMAJOR} -m PyInstaller greenflare.spec --noconfirm
-            cp -r /Library/Frameworks/Python.framework/Versions/${PYTHONVERMAJOR}/lib/tk8.6 dist/greenflare.app/Contents/MacOS/tk
-            cp -r /Library/Frameworks/Python.framework/Versions/${PYTHONVERMAJOR}/lib/tcl8.6 dist/greenflare.app/Contents/MacOS/tcl
             mkdir results/
             cd dist/
             hdiutil create ./greenflare-${GFLAREVER}-x86_64-1.dmg -srcfolder greenflare.app -ov
-            mv greenflare-*.dmg ../results/
+            mv greenflare-*.dmg ../results/            
       - store_artifacts:
           path: results/
 workflows:
