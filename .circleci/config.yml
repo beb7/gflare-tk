@@ -142,5 +142,5 @@ workflows:
   main:
     jobs:
       # - ubuntu-build
-      - windows-build
-      - macos-build
+      # - windows-build
+      # - macos-build
