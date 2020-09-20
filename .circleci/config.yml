@@ -29,7 +29,7 @@ jobs:
             tar -zcvf linux-build.tar.gz build/
             mkdir results/ 
             mv linux-build.tar.gz results/ 
-          name: Build Test
+          name: Freeze Linux Binary
       - store_artifacts:
           path: results/
   
@@ -42,20 +42,20 @@ jobs:
       - python/load-cache
       - python/save-cache
       - run:
-          name: upgrade python
+          name: Install Python
           command: |
             choco install python --version=3.8.2
             refreshenv
             python --version
             $Env:Path
       - run:
-          name: install dependencies
+          name: Install dependencies
           command: |
             pip install --user pip --upgrade
             pip install --user -r requirements.txt
             pip install cx-freeze==6.1
       - run:
-          name: run cxfreeze
+          name: Freeze Windows Programme
           command: |
             python build_binary.py build_exe
             tar.exe -a -c -f greenflare-${GFLAREVER}-x86_64-1.zip build
@@ -73,26 +73,23 @@ jobs:
       PYTHONVERMAJOR: << pipeline.parameters.python-ver-macos-major >>
     steps:
       - checkout
-      - python/load-cache
-      - python/install-deps
-      - python/save-cache
       - run:
-          name: download python
+          name: Download python
           command: curl -O https://www.python.org/ftp/python/${PYTHONVER}/python-${PYTHONVER}-macosx10.9.pkg
       - run:
-          name: install python
+          name: Install python
           command: sudo installer -pkg python-${PYTHONVER}-macosx10.9.pkg -target /
       - run: 
-          name: install dependencies
+          name: Install dependencies
           command: |
             python${PYTHONVERMAJOR} -m pip install pip --upgrade
             python${PYTHONVERMAJOR} -m pip install -r requirements.txt
             python${PYTHONVERMAJOR} -m pip install py2app==0.22
       - run:
-          name: freeze macos app
+          name: Freeze macOS app
           command: python${PYTHONVERMAJOR} setup-py2app.py py2app
       - run:
-          name: package .dmg app bundle
+          name: Package .dmg app bundle
           command: |
             mkdir results/
             cd dist/
