@@ -89,7 +89,7 @@ jobs:
             python${PYTHONVERMAJOR} -m pip install -r requirements.txt
             python${PYTHONVERMAJOR} -m pip install py2app==0.22
       - save_cache:
-          key: pycache
+          key: pycache-{{ checksum "requirements.txt" }}
           paths:
             - Library/Caches/pip/            
       - run:
