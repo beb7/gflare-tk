@@ -128,7 +128,7 @@ jobs:
       #       mv greenflare-*.dmg ../results/
       - run:
           name: freeze macos app
-          command: python${PYTHONVERMAJOR} setup-p2app.py py2app
+          command: python${PYTHONVERMAJOR} setup-py2app.py py2app
       - run:
           name: package .dmg app bundle
           command: |
