@@ -32,6 +32,7 @@ jobs:
           name: Build Test
       - store_artifacts:
           path: results/
+  
   windows-build:
     executor: win/default
     environment:
@@ -72,36 +73,9 @@ jobs:
       PYTHONVERMAJOR: << pipeline.parameters.python-ver-macos-major >>
     steps:
       - checkout
-      # - run:
-      #     name: install tkinter
-      #     command: |
-      #       brew uninstall python@2
-      #       brew uninstall python
-      #       brew update
-      #       brew install tcl-tk
-      #       # brew update
-      #       # brew install python@3.8
-      #       # brew list
-      # - run:
-      #     name: install pyenv
-      #     command: brew install pyenv
-      # - run:
-      #     name: compile python with tkinter
-      #     command: PYTHON_CONFIGURE_OPTS="--with-tcltk-includes='-I/usr/local/opt/tcl-tk/include' --with-tcltk-libs='-L/usr/local/opt/tcl-tk/lib -ltcl8.6 -ltk8.6' --enable-shared" MACOSX_DEPLOYMENT_TARGET=10.9 pyenv install 3.8.5
-
-      # - save_cache:
-      #     key: pyenv
-      #     paths:
-      #       - "~/.pyenv"
-      # - run:
-      #     name: set pyenv installation to global
-      #     command: |
-      #       pyenv global 3.8.5
-      #       echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n  eval "$(pyenv init -)"\nfi' >> ~/.zshrc
-      #       echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n  eval "$(pyenv init -)"\nfi' >> ~/.bash_profile
-      #       source ~/.zshrc
-      #       source ~/.bash_profile
-      #       python --version
+      - python/load-cache
+      - python/install-deps
+      - python/save-cache
       - run:
           name: download python
           command: curl -O https://www.python.org/ftp/python/${PYTHONVER}/python-${PYTHONVER}-macosx10.9.pkg
@@ -114,18 +88,6 @@ jobs:
             python${PYTHONVERMAJOR} -m pip install pip --upgrade
             python${PYTHONVERMAJOR} -m pip install -r requirements.txt
             python${PYTHONVERMAJOR} -m pip install py2app==0.22
-      # - run:
-      #     name: create .dmg app bundle
-      #     command: |
-      #       echo "Fixing tkinter msgcat bug ..."
-      #       sed -i .bak "s#\[msgcat::mc#\[::tk::msgcat::mc#g" /Library/Frameworks/Python.framework/Versions/${PYTHONVERMAJOR}/lib/tk8.6/console.tcl
-      #       python${PYTHONVERMAJOR} -m PyInstaller greenflare.spec --noconfirm
-      #       cp -r /Library/Frameworks/Python.framework/Versions/${PYTHONVERMAJOR}/lib/tk8.6 dist/greenflare.app/Contents/MacOS/tk
-      #       cp -r /Library/Frameworks/Python.framework/Versions/${PYTHONVERMAJOR}/lib/tcl8.6 dist/greenflare.app/Contents/MacOS/tcl
-      #       mkdir results/
-      #       cd dist/
-      #       hdiutil create ./greenflare-${GFLAREVER}-x86_64-1.dmg -srcfolder greenflare.app -ov
-      #       mv greenflare-*.dmg ../results/
       - run:
           name: freeze macos app
           command: python${PYTHONVERMAJOR} setup-py2app.py py2app
