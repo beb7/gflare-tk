@@ -6,10 +6,10 @@ parameters:
     default: "0.62"
   python-ver-macos:
     type: string
-    default: "3.8.5"
+    default: "3.9.0rc1"
   python-ver-macos-major:
     type: string
-    default: "3.8"
+    default: "3.9"
 orbs:
   python: circleci/python@0.3.0
   win: circleci/windows@2.4.0
