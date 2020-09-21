@@ -78,7 +78,7 @@ jobs:
           command: curl -O https://www.python.org/ftp/python/${PYTHONVER}/python-${PYTHONVER}rc1-macosx10.9.pkg
       - run:
           name: Install python
-          command: sudo installer -pkg python-${PYTHONVER}-macosx10.9.pkg -target /
+          command: sudo installer -pkg python-${PYTHONVER}rc1-macosx10.9.pkg -target /
       - restore_cache:
           keys:
             - pycache-{{ checksum "requirements.txt" }}
