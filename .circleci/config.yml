@@ -6,10 +6,10 @@ parameters:
     default: "0.62"
   python-ver-macos:
     type: string
-    default: "3.9.0"
+    default: "3.8.5"
   python-ver-macos-major:
     type: string
-    default: "3.9"
+    default: "3.8"
 orbs:
   python: circleci/python@0.3.0
   win: circleci/windows@2.4.0
@@ -75,10 +75,10 @@ jobs:
       - checkout
       - run:
           name: Download python
-          command: curl -O https://www.python.org/ftp/python/${PYTHONVER}/python-${PYTHONVER}rc1-macosx10.9.pkg
+          command: curl -O https://www.python.org/ftp/python/${PYTHONVER}/python-${PYTHONVER}-macosx10.9.pkg
       - run:
           name: Install python
-          command: sudo installer -pkg python-${PYTHONVER}rc1-macosx10.9.pkg -target /
+          command: sudo installer -pkg python-${PYTHONVER}-macosx10.9.pkg -target /
       - restore_cache:
           keys:
             - pycache-{{ checksum "requirements.txt" }}
