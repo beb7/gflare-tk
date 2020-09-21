@@ -1,10 +1,11 @@
 import tkinter as tk
-from tkinter import Frame, ttk, Menu, filedialog as fd, messagebox
+from tkinter import Frame, ttk, Menu, filedialog as fd, messagebox, Toplevel, Text, RIGHT, LEFT
 from core.gflarecrawler import GFlareCrawler
 from widgets.crawltab import CrawlTab
 from widgets.settingstab import SettingsTab
 from widgets.exclusionstab import ExclusionsTab
 from widgets.extractionstab import ExtractionsTab
+from widgets.listcrawl import ListModeWindow
 from threading import Lock
 from os import path, remove, environ
 from pathlib import Path
@@ -76,10 +77,11 @@ class mainWindow(Frame):
 		messagebox.showinfo(title='Export completed', message=f'All data has been successfully saved to {export_file}!')
 
 	def spider_mode(self):
-		pass
+		self.crawler.settings['MODE'] = 'Spider'
+		self.tab_crawl.reset()
 
 	def list_mode(self):
-		print("FIXME: Not yet implemented")
+		lm_wnd = ListModeWindow(crawler=self.crawler, crawl_tab=self.tab_crawl, root=self.master)
 
 	def show_about(self):
 		pass

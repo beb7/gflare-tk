@@ -71,6 +71,7 @@ class CrawlTab(Frame):
 			if not db_file.endswith(".gflaredb"): db_file += ".gflaredb"
 			if path.isfile(db_file): remove(db_file)
 			self.crawler.reset_crawl()
+			self.run_first_time = False
 			self.crawler.db_file = db_file
 			self.crawler.settings["STARTING_URL"] = url
 			self.entry_url_input["state"] = "disabled"
@@ -159,3 +160,9 @@ class CrawlTab(Frame):
 		self.progressbar["value"] = 0
 		self.populate_columns()
 		self.button_crawl["text"] = "Start"
+
+	def show_list_mode(self):
+		self.reset()
+		self.entry_url_input.delete(0, 'end')
+		self.entry_url_input.insert(0, "List Mode ...")
+		self.entry_url_input["state"] = "disabled"

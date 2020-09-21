@@ -18,6 +18,8 @@ class GFlareCrawler:
 		self.gui_mode = gui_mode
 		self.lock = lock
 
+		self.list_mode_urls = None
+
 		self.gui_url_queue = None
 		if self.gui_mode: self.gui_url_queue = queue.Queue()
 
@@ -82,7 +84,13 @@ class GFlareCrawler:
 
 		elif self.settings["MODE"] == "List":
 			self.robots_txt_found.set()
-			
+
+			if len(self.list_mode_urls) > 0:
+				self.add_to_url_queue(self.list_mode_urls)
+				db.insert_new_urls(self.list_mode_urls)
+			else:
+				print("ERROR: No urls to list crawl found!")
+
 		db.commit()
 		db.close()
 
@@ -106,8 +114,9 @@ class GFlareCrawler:
 
 	def reset_crawl(self):
 		# Reset queue
-		self.data_queue = queue.Queue()
-		self.url_queue = queue.Queue()
+		if self.settings['MODE'] != 'List':
+			self.data_queue = queue.Queue()
+			self.url_queue = queue.Queue()
 		self.crawl_running.clear()
 		self.robots_txt_found.clear()
 		
@@ -135,7 +144,10 @@ class GFlareCrawler:
 		# Reset response object
 		self.gf = gf(self.settings, columns=db.columns)
 
-		self.request_robots_txt()
+		if self.settings['MODE'] != 'List':
+			self.request_robots_txt()
+		else:
+			self.robots_txt_found.set()
 		
 		# Reinit URL queue
 		self.add_to_url_queue(db.get_url_queue())
@@ -236,7 +248,7 @@ class GFlareCrawler:
 		with self.lock:
 			inserted_urls = 0
 			threads = int(self.settings["THREADS"])
-			new = bool(self.settings.get("MODE", "") == "List")
+			# new = bool(self.settings.get("MODE", "") == "List")
 
 		while True:
 			try:
@@ -270,7 +282,7 @@ class GFlareCrawler:
 					# print("data:", data["data"])
 					url = data["url"]
 
-					db.insert_crawl_data(data["data"], new=new)
+					db.insert_crawl_data(data["data"])
 					with self.lock:
 						inserted_urls += 1
 						self.urls_crawled += 1
