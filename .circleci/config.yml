@@ -6,7 +6,7 @@ parameters:
     default: "0.62"
   python-ver-macos:
     type: string
-    default: "3.9.0rc1"
+    default: "3.9.0"
   python-ver-macos-major:
     type: string
     default: "3.9"
@@ -75,7 +75,7 @@ jobs:
       - checkout
       - run:
           name: Download python
-          command: curl -O https://www.python.org/ftp/python/${PYTHONVER}/python-${PYTHONVER}-macosx10.9.pkg
+          command: curl -O https://www.python.org/ftp/python/${PYTHONVER}/python-${PYTHONVER}rc1-macosx10.9.pkg
       - run:
           name: Install python
           command: sudo installer -pkg python-${PYTHONVER}-macosx10.9.pkg -target /
