@@ -85,7 +85,7 @@ jobs:
             python${PYTHONVERMAJOR} -m pip install pip --upgrade
             python${PYTHONVERMAJOR} -m pip install -r requirements.txt
             python${PYTHONVERMAJOR} -m pip install py2app==0.22
-        - run:
+      - run:
           name: Freeze macOS app
           command: python${PYTHONVERMAJOR} setup-py2app.py py2app
       - run:
