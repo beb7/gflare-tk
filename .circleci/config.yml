@@ -79,20 +79,13 @@ jobs:
       - run:
           name: Install python
           command: sudo installer -pkg python-${PYTHONVER}-macosx10.9.pkg -target /
-      - restore_cache:
-          keys:
-            - pycache-{{ checksum "requirements.txt" }}
       - run: 
           name: Install dependencies
           command: |
             python${PYTHONVERMAJOR} -m pip install pip --upgrade
             python${PYTHONVERMAJOR} -m pip install -r requirements.txt
             python${PYTHONVERMAJOR} -m pip install py2app==0.22
-      - save_cache:
-          key: pycache-{{ checksum "requirements.txt" }}
-          paths:
-            - Library/Caches/pip/            
-      - run:
+        - run:
           name: Freeze macOS app
           command: python${PYTHONVERMAJOR} setup-py2app.py py2app
       - run:
