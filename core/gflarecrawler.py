@@ -150,7 +150,7 @@ class GFlareCrawler:
 			self.robots_txt_found.set()
 		
 		# Reinit URL queue
-		self.add_to_url_queue(db.get_url_queue())
+		self.add_to_url_queue(db.get_url_queue(), count=False)
 
 		db.close()
 
@@ -217,7 +217,8 @@ class GFlareCrawler:
 			print(f"{url} has too many redirects")
 			return header
 		except Exception as e:
-			return [tuple([url, '', 'Timed Out', ''] + [''] * len(self.settings.get("CRAWL_ITEMS", None) - 4 ))]
+			# return [tuple([url, '', 'Timed Out', ''] + [''] * len(self.settings.get("CRAWL_ITEMS", None) - 4 ))]
+			return [tuple([url, '', 'Timed Out', ''] + [''] * (len(self.columns) - 4))]
 	
 	def add_to_gui_queue(self, data):
 		self.gui_url_queue.put(data)
@@ -337,10 +338,12 @@ class GFlareCrawler:
 		self.crawl_running.set()
 		print("Consumer thread finished")
 
-	def add_to_url_queue(self, urls):
-		with self.lock:
-			self.urls_total += len(urls)
-		[self.url_queue.put(url) for url in urls]
+	def add_to_url_queue(self, urls, count=True):
+		if count:
+			with self.lock:
+				self.urls_total += len(urls)
+		for url in urls:
+			self.url_queue.put(url)
 
 	def get_crawl_data(self):
 		if self.db_file:

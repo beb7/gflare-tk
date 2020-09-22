@@ -153,6 +153,8 @@ class CrawlTab(Frame):
 
 	def update_progressbar(self):
 		with self.lock:
+			print("urls crawled:", self.crawler.urls_crawled)
+			print("urls total:", self.crawler.urls_total)
 			if self.crawler.urls_total > 0:
 				percentage = int((self.crawler.urls_crawled / self.crawler.urls_total) * 100)
 				self.progressbar["value"] = percentage
