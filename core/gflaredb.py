@@ -9,6 +9,7 @@ class GFlareDB:
 		self.db_name = db_name
 		self.con, self.cur = self.db_connect()
 		self.con.create_function("REGEXP", 2, self.regexp)
+		self.columns = None
 		self.crawl_items = crawl_items
 		self.columns_map = {"url": "TEXT type UNIQUE",
 							"content_type": "TEXT",
@@ -30,8 +31,17 @@ class GFlareDB:
 		self.populate_columns()
 	
 	def populate_columns(self):
-		self.sql_columns = [(k, v) for k,v in self.columns_map.items() if k in self.crawl_items]
-		self.columns = [k for k in self.columns_map.keys() if k in self.crawl_items]
+		# Try to load/use existing columns from db if available
+		self.cur.execute("""SELECT * FROM crawl""")
+		self.columns = [description[0] for description in self.cur.description]
+		# remove id from self.columns
+		self.columns.pop(0)
+
+		print("Loaded columns:", self.columns)
+
+		if len(self.columns) < 1:
+			self.sql_columns = [(k, v) for k,v in self.columns_map.items() if k in self.crawl_items]
+			self.columns = [k for k in self.columns_map.keys() if k in self.crawl_items]
 
 		# Add extractions
 		if self.extractions: 
@@ -164,6 +174,11 @@ class GFlareDB:
 	def get_urls_crawled(self):
 		self.cur.execute("""SELECT count(*) FROM crawl WHERE status_code != ''""")
 		return self.cur.fetchone()[0]
+
+	@exception_handler
+	def get_crawl_data(self):
+		self.cur.execute(f"SELECT {', '.join(self.columns)} FROM crawl WHERE status_code != ''")
+		return self.cur.fetchall()
 
 	@exception_handler
 	def close(self):

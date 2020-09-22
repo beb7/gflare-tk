@@ -342,6 +342,14 @@ class GFlareCrawler:
 			self.urls_total += len(urls)
 		[self.url_queue.put(url) for url in urls]
 
+	def get_crawl_data(self):
+		if self.db_file:
+			db = self.connect_to_db()
+			data = db.get_crawl_data()
+			db.close()
+			return data
+		return []
+
 	def save_config(self, settings):
 		if self.db_file:
 			db = self.connect_to_db()

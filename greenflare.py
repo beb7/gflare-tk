@@ -63,6 +63,7 @@ class mainWindow(Frame):
 		if self.crawler.settings["MODE"] == "Spider": self.spider_mode()
 		elif self.crawler.settings["MODE"] == "List": self.list_mode()
 
+		self.tab_crawl.load_crawl_to_outputtable()
 		self.update_gui()
 
 	def full_export(self):

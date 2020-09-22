@@ -46,11 +46,17 @@ class CrawlTab(Frame):
 
 	def populate_columns(self):
 		columns = ["url", "content_type", "indexability", "status_code", "h1", "page_title", "canonical_tag", "robots_txt", "redirect_url"]
-		if self.crawler.columns: columns = self.crawler.columns
+		if self.crawler.columns: 
+			columns = self.crawler.columns.copy()
+			if 'id' in columns: columns.remove('id')
+			if 'unique_inlinks' in columns: columns.remove('unique_inlinks')
+			print("columns", columns)
 
 		items = [i.title().replace("_", " ") for i in columns]
 		items[items.index("Url")] = "URL"
 		items[items.index("Redirect Url")] = "Redirect URL"
+
+		print("items", items)
 
 		self.treeview_table["columns"] = tuple(items)
 		self.treeview_table.heading("#0", text="id", anchor=W)
@@ -110,6 +116,11 @@ class CrawlTab(Frame):
 		elif btn_txt == "Resume": self.button_crawl["text"] = "Pause"
 		elif btn_txt == "Restart": self.button_crawl["text"] = "Pause"
 
+	def add_item_to_outputtable(self, item):
+		for row in item:
+			self.treeview_table.insert('', 'end', text=self.row_counter, values=row)
+			with self.lock: self.row_counter += 1
+
 	def add_to_outputtable(self):
 		items = []
 		try:
@@ -131,14 +142,18 @@ class CrawlTab(Frame):
 			if item == "END":
 				return
 
-			for row in item:
-				self.treeview_table.insert('', 'end', text=self.row_counter, values=row)
-				with self.lock: self.row_counter += 1
+			self.add_item_to_outputtable(item)
 
 		self.treeview_table.yview_moveto(1)
 		self.update_progressbar()
 		
 		self.after(200, self.add_to_outputtable)
+
+	def load_crawl_to_outputtable(self):
+		items = self.crawler.get_crawl_data()
+		self.clear_output_table()
+		for item in items:
+			self.add_item_to_outputtable([item])
 
 	def update_progressbar(self):
 		with self.lock:
