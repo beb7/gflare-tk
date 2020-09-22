@@ -60,8 +60,10 @@ class mainWindow(Frame):
 		if not db_file: return
 		self.crawler.load_crawl(db_file)
 
-		if self.crawler.settings["MODE"] == "Spider": self.spider_mode()
-		elif self.crawler.settings["MODE"] == "List": self.list_mode()
+		if self.crawler.settings["MODE"] == "Spider": self.master.title(f"{self.crawler.settings['ROOT_DOMAIN']} - Greenflare SEO Crawler")
+		elif self.crawler.settings["MODE"] == "List": 
+			self.master.title(f"List Mode - Greenflare SEO Crawler")
+			self.tab_crawl.show_list_mode()
 
 		self.tab_crawl.load_crawl_to_outputtable()
 		self.update_gui()
