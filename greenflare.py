@@ -10,7 +10,7 @@ from threading import Lock
 from os import path, remove, environ
 from pathlib import Path
 import sys
-
+import argparse
 
 class mainWindow(Frame):
 	def __init__(self, crawler=None):
@@ -54,10 +54,13 @@ class mainWindow(Frame):
 	def reset_ui(self):
 		self.tab_crawl.reset()
 
-	def load_crawl(self):
+	def load_crawl(self, db_file=None):
 		files = [('Greenflare DB', '*.gflaredb'), ('All files', '.*')]
-		db_file = fd.askopenfilename(filetypes=files)
+		
+		if not db_file: db_file = fd.askopenfilename(filetypes=files)
+		# Don't do anything if user does not select a file
 		if not db_file: return
+		
 		self.crawler.load_crawl(db_file)
 
 		if self.crawler.settings["MODE"] == "Spider": self.master.title(f"{self.crawler.settings['ROOT_DOMAIN']} - Greenflare SEO Crawler")
@@ -118,4 +121,15 @@ if __name__ == "__main__":
 	Crawler = GFlareCrawler(settings=Settings, gui_mode=True, lock=globalLock)
 
 	app = mainWindow(crawler=Crawler)
+	
+	# Parse and load db file if provided
+	parser = argparse.ArgumentParser()
+	parser.add_argument("file_path", type=Path, nargs='*')
+
+	p = parser.parse_args()
+
+	if p.file_path and p.file_path[0].exists():
+		app.load_crawl(db_file=p.file_path[0])	
+
+
 	root.mainloop()
