@@ -39,11 +39,12 @@ class CrawlTab(Frame):
 		self.populate_columns()
 		self.row_counter = 1
 
-	def populate_columns(self):
+	def clear_output_table(self):
 		# Clear table
 		self.treeview_table.delete(*self.treeview_table.get_children())
 		self.row_counter = 1
-		
+
+	def populate_columns(self):
 		columns = ["url", "content_type", "indexability", "status_code", "h1", "page_title", "canonical_tag", "robots_txt", "redirect_url"]
 		if self.crawler.columns: columns = self.crawler.columns
 
@@ -76,6 +77,7 @@ class CrawlTab(Frame):
 			self.crawler.settings["STARTING_URL"] = url
 			self.entry_url_input["state"] = "disabled"
 			self.crawler.start_crawl()
+			self.clear_output_table()
 			self.populate_columns()
 			print("db_file", self.crawler.db_file)
 			print("STARTING_URL", self.crawler.settings["STARTING_URL"])
@@ -158,6 +160,7 @@ class CrawlTab(Frame):
 		self.entry_url_input.delete(0, 'end')
 		self.entry_url_input.insert(0, "Enter URL to crawl")
 		self.progressbar["value"] = 0
+		self.clear_output_table()
 		self.populate_columns()
 		self.button_crawl["text"] = "Start"
 
