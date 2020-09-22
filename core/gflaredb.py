@@ -9,7 +9,8 @@ class GFlareDB:
 		self.db_name = db_name
 		self.con, self.cur = self.db_connect()
 		self.con.create_function("REGEXP", 2, self.regexp)
-		self.columns = None
+		self.columns = []
+		self.table_created = False
 		self.crawl_items = crawl_items
 		self.columns_map = {"url": "TEXT type UNIQUE",
 							"content_type": "TEXT",
@@ -30,7 +31,7 @@ class GFlareDB:
 
 		self.populate_columns()
 	
-	def populate_columns(self):
+	def load_columns(self):
 		# Try to load/use existing columns from db if available
 		self.cur.execute("""SELECT * FROM crawl""")
 		self.columns = [description[0] for description in self.cur.description]
@@ -38,6 +39,7 @@ class GFlareDB:
 		# remove id from self.columns
 		self.columns.pop(0)
 
+	def populate_columns(self):
 		if len(self.columns) < 1:
 			self.sql_columns = [(k, v) for k,v in self.columns_map.items() if k in self.crawl_items]
 			self.columns = [k for k in self.columns_map.keys() if k in self.crawl_items]

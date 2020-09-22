@@ -106,6 +106,7 @@ class GFlareCrawler:
 		self.urls_total = db.get_total_urls()
 		self.settings = db.get_settings()
 		db.extractions = self.settings.get("EXTRACTIONS", "")
+		db.load_columns()
 		db.populate_columns()
 		self.columns = db.columns
 		# print("Loaded settings:\n", self.settings)
@@ -218,7 +219,7 @@ class GFlareCrawler:
 			return header
 		except Exception as e:
 			# return [tuple([url, '', 'Timed Out', ''] + [''] * len(self.settings.get("CRAWL_ITEMS", None) - 4 ))]
-			return [tuple([url, '', 'Timed Out', ''] + [''] * (len(self.columns) - 4))]
+			return [tuple([url, '', '0', 'Timed Out'] + [''] * (len(self.columns) - 4))]
 	
 	def add_to_gui_queue(self, data):
 		self.gui_url_queue.put(data)
