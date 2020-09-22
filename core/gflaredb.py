@@ -34,10 +34,9 @@ class GFlareDB:
 		# Try to load/use existing columns from db if available
 		self.cur.execute("""SELECT * FROM crawl""")
 		self.columns = [description[0] for description in self.cur.description]
+		
 		# remove id from self.columns
 		self.columns.pop(0)
-
-		print("Loaded columns:", self.columns)
 
 		if len(self.columns) < 1:
 			self.sql_columns = [(k, v) for k,v in self.columns_map.items() if k in self.crawl_items]

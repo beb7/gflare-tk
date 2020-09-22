@@ -48,15 +48,11 @@ class CrawlTab(Frame):
 		columns = ["url", "content_type", "indexability", "status_code", "h1", "page_title", "canonical_tag", "robots_txt", "redirect_url"]
 		if self.crawler.columns: 
 			columns = self.crawler.columns.copy()
-			if 'id' in columns: columns.remove('id')
-			if 'unique_inlinks' in columns: columns.remove('unique_inlinks')
-			print("columns", columns)
+			# if 'unique_inlinks' in columns: columns.remove('unique_inlinks')
 
 		items = [i.title().replace("_", " ") for i in columns]
 		items[items.index("Url")] = "URL"
 		items[items.index("Redirect Url")] = "Redirect URL"
-
-		print("items", items)
 
 		self.treeview_table["columns"] = tuple(items)
 		self.treeview_table.heading("#0", text="id", anchor=W)

@@ -108,7 +108,7 @@ class GFlareCrawler:
 		db.extractions = self.settings.get("EXTRACTIONS", "")
 		db.populate_columns()
 		self.columns = db.columns
-		print("Loaded settings:\n", self.settings)
+		# print("Loaded settings:\n", self.settings)
 		db.close()
 
 
