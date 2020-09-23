@@ -101,11 +101,11 @@ class mainWindow(Frame):
 		self.tab_exclusions.update()
 		self.tab_extractions.update()
 
-	def open_file_on_macos(*args):
-		global app
-		for f in args:
-			app.load_crawl(db_file=f)
-			break
+def open_file_on_macos(*args):
+	global app
+	for f in args:
+		app.load_crawl(db_file=f)
+		break
 		
 if __name__ == "__main__":
 	if getattr(sys, 'frozen', False): 
