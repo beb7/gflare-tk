@@ -161,7 +161,7 @@ class CrawlTab(Frame):
 			if self.crawler.urls_total > 0:
 				percentage = int((self.crawler.urls_crawled / self.crawler.urls_total) * 100)
 				self.progressbar["value"] = percentage
-				self.style.configure('text.Horizontal.TProgressbar', text=f'{percentage} %')
+				if sys.path != "darwin": self.style.configure('text.Horizontal.TProgressbar', text=f'{percentage} %')
 
 	def update(self):
 		self.button_crawl["text"] = "Resume"
