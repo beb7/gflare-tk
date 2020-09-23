@@ -73,21 +73,29 @@ jobs:
       PYTHONVERMAJOR: << pipeline.parameters.python-ver-macos-major >>
     steps:
       - checkout
-      - run:
-          name: Download python
-          command: curl -O https://www.python.org/ftp/python/${PYTHONVER}/python-${PYTHONVER}-macosx10.9.pkg
+      # - run:
+      #     name: Download python
+      #     command: curl -O https://www.python.org/ftp/python/${PYTHONVER}/python-${PYTHONVER}-macosx10.9.pkg
       - run:
           name: Install python
-          command: sudo installer -pkg python-${PYTHONVER}-macosx10.9.pkg -target /
+          # command: sudo installer -pkg python-${PYTHONVER}-macosx10.9.pkg -target /
+          command: |
+            cd macos/
+            unzip PythonFramework-3.8.pkg.zip
+            unzip PythonInstallPip-3.8.pkg.zip
+            pax -z -p e -r -f PythonFramework-3.8.pkg/Contents/Archive.pax.gz
+            sudo cp -r Versions /Library/Frameworks/Python.framework/
+            sudo ./PythonInstallPip-3.8.pkg/Contents/Resources/postflight
+            cd ..
       # - restore_cache:
       #     keys:
       #       - pip-cache-{{ checksum "requirements.txt" }}
       - run: 
           name: Install dependencies
           command: |
-            python${PYTHONVERMAJOR} -m pip install pip --upgrade
-            python${PYTHONVERMAJOR} -m pip install -r requirements.txt
-            python${PYTHONVERMAJOR} -m pip install py2app==0.22
+            /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install pip --upgrade
+            /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install -r requirements.txt
+            /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install py2app==0.22
       # - save_cache:
       #     key: pip-cache-{{ checksum "requirements.txt" }}
       #     paths:
@@ -95,7 +103,7 @@ jobs:
       - run:
           name: Freeze macOS app
           command: |
-            python${PYTHONVERMAJOR} setup-py2app.py py2app
+            /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 setup-py2app.py py2app
             chmod +x launch-mac
             cp launch-mac dist/Greenflare.app/Contents/MacOS/
             plutil -replace CFBundleExecutable -string launch-mac dist/Greenflare.app/Contents/Info.plist
@@ -104,7 +112,7 @@ jobs:
           command: |
             mkdir results/
             cd dist/
-            hdiutil create ./greenflare-${GFLAREVER}-x86_64-7.dmg -srcfolder Greenflare.app -ov
+            hdiutil create ./greenflare-${GFLAREVER}-x86_64-9.dmg -srcfolder Greenflare.app -ov
             mv greenflare-*.dmg ../results/            
       - store_artifacts:
           path: results/
