@@ -100,6 +100,12 @@ class mainWindow(Frame):
 		self.tab_settings.update()
 		self.tab_exclusions.update()
 		self.tab_extractions.update()
+
+	def open_file_on_macos(*args):
+		global app
+		for f in args:
+			app.load_crawl(db_file=f)
+			break
 		
 if __name__ == "__main__":
 	if getattr(sys, 'frozen', False): 
@@ -121,6 +127,11 @@ if __name__ == "__main__":
 	Crawler = GFlareCrawler(settings=Settings, gui_mode=True, lock=globalLock)
 
 	app = mainWindow(crawler=Crawler)
+
+	# running on macOS
+	if sys.platform == "darwin":
+		# Use TK's Apple Event Handler to react to clicked/open documents
+		root.createcommand("::tk::mac::OpenDocument", open_file_on_macos)
 	
 	# Parse and load db file if provided
 	parser = argparse.ArgumentParser()

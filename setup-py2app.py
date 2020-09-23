@@ -14,10 +14,10 @@ OPTIONS = {
 	'plist': {
 		'CFBundleIconFile': 'greenflare-icon-64x64.icns',
 		'CFBundleIdentifier': 'io.greenflare.crawler',
-		'CFBundleShortVersionString': '0.70.2',
+		'CFBundleShortVersionString': '0.70.3',
 		'CFBundleDocumentTypes': [{'CFBundleTypeExtensions': ["gflaredb"], 'CFBundleTypeName': "Greenflare Crawl DB", 'CFBundleTypeRole': "Editor"}]
 		},
-	'argv_emulation': True
+	'argv_emulation': False
 	}
 
 setup(
