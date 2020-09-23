@@ -97,13 +97,15 @@ jobs:
           command: |
             python${PYTHONVERMAJOR} setup-py2app.py py2app
             chmod +x launch-mac
-            cp launch-mac dist/greenflare.app/Contents/MacOS/
+            cp launch-mac dist/Greenflare.app/Contents/MacOS/
+            sed -e "s/<string>greenflare<\/string>/<string>launch-mac<\/string>/g" dist/Greenflare.app/Contents/Info.plist > dist/Greenflare.app/Contents/Info.plist_new
+            mv dist/Greenflare.app/Contents/Info.plist_new dist/Greenflare.app/Contents/Info.plist
       - run:
           name: Package .dmg app bundle
           command: |
             mkdir results/
             cd dist/
-            hdiutil create ./greenflare-${GFLAREVER}-x86_64-5.dmg -srcfolder greenflare.app -ov
+            hdiutil create ./greenflare-${GFLAREVER}-x86_64-6.dmg -srcfolder Greenflare.app -ov
             mv greenflare-*.dmg ../results/            
       - store_artifacts:
           path: results/

@@ -12,7 +12,7 @@ DATA_FILES = []
 OPTIONS = {
 	'iconfile': 'greenflare-icon-64x64.icns',
 	'plist': {
-		'CFBundleExecutable': 'launch-mac',
+		'CFBundleName': 'Greenflare',
 		'CFBundleIconFile': 'greenflare-icon-64x64.icns',
 		'CFBundleIdentifier': 'io.greenflare.crawler',
 		'CFBundleShortVersionString': '0.70.4',
