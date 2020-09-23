@@ -104,7 +104,7 @@ class mainWindow(Frame):
 def open_file_on_macos(*args):
 	global app
 	for f in args:
-		app.load_crawl(db_file=f)
+		if f.endswith('.gflaredb'): app.load_crawl(db_file=f)
 		break
 		
 if __name__ == "__main__":
