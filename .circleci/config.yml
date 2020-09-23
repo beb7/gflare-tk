@@ -83,7 +83,7 @@ jobs:
             cd macos/
             unzip PythonFramework-3.8.pkg.zip
             unzip PythonInstallPip-3.8.pkg.zip
-            pax -z -p e -r -f PythonFramework-3.8.pkg/Contents/Archive.pax.gz
+            sudo pax -z -p e -r -f PythonFramework-3.8.pkg/Contents/Archive.pax.gz
             sudo cp -r Versions /Library/Frameworks/Python.framework/
             sudo ./PythonInstallPip-3.8.pkg/Contents/Resources/postflight
             cd ..
