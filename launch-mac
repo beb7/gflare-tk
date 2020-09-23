@@ -1,0 +1,5 @@
+#!/bin/sh
+
+CURR_DIR="$( cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+exec "$CURR_DIR/greenflare" > ~/greenflare.log
