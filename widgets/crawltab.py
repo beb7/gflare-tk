@@ -2,16 +2,13 @@ from tkinter import Frame, LEFT, ttk, W, NO, filedialog as fd, messagebox
 from os import path, remove
 from threading import Thread
 import queue
+import sys
 
 class CrawlTab(Frame):
 	def __init__(self, crawler=None):
 		Frame.__init__(self)
 		self.crawler = crawler
 		self.lock = crawler.lock
-
-		self.style = ttk.Style(self)
-		self.style.layout('text.Horizontal.TProgressbar', [('Horizontal.Progressbar.trough', {'children': [('Horizontal.Progressbar.pbar', {'side': 'left', 'sticky': 'ns'})], 'sticky': 'nswe'}), ('Horizontal.Progressbar.label', {'sticky': ''})])
-		self.style.configure('text.Horizontal.TProgressbar', text='0 %')
 
 		self.topframe = Frame(self)
 		self.topframe.pack(anchor='center', padx=20, pady=20, fill="x")
@@ -24,7 +21,15 @@ class CrawlTab(Frame):
 		self.button_crawl = ttk.Button(self.topframe, text="Start", command=self.btn_crawl_pushed)
 		self.button_crawl.pack(side=LEFT, padx=(0, 20))
 
-		self.progressbar = ttk.Progressbar(self.topframe, orient="horizontal", length=150, mode="determinate", maximum=100, value=0, style='text.Horizontal.TProgressbar')
+		# macOS does not support styling the progressbar to include labels (as far as I know)
+		if sys.platform == "darwin":
+			self.progressbar = ttk.Progressbar(self.topframe, orient="horizontal", length=150, mode="determinate", maximum=100, value=0)
+		else:
+			self.style = ttk.Style(self)
+			self.style.layout('text.Horizontal.TProgressbar', [('Horizontal.Progressbar.trough', {'children': [('Horizontal.Progressbar.pbar', {'side': 'left', 'sticky': 'ns'})], 'sticky': 'nswe'}), ('Horizontal.Progressbar.label', {'sticky': ''})])
+			self.style.configure('text.Horizontal.TProgressbar', text='0 %')
+			self.progressbar = ttk.Progressbar(self.topframe, orient="horizontal", length=150, mode="determinate", maximum=100, value=0, style='text.Horizontal.TProgressbar')
+		
 		self.progressbar.pack(side=LEFT, fill="x")
 		
 		self.treeview_table = ttk.Treeview(self, selectmode="browse")
