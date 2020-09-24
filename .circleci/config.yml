@@ -113,7 +113,7 @@ jobs:
           command: |
             mkdir results/
             cd dist/
-            hdiutil create ./greenflare-${GFLAREVER}-x86_64-1.dmg -srcfolder Greenflare.app -ov
+            hdiutil create ./greenflare-${GFLAREVER}-x86_64-2.dmg -srcfolder Greenflare.app -ov
             mv greenflare-*.dmg ../results/            
       - store_artifacts:
           path: results/
