@@ -65,7 +65,7 @@ class mainWindow(Frame):
 
 		if self.crawler.settings["MODE"] == "Spider": self.master.title(f"{self.crawler.settings['ROOT_DOMAIN']} - Greenflare SEO Crawler")
 		elif self.crawler.settings["MODE"] == "List": 
-			self.master.title(f"List Mode - Greenflare SEO Crawler")
+			# self.master.title(f"List Mode - Greenflare SEO Crawler")
 			self.tab_crawl.show_list_mode()
 
 		self.tab_crawl.load_crawl_to_outputtable()
@@ -93,9 +93,6 @@ class mainWindow(Frame):
 		pass
 
 	def update_gui(self):
-
-		self.master.title(f"{self.crawler.settings['ROOT_DOMAIN']} - Greenflare SEO Crawler")
-
 		self.tab_crawl.update()
 		self.tab_settings.update()
 		self.tab_exclusions.update()

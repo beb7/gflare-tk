@@ -88,6 +88,7 @@ class CrawlTab(Frame):
 			self.populate_columns()
 			print("db_file", self.crawler.db_file)
 			print("STARTING_URL", self.crawler.settings["STARTING_URL"])
+			self.master.title(f"{self.crawler.gf.get_domain(self.crawler.settings['STARTING_URL'])} - Greenflare SEO Crawler")
 
 			self.after(10, self.add_to_outputtable)
 			self.after(10, self.change_btn_text)
@@ -182,6 +183,7 @@ class CrawlTab(Frame):
 
 	def show_list_mode(self):
 		self.reset()
+		self.master.title(f"List Mode - Greenflare SEO Crawler")
 		self.entry_url_input.delete(0, 'end')
 		self.entry_url_input.insert(0, "List Mode ...")
 		self.entry_url_input["state"] = "disabled"
