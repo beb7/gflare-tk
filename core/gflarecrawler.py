@@ -72,8 +72,7 @@ class GFlareCrawler:
 		# Reset response object
 		self.gf = gf(self.settings, columns=None)
 		
-		self.columns = db.columns
-		self.gf.all_items = self.columns
+		self.columns = self.gf.all_items = db.get_columns()
 
 		if self.settings["MODE"] == "Spider":
 			if not self.settings["STARTING_URL"].endswith("/"): self.settings["STARTING_URL"] += "/"
@@ -106,9 +105,9 @@ class GFlareCrawler:
 		self.urls_total = db.get_total_urls()
 		self.settings = db.get_settings()
 		db.extractions = self.settings.get("EXTRACTIONS", "")
-		db.load_columns()
-		db.populate_columns()
-		self.columns = db.columns
+		# db.load_columns()
+		# db.populate_columns()
+		self.columns = db.columns.copy()
 		# print("Loaded settings:\n", self.settings)
 		db.close()
 
@@ -134,7 +133,8 @@ class GFlareCrawler:
 
 		db = self.connect_to_db()
 		db.extractions = self.settings.get("EXTRACTIONS", "")
-		db.populate_columns()
+		# # db.populate_columns()
+		# db.load_columns()
 		# db.add_remove_columns()
 
 		self.reset_crawl()
@@ -143,7 +143,7 @@ class GFlareCrawler:
 		self.urls_total = db.get_total_urls()
 
 		# Reset response object
-		self.gf = gf(self.settings, columns=db.columns)
+		self.gf = gf(self.settings, columns=db.get_columns())
 
 		if self.settings['MODE'] != 'List':
 			self.request_robots_txt()
@@ -153,6 +153,7 @@ class GFlareCrawler:
 		# Reinit URL queue
 		self.add_to_url_queue(db.get_url_queue(), count=False)
 
+		db.commit()
 		db.close()
 
 		self.start_consumer()

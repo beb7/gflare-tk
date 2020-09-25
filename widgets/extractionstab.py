@@ -64,6 +64,9 @@ class ExtractionsTab(Frame):
 			name = children[0].get()
 			selector = children[1].get()
 			value = children[2].get()
+
+			# Ignore empty extractions (such as the default) and do not attempt to save them
+			if not value: continue
 		
 			col_name = name.lower().replace(" ", "_")
 			
@@ -71,8 +74,8 @@ class ExtractionsTab(Frame):
 			if col_name in self.crawler.settings.get("CRAWL_ITEMS", ""): col_name += "_custom"
 			extractions[col_name] = {"selector": selector, "value": value}
 
-		self.crawler.settings["EXTRACTIONS"] = extractions		
-
+		# Only save extractions if there are any
+		if extractions: self.crawler.settings["EXTRACTIONS"] = extractions
 
 	def update(self):
 		

@@ -7,11 +7,7 @@ import re
 class GFlareDB:
 	def __init__(self, db_name, crawl_items=None, extractions=None):
 		self.db_name = db_name
-		self.con, self.cur = self.db_connect()
-		self.con.create_function("REGEXP", 2, self.regexp)
-		self.columns = []
-		self.table_created = False
-		self.crawl_items = crawl_items
+
 		self.columns_map = {"url": "TEXT type UNIQUE",
 							"content_type": "TEXT",
 							"status_code": "INT",
@@ -27,33 +23,46 @@ class GFlareDB:
 							"x_robots_tag": "TEXT",
 							"unique_inlinks": "INT"
 							}
+
+		self.crawl_items = crawl_items
 		self.extractions = extractions
-
-		self.populate_columns()
-	
-	def load_columns(self):
-		# Try to load/use existing columns from db if available
-		self.cur.execute("""SELECT * FROM crawl""")
-		self.columns = [description[0] for description in self.cur.description]
-		
-		# remove id from self.columns
-		self.columns.pop(0)
-
-	def populate_columns(self):
-		if len(self.columns) < 1:
-			self.sql_columns = [(k, v) for k,v in self.columns_map.items() if k in self.crawl_items]
-			self.columns = [k for k in self.columns_map.keys() if k in self.crawl_items]
-
-		# Add extractions
-		if self.extractions: 
-			extraction_columns = [k.lower().replace(' ', '_') for k in self.extractions.keys()]
-			self.columns += extraction_columns
-			self.sql_columns += [(k, 'TEXT') for k in extraction_columns]
-
+		self.con, self.cur = self.db_connect()
+		self.con.create_function("REGEXP", 2, self.regexp)
+		self.columns = self.get_columns()
 		self.columns_total = len(self.columns)
+		self.table_created = False
+	
+	def check_if_table_exists(self, table_name):
+		self.cur.execute(f"SELECT count(*) FROM sqlite_master WHERE type='table' AND name='{table_name}'")
+		result = self.cur.fetchone()[0]
+		return result
+
+	def load_columns(self):
+		print("REPLACE me with get_columns()!")
+
+	def get_columns(self):
+		if self.check_if_table_exists("crawl") == 0:
+			if not self.crawl_items: self.crawl_items = []
+			if not self.extractions: self.extractions = {}
+			out = [k for k in self.columns_map.keys() if k in self.crawl_items] + [k.lower().replace(' ', '_') for k in self.extractions.keys()]
+			print("get_columns:", out)
+			return out
+		else:
+			self.cur.execute("""SELECT * FROM crawl""")
+			out = [description[0] for description in self.cur.description]
+			# remove id from our output
+			out.pop(0)
+			print("loaded columns", out)
+			return out
+
+	def get_sql_columns(self):
+		if not self.crawl_items: self.crawl_items = []
+		if not self.extractions: self.extractions = {}
+		out = [(k, v) for k,v in self.columns_map.items() if k in self.crawl_items] + [(k.lower().replace(' ', '_'), 'TEXT') for k in self.extractions.keys()]
+		print("get_sql_columns:", out)
+		return out
 
 	def create(self):
-		self.populate_columns()
 		self.create_data_table()
 		self.create_config_table()
 		self.create_inlinks_table()
@@ -96,7 +105,7 @@ class GFlareDB:
 
 	@exception_handler
 	def create_data_table(self):
-		query = f"CREATE TABLE IF NOT EXISTS crawl(id INTEGER PRIMARY KEY, {self.items_to_sql(self.sql_columns)})"
+		query = f"CREATE TABLE IF NOT EXISTS crawl(id INTEGER PRIMARY KEY, {self.items_to_sql(self.get_sql_columns())})"
 		self.cur.execute(query)
 		self.cur.execute("CREATE INDEX IF NOT EXISTS url_index ON crawl (url);")
 
