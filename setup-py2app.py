@@ -10,7 +10,7 @@ from setuptools import setup
 APP = ['greenflare.py']
 DATA_FILES = []
 OPTIONS = {
-	'iconfile': 'greenflare-icon-64x64.icns',
+	'iconfile': 'greenflare-icon-64x64.png',
 	'plist': {
 		'CFBundleName': 'Greenflare',
 		'CFBundleIconFile': 'greenflare-icon-64x64.png',
