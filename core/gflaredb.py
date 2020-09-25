@@ -31,43 +31,7 @@ class GFlareDB:
 		self.columns = self.get_columns()
 		self.columns_total = len(self.columns)
 		self.table_created = False
-	
-	def check_if_table_exists(self, table_name):
-		self.cur.execute(f"SELECT count(*) FROM sqlite_master WHERE type='table' AND name='{table_name}'")
-		result = self.cur.fetchone()[0]
-		return result
-
-	def load_columns(self):
-		print("REPLACE me with get_columns()!")
-
-	def get_columns(self):
-		if self.check_if_table_exists("crawl") == 0:
-			if not self.crawl_items: self.crawl_items = []
-			if not self.extractions: self.extractions = {}
-			out = [k for k in self.columns_map.keys() if k in self.crawl_items] + [k.lower().replace(' ', '_') for k in self.extractions.keys()]
-			print("get_columns:", out)
-			return out
-		else:
-			self.cur.execute("""SELECT * FROM crawl""")
-			out = [description[0] for description in self.cur.description]
-			# remove id from our output
-			out.pop(0)
-			print("loaded columns", out)
-			return out
-
-	def get_sql_columns(self):
-		if not self.crawl_items: self.crawl_items = []
-		if not self.extractions: self.extractions = {}
-		out = [(k, v) for k,v in self.columns_map.items() if k in self.crawl_items] + [(k.lower().replace(' ', '_'), 'TEXT') for k in self.extractions.keys()]
-		print("get_sql_columns:", out)
-		return out
-
-	def create(self):
-		self.create_data_table()
-		self.create_config_table()
-		self.create_inlinks_table()
-		self.create_extractions_table()
-
+		
 	def exception_handler(func):
 		@functools.wraps(func)
 		def wrapper(*args, **kwargs):
@@ -79,6 +43,61 @@ class GFlareDB:
 				print(f"kwargs: {kwargs}")
 				print(e)
 		return wrapper
+
+	@exception_handler
+	def check_if_table_exists(self, table_name):
+		self.cur.execute(f"SELECT count(*) FROM sqlite_master WHERE type='table' AND name='{table_name}'")
+		result = self.cur.fetchone()[0]
+		return result
+
+	@exception_handler
+	def load_columns(self):
+		print("REPLACE me with get_columns()!")
+	
+	@exception_handler
+	def get_soft_columns(self):
+		if not self.crawl_items: self.crawl_items = []
+		if not self.extractions: self.extractions = {}
+		return [k for k in self.columns_map.keys() if k in self.crawl_items] + [k.lower().replace(' ', '_') for k in self.extractions.keys()]
+
+	@exception_handler
+	def get_table_columns(self):
+		self.cur.execute("""SELECT * FROM crawl""")
+		out = [description[0] for description in self.cur.description]
+		
+		# remove id from our output
+		out.pop(0)
+		return out
+
+	@exception_handler
+	def get_columns(self):
+		if self.check_if_table_exists("crawl") == 0:
+			out = self.get_soft_columns()
+			print("get_columns:", out)
+			return out
+		
+		out = self.get_table_columns()
+		print("loaded columns", out)
+		return out
+
+	@exception_handler
+	def get_sql_columns(self):
+		if not self.crawl_items: self.crawl_items = []
+		if not self.extractions: self.extractions = {}
+		out = [(k, v) for k,v in self.columns_map.items() if k in self.crawl_items] + [(k.lower().replace(' ', '_'), 'TEXT') for k in self.extractions.keys()]
+		print("get_sql_columns:", out)
+		return out
+	
+	@exception_handler
+	def update_table_columns(self):
+		soft_columns = self.get_soft_columns()
+		table_columns = self.get_table_columns()
+
+	def create(self):
+		self.create_data_table()
+		self.create_config_table()
+		self.create_inlinks_table()
+		self.create_extractions_table()
 	
 	def timer(func):
 	    @functools.wraps(func)
@@ -340,7 +359,3 @@ class GFlareDB:
 				self.insert_crawl_data([redirect], new=False)
 			else:
 				self.insert_crawl_data([redirect], new=True)
-
-	@exception_handler
-	def add_remove_columns(self):
-		print("FIXME: Not implemented yet")

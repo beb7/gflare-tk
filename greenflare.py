@@ -65,7 +65,6 @@ class mainWindow(Frame):
 
 		if self.crawler.settings["MODE"] == "Spider": self.master.title(f"{self.crawler.settings['ROOT_DOMAIN']} - Greenflare SEO Crawler")
 		elif self.crawler.settings["MODE"] == "List": 
-			# self.master.title(f"List Mode - Greenflare SEO Crawler")
 			self.tab_crawl.show_list_mode()
 
 		self.tab_crawl.load_crawl_to_outputtable()
@@ -115,7 +114,7 @@ if __name__ == "__main__":
 	
 	# macOS tkinter cannot handle iconphotos at the time being, disabling it for now
 	if sys.platform != "darwin":
-		root.iconphoto(False, tk.PhotoImage(file=WorkingDir + path.sep + 'greenflare-icon-64x64.png'))
+		root.iconphoto(False, tk.PhotoImage(file=WorkingDir + path.sep + 'greenflare-icon-32x32.png'))
 
 	globalLock = Lock()
 	crawl_items = ["url", "content_type", "status_code", "indexability", "page_title", "meta_description", "h1", "h2", "unique_inlinks", "canonicals", "canonical_tag", "robots_txt", "redirect_url", "meta_robots", "x_robots_tag", "respect_robots_txt", "report_on_status", "follow_blocked_redirects"]
