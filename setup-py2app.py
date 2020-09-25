@@ -13,9 +13,9 @@ OPTIONS = {
 	'iconfile': 'greenflare-icon-64x64.icns',
 	'plist': {
 		'CFBundleName': 'Greenflare',
-		'CFBundleIconFile': 'greenflare-icon-64x64.icns',
+		'CFBundleIconFile': 'greenflare-icon-64x64.png',
 		'CFBundleIdentifier': 'io.greenflare.crawler',
-		'CFBundleShortVersionString': '0.70.9',
+		'CFBundleShortVersionString': '0.75.2',
 		'CFBundleDocumentTypes': [{'CFBundleTypeExtensions': ["gflaredb"], 'CFBundleTypeName': "Greenflare Crawl DB", 'CFBundleTypeRole': "Editor"}]
 		},
 	'argv_emulation': False
