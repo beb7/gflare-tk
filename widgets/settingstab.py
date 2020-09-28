@@ -23,7 +23,7 @@ class SettingsTab(Frame):
 		self.label_threads =  ttk.Label(self.group_crawler, text="Threads")
 		self.label_threads.grid(row=0, column=0, sticky=W)
 
-		self.spinbox_threads = ttk.Spinbox(self.group_crawler, from_=1, to=20, state="readonly", width=5, command=self.save_threads)
+		self.spinbox_threads = ttk.Spinbox(self.group_crawler, from_=1, to=100, state="readonly", width=5, command=self.save_threads)
 		self.spinbox_threads.set("5")
 		self.spinbox_threads.grid(row=0, column=1, padx=15, pady=5, sticky=E)
 
