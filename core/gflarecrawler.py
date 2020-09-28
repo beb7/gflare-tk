@@ -208,11 +208,14 @@ class GFlareCrawler:
 		header = None
 		body = None
 
+		# timeout (connection, response)
+		timeout = (3, 2)
+
 		try:
 			if self.header_only: return self.session.head(url, headers=self.HEADERS, timeout=3) 
-			header = self.session.head(url, headers=self.HEADERS, timeout=5)
+			header = self.session.head(url, headers=self.HEADERS, timeout=timeout)
 			if "text" in header.headers.get("content-type", ""):
-				body = self.session.get(url, headers=self.HEADERS, timeout=5)
+				body = self.session.get(url, headers=self.HEADERS, timeout=timeout)
 				return body
 			return header
 		except exceptions.TooManyRedirects:
@@ -338,6 +341,7 @@ class GFlareCrawler:
 		db.close()
 
 		self.crawl_running.set()
+		self.session.close()
 		print("Consumer thread finished")
 
 	def add_to_url_queue(self, urls, count=True):
