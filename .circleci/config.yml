@@ -3,7 +3,7 @@ version: 2.1
 parameters:
   greenflare-release:
     type: string
-    default: "0.76"
+    default: "0.77"
   python-ver-macos:
     type: string
     default: "3.8.5"
@@ -113,7 +113,7 @@ jobs:
           command: |
             mkdir results/
             cd dist/
-            hdiutil create ./greenflare-${GFLAREVER}-x86_64-2.dmg -srcfolder Greenflare.app -ov
+            hdiutil create ./greenflare-${GFLAREVER}-x86_64-1.dmg -srcfolder Greenflare.app -ov
             mv greenflare-*.dmg ../results/            
       - store_artifacts:
           path: results/
@@ -122,4 +122,4 @@ workflows:
     jobs:
       # - ubuntu-build
       # - windows-build
-      # - macos-build
+      - macos-build
