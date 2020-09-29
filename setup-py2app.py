@@ -10,12 +10,12 @@ from setuptools import setup
 APP = ['greenflare.py']
 DATA_FILES = []
 OPTIONS = {
-	'iconfile': 'greenflare-icon-64x64.icns',
+	'iconfile': 'greenflare-icon-256x256.icns',
 	'plist': {
 		'CFBundleName': 'Greenflare',
-		'CFBundleIconFile': 'greenflare-icon-64x64.icns',
+		'CFBundleIconFile': 'greenflare-icon-256x256.icns',
 		'CFBundleIdentifier': 'io.greenflare.crawler',
-		'CFBundleShortVersionString': '0.75.2',
+		'CFBundleShortVersionString': '0.76.2',
 		'CFBundleDocumentTypes': [{'CFBundleTypeExtensions': ["gflaredb"], 'CFBundleTypeName': "Greenflare Crawl DB", 'CFBundleTypeRole': "Editor"}]
 		},
 	'argv_emulation': False
