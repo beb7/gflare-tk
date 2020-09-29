@@ -11,12 +11,13 @@ import threading
 import sys, os 
 
 class GFlareCrawler:
-	def __init__(self, settings=None, gui_mode=False, lock=None):
+	def __init__(self, settings=None, gui_mode=False, lock=None, stats=True):
 		self.data_queue = queue.Queue()
 		self.url_queue = queue.Queue()
 		self.gui_url_queue = None
 		self.gui_mode = gui_mode
 		self.lock = lock
+		self.stats = stats
 
 		self.list_mode_urls = None
 
@@ -31,7 +32,8 @@ class GFlareCrawler:
 		self.worker_status = []
 		self.db_file = None
 
-		self.url_per_second_limit = 0
+		self.parallel_requests_limit = 0
+		self.current_urls_per_second = 0
 		self.urls_crawled = 0
 		self.urls_total = 0
 		self.HEADERS = ""
@@ -64,7 +66,7 @@ class GFlareCrawler:
 		
 		# Set speed limit
 		if int(self.settings.get("URLS_PER_SECOND", 0)) > 0:
-			self.url_per_second_limit = (1 / int(self.settings["URLS_PER_SECOND"])) * int(self.settings["THREADS"])
+			self.parallel_requests_limit = (1 / int(self.settings["URLS_PER_SECOND"])) * int(self.settings["THREADS"])
 
 		db = self.connect_to_db()
 		db.create()
@@ -117,6 +119,7 @@ class GFlareCrawler:
 		if self.settings['MODE'] != 'List':
 			self.data_queue = queue.Queue()
 			self.url_queue = queue.Queue()
+			self.timestamps_queue = queue.Queue()
 		self.crawl_running.clear()
 		self.robots_txt_found.clear()
 		
@@ -171,6 +174,7 @@ class GFlareCrawler:
 				tname = f"worker-{i}"
 				t = Thread(target=self.crawl_worker, name=tname, args=(tname,))
 				t.start()
+		if self.stats: Thread(target=self.urls_per_second_stats, name="stats").start()
 
 	def wait_for_threads(self):
 		ts = threading.enumerate()
@@ -180,6 +184,13 @@ class GFlareCrawler:
 		if self.gui_mode: self.gui_url_queue.put("END")
 		print("All workers joined ...")
 
+	def urls_per_second_stats(self):
+		while self.crawl_running.is_set() == False:
+			with self.lock:
+				old = self.urls_crawled
+			sleep(1)
+			with self.lock:
+				self.current_urls_per_second = self.urls_crawled - old
 
 	def init_session(self):
 		"""
@@ -222,7 +233,6 @@ class GFlareCrawler:
 			print(f"{url} has too many redirects")
 			return header
 		except Exception as e:
-			# return [tuple([url, '', 'Timed Out', ''] + [''] * len(self.settings.get("CRAWL_ITEMS", None) - 4 ))]
 			return [tuple([url, '', '0', 'Timed Out'] + [''] * (len(self.columns) - 4))]
 	
 	def add_to_gui_queue(self, data):
@@ -231,7 +241,6 @@ class GFlareCrawler:
 	def crawl_worker(self, name):
 		busy = Event()
 		with self.lock:
-			url_per_second_limit = self.url_per_second_limit
 			self.worker_status.append(busy)
 		
 		while self.crawl_running.is_set() == False:
@@ -239,6 +248,12 @@ class GFlareCrawler:
 			if url == "END": break
 
 			busy.set()
+
+			# Delay crawl artificial for request rate limiting
+			# with self.lock:
+			# 	print(f"{name} sleeping for {self.parallel_requests_limit}")
+			# 	if self.parallel_requests_limit > 0: sleep(self.parallel_requests_limit)
+			
 			response = self.crawl_url(url)
 			
 			if response == None:
