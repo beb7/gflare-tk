@@ -191,6 +191,8 @@ class GFlareCrawler:
 			sleep(1)
 			with self.lock:
 				self.current_urls_per_second = self.urls_crawled - old
+		with self.lock:
+			self.current_urls_per_second = 0
 
 	def init_session(self):
 		"""
