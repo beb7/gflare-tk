@@ -12,9 +12,9 @@ from pathlib import Path
 import sys
 import argparse
 
-class mainWindow(Frame):
+class mainWindow(ttk.Frame):
 	def __init__(self, crawler=None):
-		Frame.__init__(self)
+		ttk.Frame.__init__(self)
 		
 		self.crawler = crawler
 		self.tab_parent = ttk.Notebook()
@@ -138,6 +138,5 @@ if __name__ == "__main__":
 
 	if p.file_path and p.file_path[0].exists():
 		app.load_crawl(db_file=p.file_path[0])	
-
 
 	root.mainloop()

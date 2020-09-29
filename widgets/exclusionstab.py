@@ -1,15 +1,15 @@
-from tkinter import Frame, ttk, LEFT, RIGHT
+from tkinter import ttk, LEFT, RIGHT
 from re import escape
 
-class ExclusionsTab(Frame):
+class ExclusionsTab(ttk.Frame):
 	def __init__(self, crawler=None):
-		Frame.__init__(self)
+		ttk.Frame.__init__(self)
 		self.crawler = crawler
 		self.widgets = []
 		self.bind("<FocusOut>", self.save_inexes)
 		self.pack()
 
-		self.topframe = Frame(self)
+		self.topframe = ttk.Frame(self)
 		self.topframe.pack(anchor='center', padx=20, pady=20, fill="x")
 
 		self.button_add = ttk.Button(self.topframe, text="+", command=self.add_inex_widget)
@@ -25,7 +25,7 @@ class ExclusionsTab(Frame):
 		
 		pad_x = (0, 10)
 
-		self.widgets.append(Frame(self))
+		self.widgets.append(ttk.Frame(self))
 		self.widgets[-1].pack(anchor='center', padx=20, pady=20, fill="x")
 		self.combobox_inexclude = ttk.Combobox(self.widgets[-1], values=['Exclude'], state="readonly")
 		self.combobox_inexclude.current(0)

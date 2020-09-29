@@ -1,16 +1,16 @@
-from tkinter import Frame, LEFT, RIGHT, ttk, W, NO, filedialog as fd, messagebox, StringVar
+from tkinter import LEFT, RIGHT, ttk, W, NO, filedialog as fd, messagebox, StringVar
 from os import path, remove
 from threading import Thread
 import queue
 import sys
 
-class CrawlTab(Frame):
+class CrawlTab(ttk.Frame):
 	def __init__(self, crawler=None):
-		Frame.__init__(self)
+		ttk.Frame.__init__(self)
 		self.crawler = crawler
 		self.lock = crawler.lock
 
-		self.topframe = Frame(self)
+		self.topframe = ttk.Frame(self)
 		self.topframe.pack(anchor='center', padx=20, pady=20, fill="x")
 
 		self.entry_url_input = ttk.Entry(self.topframe)
@@ -32,7 +32,7 @@ class CrawlTab(Frame):
 		
 		self.progressbar.pack(side=LEFT, fill="x")
 		
-		self.middle_frame = Frame(self)
+		self.middle_frame = ttk.Frame(self)
 		self.middle_frame.pack(anchor='center', fill='y', expand=1)
 
 		self.treeview_table = ttk.Treeview(self.middle_frame, selectmode="browse")
@@ -44,7 +44,7 @@ class CrawlTab(Frame):
 		self.treeview_table.configure(yscrollcommand=self.scrollbar_vertical.set, xscrollcommand=self.scrollbar_horizontal.set)
 		self.treeview_table.pack(fill="both", expand=1)
 
-		self.bottom_frame = Frame(self)
+		self.bottom_frame = ttk.Frame(self)
 		self.bottom_frame.pack(anchor='center', padx=5, pady=5, fill='x')
 
 		self.urls_string_var = StringVar()

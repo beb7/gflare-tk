@@ -1,16 +1,16 @@
-from tkinter import Frame, ttk, LEFT, W, E, NW, LabelFrame, Checkbutton, StringVar
+from tkinter import ttk, LEFT, W, E, NW, LabelFrame, Checkbutton, StringVar
 from .checkboxgroup import CheckboxGroup
 
-class SettingsTab(Frame):
+class SettingsTab(ttk.Frame):
 	def __init__(self, crawler=None):
-		Frame.__init__(self)
+		ttk.Frame.__init__(self)
 
 		self.crawler = crawler
 
 		"""
 		First row
 		"""
-		self.frame_first = Frame(self)
+		self.frame_first = ttk.Frame(self)
 		self.frame_first.grid(row=0, column=0, sticky=W, padx=10, pady=10)
 
 
@@ -83,7 +83,7 @@ class SettingsTab(Frame):
 		"""
 		Second row
 		"""
-		self.frame_second = Frame(self)
+		self.frame_second = ttk.Frame(self)
 		self.frame_second.grid(row=1, column=0, sticky=W, padx=10, pady=10)
 
 		"""

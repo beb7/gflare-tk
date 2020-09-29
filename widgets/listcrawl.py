@@ -1,9 +1,9 @@
-from tkinter import Frame, LEFT, RIGHT, Toplevel, ttk, Text, messagebox
+from tkinter import LEFT, RIGHT, Toplevel, ttk, Text, messagebox
 import urllib.parse
 
-class ListModeWindow(Frame):	
+class ListModeWindow(ttk.Frame):	
 	def __init__(self, crawler=None, crawl_tab=None, root=None):
-		Frame.__init__(self)
+		ttk.Frame.__init__(self)
 
 		self.crawler = crawler
 		self.crawl_tab = crawl_tab
@@ -12,13 +12,13 @@ class ListModeWindow(Frame):
 		self.list_crawl_window.resizable(False, False)
 		self.list_crawl_window.title("Greenflare SEO Crawler - List Mode Input URLs")
 
-		self.top_frame = Frame(self.list_crawl_window)
+		self.top_frame = ttk.Frame(self.list_crawl_window)
 		self.top_frame.pack(anchor='center', padx=5, pady=5, fill='x')
 
-		self.middle_frame = Frame(self.list_crawl_window)
+		self.middle_frame = ttk.Frame(self.list_crawl_window)
 		self.middle_frame.pack(anchor='center', padx=5, pady=5, fill='x')
 
-		self.bottom_frame = Frame(self.list_crawl_window)
+		self.bottom_frame = ttk.Frame(self.list_crawl_window)
 		self.bottom_frame.pack(anchor='center', padx=5, pady=5, fill='x')
 
 		self.label_input = ttk.Label(self.top_frame, text="Enter or paste URLs to spider list crawl, one per line.")
