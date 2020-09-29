@@ -69,6 +69,7 @@ class mainWindow(Frame):
 
 		self.tab_crawl.load_crawl_to_outputtable()
 		self.update_gui()
+		self.tab_crawl.update_bottom_stats()
 
 	def full_export(self):
 		files = [('CSV files', '*.csv')]
