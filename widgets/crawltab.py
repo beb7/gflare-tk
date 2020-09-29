@@ -1,4 +1,4 @@
-from tkinter import Frame, LEFT, ttk, W, NO, filedialog as fd, messagebox
+from tkinter import Frame, LEFT, RIGHT, ttk, W, NO, filedialog as fd, messagebox, StringVar
 from os import path, remove
 from threading import Thread
 import queue
@@ -40,6 +40,19 @@ class CrawlTab(Frame):
 		self.scrollbar_horizontal.pack(side="bottom", fill="x")
 		self.treeview_table.configure(yscrollcommand=self.scrollbar_vertical.set, xscrollcommand=self.scrollbar_horizontal.set)
 		self.treeview_table.pack(fill="both", expand=1)
+
+		self.bottom_frame = Frame(self)
+		self.bottom_frame.pack(anchor='center', padx=5, pady=5, fill='x')
+
+		self.urls_string_var = StringVar()
+		self.urls_string_var.set("Speed: - URL/s")
+		self.label_urls_per_second = ttk.Label(self.bottom_frame, textvariable=self.urls_string_var)
+		self.label_urls_per_second.pack(side=LEFT)
+
+		self.urls_crawled_string_var = StringVar()
+		self.urls_crawled_string_var.set("URLs crawled/discovered: 0/0")
+		self.label_urls_crawled = ttk.Label(self.bottom_frame, textvariable=self.urls_crawled_string_var)
+		self.label_urls_crawled.pack(side=RIGHT)
 
 		self.populate_columns()
 		self.row_counter = 1
@@ -125,6 +138,7 @@ class CrawlTab(Frame):
 
 	def add_to_outputtable(self):
 		items = []
+		end = False
 		try:
 			while not self.crawler.gui_url_queue.empty():
 				items.append(self.crawler.gui_url_queue.get_nowait())
@@ -136,26 +150,31 @@ class CrawlTab(Frame):
 				self.update_progressbar()
 				self.button_crawl["text"] = "Restart"
 				messagebox.showinfo(title='Crawl completed', message=f'Crawl of {self.crawler.settings.get("ROOT_DOMAIN", "")} has been completed successfully!')
-				return
+				end = True
+				continue
 			if item == "CRAWL_TIMED_OUT":
 				messagebox.showerror(title='Error - Timed Out', message=f'Crawl timed out!')
 				self.button_crawl["text"] = "Restart"
-				return
+				end = True
+				continue
 			if item == "END":
-				return
+				end = True
+				continue
 
 			self.add_item_to_outputtable(item)
 
 		self.treeview_table.yview_moveto(1)
 		self.update_progressbar()
+		self.update_bottom_stats()
 		
+		if end: return
 		self.after(200, self.add_to_outputtable)
 
 	def load_crawl_to_outputtable(self):
 		items = self.crawler.get_crawl_data()
 		self.clear_output_table()
 		for item in items:
-			self.add_item_to_outputtable([item])
+			self.add_item_to_outputtable([item])		
 
 	def update_progressbar(self):
 		with self.lock:
@@ -163,6 +182,11 @@ class CrawlTab(Frame):
 				percentage = int((self.crawler.urls_crawled / self.crawler.urls_total) * 100)
 				self.progressbar["value"] = percentage
 				if sys.platform != "darwin": self.style.configure('text.Horizontal.TProgressbar', text=f'{percentage} %')
+
+	def update_bottom_stats(self):
+		with self.lock:
+			self.urls_string_var.set(f"Speed: {self.crawler.current_urls_per_second} URL/s")
+			self.urls_crawled_string_var.set(f"URLs crawled/discovered: {self.crawler.urls_crawled}/{self.crawler.urls_total}")
 
 	def update(self):
 		self.button_crawl["text"] = "Resume"
