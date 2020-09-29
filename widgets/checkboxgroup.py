@@ -1,6 +1,6 @@
-from tkinter import W, LabelFrame, ttk, IntVar
+from tkinter import W, ttk, IntVar
 
-class CheckboxGroup(LabelFrame):
+class CheckboxGroup(ttk.LabelFrame):
 	def __init__(self, parent, text, boxes, settings, column):
 		self.parent = parent
 		self.boxes = boxes
@@ -8,7 +8,7 @@ class CheckboxGroup(LabelFrame):
 		self.settings = settings
 		self.column = column
 
-		LabelFrame.__init__(self, self.parent, text=self.text)
+		ttk.LabelFrame.__init__(self, self.parent, text=self.text)
 
 		self.widgets = []
 		self.vars = []

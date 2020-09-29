@@ -1,4 +1,4 @@
-from tkinter import ttk, LEFT, W, E, NW, LabelFrame, Checkbutton, StringVar
+from tkinter import ttk, LEFT, W, E, NW, Checkbutton, StringVar
 from .checkboxgroup import CheckboxGroup
 
 class SettingsTab(ttk.Frame):
@@ -17,7 +17,7 @@ class SettingsTab(ttk.Frame):
 		"""
 		Crawler Group
 		"""	
-		self.group_crawler = LabelFrame(self.frame_first, text="Crawler", padx=5, pady=5)
+		self.group_crawler = ttk.LabelFrame(self.frame_first, text="Crawler")
 		self.group_crawler.grid(row=0, column=0, sticky=W, padx=10, pady=10)
 
 		self.label_threads =  ttk.Label(self.group_crawler, text="Threads")
@@ -52,7 +52,7 @@ class SettingsTab(ttk.Frame):
 		self.combobox_ua.current(0)
 		self.combobox_ua.grid(row=3, column=1, padx=15, pady=5, sticky=E)
 
-		self.group_network = LabelFrame(self.frame_first, text="Proxy", padx=5, pady=5)
+		self.group_network = ttk.LabelFrame(self.frame_first, text="Proxy")
 		self.group_network.grid(row=0, column=1, sticky=W, padx=10, pady=10)
 
 		self.label_host = ttk.Label(self.group_network, text="Host")
