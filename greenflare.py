@@ -104,6 +104,11 @@ def open_file_on_macos(*args):
 	for f in args:
 		if f.endswith('.gflaredb'): app.load_crawl(db_file=f)
 		break
+
+def on_closing():
+	global Crawler
+	Crawler.end_crawl_gracefully()
+	root.destroy()
 		
 if __name__ == "__main__":
 	if getattr(sys, 'frozen', False): 
@@ -139,5 +144,6 @@ if __name__ == "__main__":
 
 	if p.file_path and p.file_path[0].exists():
 		app.load_crawl(db_file=p.file_path[0])	
-
+	
+	root.protocol("WM_DELETE_WINDOW", on_closing)
 	root.mainloop()
