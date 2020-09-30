@@ -158,10 +158,9 @@ class GFlareResponse:
 				if "http" not in onpage_url_components["scheme"]:
 					continue
 
-				if "external_links" not in self.settings.get("CRAWL_LINKS", ""):
-					if self.get_domain(onpage_url) != "":
-						if self.is_external(onpage_url):
-							continue				
+				# Check external links if wanted
+				if "external_links" not in self.settings.get("CRAWL_ITEMS", "") and self.get_domain(onpage_url) != "" and self.is_external(onpage_url):
+					continue
 
 				# Avoid duplicate URLs
 				if onpage_url in valid_links:
@@ -171,9 +170,8 @@ class GFlareResponse:
 					continue
 
 				# Do not check and report on on-page links 
-				if "check_blocked_urls" not in self.settings.get("ROBOTS_SETTINGS", ""):
-					if self.allowed_by_robots_txt(onpage_url) == False:
-						continue
+				if "check_blocked_urls" not in self.settings.get("CRAWL_ITEMS", "") and self.allowed_by_robots_txt(onpage_url) == False:
+					continue
 
 				if " " in onpage_url:
 					print("Critical flaw in parsing URL see below")
