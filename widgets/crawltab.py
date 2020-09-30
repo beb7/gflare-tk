@@ -152,7 +152,10 @@ class CrawlTab(ttk.Frame):
 			if item == "CRAWL_COMPLETED":
 				self.update_progressbar()
 				self.button_crawl["text"] = "Restart"
-				messagebox.showinfo(title='Crawl completed', message=f'Crawl of {self.crawler.settings.get("ROOT_DOMAIN", "")} has been completed successfully!')
+				if self.crawler.settings.get("MODE", "") == "Spider":
+					messagebox.showinfo(title='Crawl completed', message=f'{self.crawler.settings.get("ROOT_DOMAIN", "")} has been crawled successfully!')
+				else:
+					messagebox.showinfo(title='Crawl completed', message=f'List Mode Crawl has been completed successfully!')
 				end = True
 				continue
 			if item == "CRAWL_TIMED_OUT":
