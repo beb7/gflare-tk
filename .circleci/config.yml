@@ -3,7 +3,7 @@ version: 2.1
 parameters:
   greenflare-release:
     type: string
-    default: "0.77.3"
+    default: "0.77.4"
   python-ver-macos:
     type: string
     default: "3.8.5"
