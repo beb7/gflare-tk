@@ -45,6 +45,7 @@ class ListModeWindow(ttk.Frame):
 			self.crawler.list_mode_urls = urls
 			self.crawl_tab.show_list_mode()
 			messagebox.showinfo(title='Reading URLs completed', message=f'Loaded {len(urls)} valid and unique URLs!')
+			self.list_crawl_window.destroy()
 		else:
 			messagebox.showerror(title='Reading URLs failed', message=f'No valid URLs found, please check your input!')
 
