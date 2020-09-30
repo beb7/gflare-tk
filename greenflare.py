@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, Menu, filedialog as fd, messagebox, Toplevel, Text, RIGHT, LEFT
+from tkinter import ttk, Menu, filedialog as fd, messagebox
 from core.gflarecrawler import GFlareCrawler
 from widgets.crawltab import CrawlTab
 from widgets.settingstab import SettingsTab
