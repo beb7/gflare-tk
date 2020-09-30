@@ -53,6 +53,7 @@ class mainWindow(ttk.Frame):
 
 	def reset_ui(self):
 		self.tab_crawl.reset()
+		self.master.title("Greenflare SEO Crawler")
 
 	def load_crawl(self, db_file=None):
 		files = [('Greenflare DB', '*.gflaredb'), ('All files', '.*')]
