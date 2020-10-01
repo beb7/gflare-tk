@@ -1,4 +1,4 @@
-from threading import Thread, Event
+from threading import Thread, Event, enumerate as tenum
 from .gflaredb import GFlareDB
 from .gflareresponse import GFlareResponse as gf
 from requests import Session, exceptions
@@ -6,7 +6,6 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from time import sleep
 import queue
-import threading
 
 class GFlareCrawler:
 	def __init__(self, settings=None, gui_mode=False, lock=None, stats=True):
@@ -175,7 +174,7 @@ class GFlareCrawler:
 		if self.stats: Thread(target=self.urls_per_second_stats, name="stats").start()
 
 	def wait_for_threads(self):
-		ts = threading.enumerate()
+		ts = tenum()
 		for t in ts:
 			if "worker-" in t.name:
 				t.join()
@@ -339,7 +338,7 @@ class GFlareCrawler:
 				print("Consumer thread timed out")
 				self.crawl_running.set()
 				self.robots_txt_found.set()
-				for t in threading.enumerate():
+				for t in tenum():
 					if "worker-" in t.name:
 						self.url_queue.put("END")
 				if self.gui_mode: self.add_to_gui_queue("CRAWL_TIMED_OUT")
