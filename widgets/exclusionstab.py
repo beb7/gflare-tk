@@ -86,6 +86,4 @@ class ExclusionsTab(ttk.Frame):
 	def update(self):
 		children = self.widgets[-1].winfo_children()
 		children[-2].current(4)
-
-		excls = self.crawler.settings.get('EXCLUSIONS', '') 
 		children[3].insert(0, self.crawler.settings.get('EXCLUSIONS', ''))
