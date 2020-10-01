@@ -1,5 +1,4 @@
 from tkinter import ttk, LEFT, RIGHT
-from re import escape
 
 class ExtractionsTab(ttk.Frame):
 	def __init__(self, crawler=None):
