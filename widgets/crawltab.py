@@ -154,11 +154,11 @@ class CrawlTab(ttk.Frame):
 				if self.crawler.settings.get("MODE", "") == "Spider":
 					messagebox.showinfo(title='Crawl completed', message=f'{self.crawler.settings.get("ROOT_DOMAIN", "")} has been crawled successfully!')
 				else:
-					messagebox.showinfo(title='Crawl completed', message=f'List Mode Crawl has been completed successfully!')
+					messagebox.showinfo(title='Crawl completed', message='List Mode Crawl has been completed successfully!')
 				end = True
 				continue
 			if item == "CRAWL_TIMED_OUT":
-				messagebox.showerror(title='Error - Timed Out', message=f'Crawl timed out!')
+				messagebox.showerror(title='Error - Timed Out', message='Crawl timed out!')
 				self.button_crawl["text"] = "Restart"
 				end = True
 				continue
@@ -212,7 +212,7 @@ class CrawlTab(ttk.Frame):
 
 	def show_list_mode(self):
 		self.reset()
-		self.master.title(f"List Mode - Greenflare SEO Crawler")
+		self.master.title("List Mode - Greenflare SEO Crawler")
 		self.entry_url_input.delete(0, 'end')
 		self.entry_url_input.insert(0, "List Mode ...")
 		self.entry_url_input["state"] = "disabled"
