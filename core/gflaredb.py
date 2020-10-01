@@ -227,7 +227,7 @@ class GFlareDB:
 		print( "Exporting crawl to", file_name, "...")
 		
 		if not columns and not filters:
-			query = f"SELECT url, content_type, indexability, status_code, h1, h2, page_title, robots_txt, meta_robots, x_robots_tag, redirect_url, meta_description, count(*) AS unique_inlinks FROM inlinks INNER JOIN crawl ON crawl.id = inlinks.url_to_id WHERE crawl.status_code != '' GROUP BY url_to_id"
+			query = "SELECT url, content_type, indexability, status_code, h1, h2, page_title, robots_txt, meta_robots, x_robots_tag, redirect_url, meta_description, count(*) AS unique_inlinks FROM inlinks INNER JOIN crawl ON crawl.id = inlinks.url_to_id WHERE crawl.status_code != '' GROUP BY url_to_id"
 		elif filters and columns:
 			negate, column, operator, value = filters
 			inlink_query = ""
