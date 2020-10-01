@@ -233,6 +233,7 @@ class GFlareCrawler:
 			print(f"{url} has too many redirects")
 			return header
 		except Exception as e:
+			print(e)
 			return [tuple([url, '', '0', 'Timed Out'] + [''] * (len(self.columns) - 4))]
 	
 	def add_to_gui_queue(self, data):
