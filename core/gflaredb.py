@@ -1,7 +1,6 @@
 import sqlite3 as sqlite
 from csv import writer as csvwriter
 import functools
-from time import perf_counter
 import re
 
 class GFlareDB:
@@ -93,17 +92,6 @@ class GFlareDB:
 		self.create_config_table()
 		self.create_inlinks_table()
 		self.create_extractions_table()
-	
-	def timer(func):
-	    @functools.wraps(func)
-	    def wrapper_timer(*args, **kwargs):
-	        tic = perf_counter()
-	        value = func(*args, **kwargs)
-	        toc = perf_counter()
-	        elapsed_time = toc - tic
-	        print(f"{func.__name__!r}: took {elapsed_time:0.8f} seconds")
-	        return value
-	    return wrapper_timer
 
 	@exception_handler
 	def db_connect(self):
