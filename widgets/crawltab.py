@@ -1,6 +1,5 @@
 from tkinter import LEFT, RIGHT, ttk, W, NO, filedialog as fd, messagebox, StringVar
 from os import path, remove
-from threading import Thread
 import queue
 import sys
 
