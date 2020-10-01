@@ -1,4 +1,4 @@
-from tkinter import ttk, LEFT, W, E, NW, StringVar
+from tkinter import ttk, W, E, NW, StringVar
 from .checkboxgroup import CheckboxGroup
 
 class SettingsTab(ttk.Frame):
