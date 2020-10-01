@@ -88,11 +88,6 @@ class GFlareDB:
 		print("get_sql_columns:", out)
 		return out
 	
-	@exception_handler
-	def update_table_columns(self):
-		soft_columns = self.get_soft_columns()
-		table_columns = self.get_table_columns()
-
 	def create(self):
 		self.create_data_table()
 		self.create_config_table()
