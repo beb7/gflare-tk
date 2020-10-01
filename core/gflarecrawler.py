@@ -4,11 +4,9 @@ from .gflareresponse import GFlareResponse as gf
 from requests import Session, exceptions
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
-from time import sleep, perf_counter
-import functools
+from time import sleep
 import queue
 import threading
-import sys, os 
 
 class GFlareCrawler:
 	def __init__(self, settings=None, gui_mode=False, lock=None, stats=True):
