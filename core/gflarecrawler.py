@@ -21,6 +21,9 @@ class GFlareCrawler:
 		self.gui_url_queue = None
 		if self.gui_mode: self.gui_url_queue = queue.Queue()
 
+		self.url_attempts = {}
+		self.retries = 5
+
 		self.settings = settings
 		self.gf = gf(self.settings, columns=None)
 		self.crawl_running = Event()
@@ -209,7 +212,8 @@ class GFlareCrawler:
 				self.session.proxies = { 'https' : f"https://{self.settings['PROXY_USER']}:{self.settings['PROXY_PASSWORD']}@{self.settings['PROXY_HOST']}"}
 
 		retry = Retry(total=retries, read=retries, connect=retries, backoff_factor=0.3, status_forcelist=status_forcelist)
-		adapter = HTTPAdapter(max_retries=retry)
+		# adapter = HTTPAdapter(max_retries=retry)
+		adapter = HTTPAdapter()
 		self.session.mount("http://", adapter)
 		self.session.mount("https://", adapter)
 	
@@ -219,22 +223,53 @@ class GFlareCrawler:
 		body = None
 
 		# timeout (connection, response)
-		timeout = (3, 2)
+		timeout = (3, 5)
+		issue = ""
 
 		try:
-			if self.header_only: return self.session.head(url, headers=self.HEADERS, timeout=3) 
+			if self.header_only: 
+				header = self.session.head(url, headers=self.HEADERS, timeout=timeout)
+				return header
+			
 			header = self.session.head(url, headers=self.HEADERS, timeout=timeout)
-			if "text" in header.headers.get("content-type", ""):
+			
+			content_type = header.headers.get("content-type", "")
+			if "text" in content_type:
 				body = self.session.get(url, headers=self.HEADERS, timeout=timeout)
 				return body
+			
 			return header
 		except exceptions.TooManyRedirects:
-			print(f"{url} has too many redirects")
-			return header
+			return self.deal_with_exception(url, "Too Many Redirects")
+		
+		except exceptions.ConnectionError:
+			return self.deal_with_exception(url, "Connection Refused")
+
+		except exceptions.ReadTimeout:
+			return self.deal_with_exception(url, "Read timed out")
+
+		except exceptions.InvalidURL:
+			return self.deal_with_exception(url, "Invalid URL")
+
 		except Exception as e:
-			print(e)
-			return [tuple([url, '', '0', 'Timed Out'] + [''] * (len(self.columns) - 4))]
+			return self.deal_with_exception(url, "Unknown Exception")
+
 	
+	def deal_with_exception(self, url, issue):
+		with self.lock:
+			attempts = self.url_attempts.get(url, 0)
+
+		if attempts >= self.retries:
+			print(f"{url} {issue} after {attempts} attempts.")
+			return [tuple([url, '', '0', issue] + [''] * (len(self.columns) - 4))]
+
+		with self.lock:
+			self.url_attempts[url] = self.url_attempts.get(url, 0) + 1
+		
+		self.add_to_url_queue([url], count=False)
+		return "SKIP_ME"
+
+
 	def add_to_gui_queue(self, data):
 		self.gui_url_queue.put(data)
 
@@ -256,8 +291,8 @@ class GFlareCrawler:
 			
 			response = self.crawl_url(url)
 			
-			if response == None:
-				print("Skipping none type response")
+			if response == "SKIP_ME": 
+				# print(f"Skipping {url}")
 				busy.clear()
 				continue
 
@@ -287,8 +322,10 @@ class GFlareCrawler:
 
 				if isinstance(response, list):
 					db.insert_crawl_data(response)
+					if self.gui_mode: self.add_to_gui_queue(response)
 					with self.lock:
 						inserted_urls += 1
+						self.urls_crawled += 1
 					continue
 
 				self.gf.set_response(response)
