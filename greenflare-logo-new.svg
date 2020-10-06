@@ -15,8 +15,8 @@
    id="svg29"
    sodipodi:docname="greenflare-logo-new.svg"
    inkscape:export-filename="C:\Users\benjamin\gflare-tk\macos\Icon1024.png"
-   inkscape:export-xdpi="280.86899"
-   inkscape:export-ydpi="280.86899"
+   inkscape:export-xdpi="196.608"
+   inkscape:export-ydpi="196.608"
    inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)">
   <metadata
      id="metadata33">
@@ -170,11 +170,11 @@
           <polygon
              id="rect7868-8"
              transform="rotate(-25.487087,50.695616,43.818469)"
-             points="62.673904,2.0453397 62.831554,85.636939 38.717328,85.591599 38.559678,2 " />
+             points="62.831554,85.636939 38.717328,85.591599 38.559678,2 62.673904,2.0453397 " />
           <polygon
              id="rect7868"
              transform="rotate(154.51291,31.693921,133.91963)"
-             points="43.673904,93.04534 43.828164,174.83927 19.713938,174.79393 19.559678,93 " />
+             points="43.828164,174.83927 19.713938,174.79393 19.559678,93 43.673904,93.04534 " />
           <circle
              id="path7885"
              transform="rotate(180,41.236969,88.101974)"
