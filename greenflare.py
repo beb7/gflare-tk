@@ -6,6 +6,9 @@ from widgets.settingstab import SettingsTab
 from widgets.exclusionstab import ExclusionsTab
 from widgets.extractionstab import ExtractionsTab
 from widgets.listcrawl import ListModeWindow
+from widgets.progresswindow import ProgressWindow
+from concurrent import futures
+import functools
 from threading import Lock
 from os import path, remove
 from pathlib import Path
@@ -17,6 +20,7 @@ class mainWindow(ttk.Frame):
 		ttk.Frame.__init__(self)
 		
 		self.crawler = crawler
+		self.executor = futures.ThreadPoolExecutor(max_workers=1)
 		self.tab_parent = ttk.Notebook()
 		self.tab_crawl = CrawlTab(crawler)
 		self.tab_settings = SettingsTab(crawler)
@@ -49,7 +53,28 @@ class mainWindow(ttk.Frame):
 		self.menubar.add_cascade(label="Help", menu=self.aboutmenu)
 
 		root.config(menu=self.menubar)
-
+	
+	def daemonize(title=None, msg=None):
+		def decorator(target):
+			@functools.wraps(target)
+			def wrapper(*args, **kwargs):
+				args[0].win_progress = ProgressWindow(title=title, msg=msg)
+				args[0].win_progress.focus_force()
+				args[0].win_progress.grab_set()
+				result = args[0].executor.submit(target, *args, **kwargs)
+				result.add_done_callback(args[0].daemon_call_back)
+				return result
+	 
+			return wrapper
+	 
+		return decorator
+ 
+	def daemon_call_back(self, future):
+		self.win_progress.grab_release()
+		self.win_progress.window.destroy()
+		exception = future.exception()
+		if exception:
+			raise exception
 
 	def reset_ui(self):
 		self.tab_crawl.reset()
@@ -72,6 +97,7 @@ class mainWindow(ttk.Frame):
 		self.update_gui()
 		self.tab_crawl.update_bottom_stats()
 
+	@daemonize(title="Exporting crawl ...", msg="Exporting to CSV, that might take a while ...")
 	def full_export(self):
 		files = [('CSV files', '*.csv')]
 		export_file = fd.asksaveasfilename(filetypes=files)
@@ -98,17 +124,15 @@ class mainWindow(ttk.Frame):
 		self.tab_settings.update()
 		self.tab_exclusions.update()
 		self.tab_extractions.update()
+	
+	def on_closing(self):
+		self.crawler.end_crawl_gracefully()
+		self.master.destroy()
 
-def open_file_on_macos(*args):
-	global app
-	for f in args:
-		if f.endswith('.gflaredb'): app.load_crawl(db_file=f)
-		break
-
-def on_closing():
-	global Crawler
-	Crawler.end_crawl_gracefully()
-	root.destroy()
+	def open_file_on_macos(self, *args):
+		for f in args:
+			if f.endswith('.gflaredb'): self.load_crawl(db_file=f)
+			break
 		
 if __name__ == "__main__":
 	if getattr(sys, 'frozen', False): 
@@ -134,7 +158,7 @@ if __name__ == "__main__":
 	# running on macOS
 	if sys.platform == "darwin":
 		# Use TK's Apple Event Handler to react to clicked/open documents
-		root.createcommand("::tk::mac::OpenDocument", open_file_on_macos)
+		root.createcommand("::tk::mac::OpenDocument", self.open_file_on_macos)
 	
 	# Parse and load db file if provided
 	parser = argparse.ArgumentParser()
@@ -145,5 +169,5 @@ if __name__ == "__main__":
 	if p.file_path and p.file_path[0].exists():
 		app.load_crawl(db_file=p.file_path[0])	
 	
-	root.protocol("WM_DELETE_WINDOW", on_closing)
+	root.protocol("WM_DELETE_WINDOW", app.on_closing)
 	root.mainloop()
