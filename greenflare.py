@@ -158,7 +158,7 @@ if __name__ == "__main__":
 	# running on macOS
 	if sys.platform == "darwin":
 		# Use TK's Apple Event Handler to react to clicked/open documents
-		root.createcommand("::tk::mac::OpenDocument", self.open_file_on_macos)
+		root.createcommand("::tk::mac::OpenDocument", app.open_file_on_macos)
 	
 	# Parse and load db file if provided
 	parser = argparse.ArgumentParser()
