@@ -1,4 +1,7 @@
 from tkinter import LEFT, RIGHT, ttk, W, NO, filedialog as fd, messagebox, StringVar
+from widgets.progresswindow import ProgressWindow
+from concurrent import futures
+import functools
 from os import path, remove
 import queue
 import sys
@@ -8,6 +11,9 @@ class CrawlTab(ttk.Frame):
 		ttk.Frame.__init__(self)
 		self.crawler = crawler
 		self.lock = crawler.lock
+
+		self.executor = futures.ThreadPoolExecutor(max_workers=1)
+		self.win_progress = None
 
 		self.topframe = ttk.Frame(self)
 		self.topframe.pack(anchor='center', padx=20, pady=20, fill="x")
@@ -59,6 +65,29 @@ class CrawlTab(ttk.Frame):
 		self.populate_columns()
 		self.row_counter = 1
 
+	def daemonize(title=None, msg=None):
+		def decorator(target):
+			@functools.wraps(target)
+			def wrapper(*args, **kwargs):
+				args[0].win_progress = ProgressWindow(title=title, msg=msg)
+				args[0].win_progress.focus_force()
+				args[0].win_progress.grab_set()
+				result = args[0].executor.submit(target, *args, **kwargs)
+				result.add_done_callback(args[0].daemon_call_back)
+				return result
+	 
+			return wrapper
+	 
+		return decorator
+ 
+ 
+	def daemon_call_back(self, future):
+		self.win_progress.grab_release()
+		self.win_progress.window.destroy()
+		exception = future.exception()
+		if exception:
+			raise exception
+
 	def clear_output_table(self):
 		# Clear table
 		self.treeview_table.delete(*self.treeview_table.get_children())
@@ -108,22 +137,28 @@ class CrawlTab(ttk.Frame):
 			self.after(10, self.add_to_outputtable)
 			self.after(10, self.change_btn_text)
 
+	@daemonize(title="Stopping crawl ...", msg="Waiting for the crawl to finish ...")
+	def stop_crawl(self):
+		self.crawler.end_crawl_gracefully()
+		self.after(10, self.change_btn_text)
+
 	def btn_crawl_pushed(self):
 		url = self.entry_url_input.get()
 		if self.button_crawl["text"] == "Start" and url != "":
 			self.start_new_crawl(url)
 
 		elif self.button_crawl["text"] == "Pause":
-			self.crawler.end_crawl_gracefully()
-			self.after(10, self.change_btn_text)
-			# self.enable_settings(True)
+			self.stop_crawl()
+		
 		elif self.button_crawl["text"] == "Resume":
 			self.populate_columns()
 			self.crawler.resume_crawl()
 			self.after(10, self.add_to_outputtable)
 			self.after(10, self.change_btn_text)
+		
 		elif self.button_crawl["text"] == "Restart":
 			self.start_new_crawl(url)
+		
 		print(self.crawler.settings)
 
 	def change_btn_text(self):
@@ -175,6 +210,7 @@ class CrawlTab(ttk.Frame):
 		if end: return
 		self.after(200, self.add_to_outputtable)
 
+	# @daemonize(title="Loading crawl ...", msg="Please wait while the crawl is loading ...")
 	def load_crawl_to_outputtable(self):
 		items = self.crawler.get_crawl_data()
 		self.clear_output_table()
