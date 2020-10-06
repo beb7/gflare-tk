@@ -189,24 +189,24 @@ class GFlareResponse:
 			elif method == "xpath": tree_result = self.tree.xpath(selector)
 			else: pass
 
+			txt = ""
+
+			if len(tree_result) > 0:
+				if get == "href":
+					txt = tree_result[0].attrib['href']
+				elif get != "txt":
+					txt = tree_result[0].get(get)
+				else:
+					txt = tree_result[0].text_content()
+			
+			if txt == None:
+				return ""
+
+			return txt.strip()
+
 		except:
 			print(f"{selector} failed")
 			return ""
-		
-		txt = ""
-
-		if len(tree_result) > 0:
-			if get == "href":
-				txt = tree_result[0].attrib['href']
-			elif get != "txt":
-				txt = tree_result[0].get(get)
-			else:
-				txt = tree_result[0].text_content()
-		
-		if txt == None:
-			return ""
-
-		return txt.strip()
 
 	def extract_onpage_elements(self):
 		d = {}
