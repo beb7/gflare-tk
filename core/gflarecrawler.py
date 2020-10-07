@@ -32,7 +32,7 @@ class GFlareCrawler:
 		self.worker_status = []
 		self.db_file = None
 
-		self.parallel_requests_limit = 0
+		self.rate_limit_delay = 0
 		self.current_urls_per_second = 0
 		self.urls_crawled = 0
 		self.urls_total = 0
@@ -185,12 +185,29 @@ class GFlareCrawler:
 		print("All workers joined ...")
 
 	def urls_per_second_stats(self):
+		url_limit = int(self.settings.get("URLS_PER_SECOND", 0))
+		step = 0.1
+		
+		# Set initial limit depending on the number of threads
+		if url_limit > 0 :
+			self.rate_limit_delay = 1 / url_limit * int(self.settings.get("THREADS", 1)) * step
 		while self.crawl_running.is_set() == False:
 			with self.lock:
 				old = self.urls_crawled
+			
+			# Wait for 1 second to pass
 			sleep(1)
+		
 			with self.lock:
 				self.current_urls_per_second = self.urls_crawled - old
+
+				if  url_limit > 0 and self.current_urls_per_second > url_limit:
+					self.rate_limit_delay += step
+				elif url_limit > 0 and self.current_urls_per_second <= url_limit:
+					if self.rate_limit_delay - step > 0:
+						self.rate_limit_delay -= step
+					else:
+						self.rate_limit_delay = 0
 		with self.lock:
 			self.current_urls_per_second = 0
 
@@ -281,18 +298,14 @@ class GFlareCrawler:
 		while self.crawl_running.is_set() == False:
 			url = self.url_queue.get()
 			if url == "END": break
-
 			busy.set()
-
-			# Delay crawl artificial for request rate limiting
-			# with self.lock:
-			# 	print(f"{name} sleeping for {self.parallel_requests_limit}")
-			# 	if self.parallel_requests_limit > 0: sleep(self.parallel_requests_limit)
+			
+			print(f"{name}: sleeping for {self.rate_limit_delay} seconds ...")
+			sleep(self.rate_limit_delay)
 			
 			response = self.crawl_url(url)
 			
 			if response == "SKIP_ME": 
-				# print(f"Skipping {url}")
 				busy.clear()
 				continue
 
