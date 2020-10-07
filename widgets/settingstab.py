@@ -1,4 +1,4 @@
-from tkinter import ttk, W, E, NW, StringVar
+from tkinter import ttk, W, E, NW, StringVar, IntVar
 from .checkboxgroup import CheckboxGroup
 
 class SettingsTab(ttk.Frame):
@@ -27,11 +27,13 @@ class SettingsTab(ttk.Frame):
 		self.spinbox_threads.set("5")
 		self.spinbox_threads.grid(row=0, column=1, padx=15, pady=5, sticky=E)
 
-		self.label_urls = ttk.Label(self.group_crawler, text="URLs/s")
-		self.label_urls.grid(row=1, column=0, sticky=W)
+		self.on_off_var = IntVar()
+		self.cbtn_limit_urls = ttk.Checkbutton(self.group_crawler, text="Limit URL/s", onvalue=1, offvalue=0, variable=self.on_off_var, command=self.url_limit_clicked)
+		self.cbtn_limit_urls.grid(row=1, column=0, sticky=W)
 
 		self.spinbox_urls = ttk.Spinbox(self.group_crawler, from_=0, to=100, state="readonly", width=5, command=self.save_urls)
-		self.spinbox_urls.set("15")
+		self.spinbox_urls["state"] = "disabled"
+		self.spinbox_urls.set("0")
 		self.spinbox_urls.grid(row=1, column=1, padx=15, pady=5, sticky=E)
 
 		self.label_ua = ttk.Label(self.group_crawler, text="User-Agent")
@@ -130,3 +132,11 @@ class SettingsTab(ttk.Frame):
 		self.crawler.settings["PROXY_HOST"] = self.var_host.get()
 		self.crawler.settings["PROXY_USER"] = self.var_user.get()
 		self.crawler.settings["PROXY_PASSWORD"] = self.var_password.get()
+
+	def url_limit_clicked(self):
+		if self.on_off_var.get() == 1:
+			self.spinbox_urls["state"] = "enabled"
+			print("enabled", self.on_off_var.get())
+		else:
+			self.spinbox_urls["state"] = "disabled"
+			print("disabled", self.on_off_var.get())
