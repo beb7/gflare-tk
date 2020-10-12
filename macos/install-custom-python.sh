@@ -12,21 +12,28 @@ if [ ! -d "$BUILD_DIR" ]; then
 
 	echo "Set TCL version from 8.6.8 to 8.6.10"
 	sed -i.bak 's,ftp://ftp.tcl.tk/pub/tcl//tcl8_6/tcl8.6.8-src.tar.gz,ftp://ftp.tcl.tk/pub/tcl//tcl8_6/tcl8.6.10-src.tar.gz,g' build-installer.py
+	sed -i.bak 's,ftp://ftp.tcl.tk/pub/tcl//tcl8_6/tcl8.6.8-src.tar.gz,ftp://ftp.tcl.tk/pub/tcl//tcl8_6/tcl8.6.10-src.tar.gz,g' build-installer.py
 	mv build-installer.py.bak build-installer.py
 	sed -i.bak 's,81656d3367af032e0ae6157eff134f89,97c55573f8520bcab74e21bfd8d0aadc,g' build-installer.py
+	sed -i.bak 's,81656d3367af032e0ae6157eff134f89,97c55573f8520bcab74e21bfd8d0aadc,g' build-installer.py
 	mv build-installer.py.bak build-installer.py
+	sed -i.bak 's,name="Tcl 8.6.8",name="Tcl 8.6.10",g' build-installer.py
 	sed -i.bak 's,name="Tcl 8.6.8",name="Tcl 8.6.10",g' build-installer.py
 	mv build-installer.py.bak build-installer.py
 
 	echo "Set TK version from 8.6.8 to 8.6.10"
 	sed -i.bak 's,ftp://ftp.tcl.tk/pub/tcl//tcl8_6/tk8.6.8-src.tar.gz,ftp://ftp.tcl.tk/pub/tcl//tcl8_6/tk8.6.10-src.tar.gz,g' build-installer.py
+	sed -i.bak 's,ftp://ftp.tcl.tk/pub/tcl//tcl8_6/tk8.6.8-src.tar.gz,ftp://ftp.tcl.tk/pub/tcl//tcl8_6/tk8.6.10-src.tar.gz,g' build-installer.py
 	mv build-installer.py.bak build-installer.py
 	sed -i.bak 's,5e0faecba458ee1386078fb228d008ba,602a47ad9ecac7bf655ada729d140a94,g' build-installer.py
+	sed -i.bak 's,5e0faecba458ee1386078fb228d008ba,602a47ad9ecac7bf655ada729d140a94,g' build-installer.py
 	mv build-installer.py.bak build-installer.py
+	sed -i.bak 's,name="Tk 8.6.8",name="Tk 8.6.10",g' build-installer.py
 	sed -i.bak 's,name="Tk 8.6.8",name="Tk 8.6.10",g' build-installer.py
 	mv build-installer.py.bak build-installer.py
 
 	echo "Disable TCL/TK patch"
+	sed -i.bak 's#"tk868_on_10_8_10_9.patch",##g' build-installer.py
 	sed -i.bak 's#"tk868_on_10_8_10_9.patch",##g' build-installer.py
 	mv build-installer.py.bak build-installer.py
 
