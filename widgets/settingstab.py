@@ -114,7 +114,10 @@ class SettingsTab(ttk.Frame):
 
 	def update(self):
 		self.spinbox_threads.set(int(self.crawler.settings["THREADS"]))
-		self.spinbox_urls.set(int(self.crawler.settings["URLS_PER_SECOND"]))
+		urls_per_second = int(self.crawler.settings["URLS_PER_SECOND"])
+		if urls_per_second > 0:
+			self.spinbox_urls.set(urls_per_second)
+			self.spinbox_urls["state"] = "enabled"
 		self.combobox_ua.current()
 
 	def save_threads(self):
