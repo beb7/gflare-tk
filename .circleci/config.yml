@@ -6,7 +6,7 @@ parameters:
     default: "0.80"
   python-ver-macos:
     type: string
-    default: "3.8.5"
+    default: "3.8.6"
   python-ver-macos-major:
     type: string
     default: "3.8"
@@ -73,34 +73,25 @@ jobs:
       PYTHONVERMAJOR: << pipeline.parameters.python-ver-macos-major >>
     steps:
       - checkout
-      # - run:
-      #     name: Download python
-      #     command: curl -O https://www.python.org/ftp/python/${PYTHONVER}/python-${PYTHONVER}-macosx10.9.pkg
+      - restore_cache:
+          keys:
+            - python-build-cache-{{ checksum "macos/install-custom-python.sh" }}
       - run:
-          name: Install python
-          # command: sudo installer -pkg python-${PYTHONVER}-macosx10.9.pkg -target /
+          name: Install Python
           command: |
-            cd macos/
-            unzip PythonFramework-3.8.pkg.zip
-            sudo pax -z -p e -r -f PythonFramework-3.8.pkg/Contents/Archive.pax.gz
-            sudo mkdir -p /Library/Frameworks/Python.framework/
-            sudo cp -r Versions /Library/Frameworks/Python.framework/
-            unzip PythonInstallPip-3.8.pkg.zip
-            sudo ./PythonInstallPip-3.8.pkg/Contents/Resources/postflight
+            cd macos
+            ./install-custom-python.sh
             cd ..
-      # - restore_cache:
-      #     keys:
-      #       - pip-cache-{{ checksum "requirements.txt" }}
       - run: 
           name: Install dependencies
           command: |
             /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install pip --upgrade
             /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install -r requirements.txt
             /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install py2app==0.22
-      # - save_cache:
-      #     key: pip-cache-{{ checksum "requirements.txt" }}
-      #     paths:
-      #       - /Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/site-packages
+      - save_cache:
+          key: python-build-cache-{{ checksum "macos/install-custom-python.sh" }}
+          paths:
+            - ~/python-build
       - run:
           name: Freeze macOS app
           command: |

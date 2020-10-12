@@ -300,7 +300,7 @@ class GFlareCrawler:
 			if url == "END": break
 			busy.set()
 			
-			print(f"{name}: sleeping for {self.rate_limit_delay} seconds ...")
+			# print(f"{name}: sleeping for {self.rate_limit_delay} seconds ...")
 			sleep(self.rate_limit_delay)
 			
 			response = self.crawl_url(url)
@@ -327,6 +327,7 @@ class GFlareCrawler:
 						if self.gui_mode: self.add_to_gui_queue("CRAWL_COMPLETED")
 						break
 
+				# FIXME: Remove timeout as no worker should wait for a requested URL forever. If it takes them longer than 30 secs the crawl will wrongly time out
 				response = self.data_queue.get(timeout=30)
 
 				if "end" in response:
