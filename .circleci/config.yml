@@ -80,6 +80,7 @@ jobs:
           name: Install Python
           command: |
             cd macos
+            chmod +x install-custom-python.sh 
             ./install-custom-python.sh
             cd ..
       - run: 
