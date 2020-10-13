@@ -158,6 +158,9 @@ class GFlareResponse:
 				if "http" not in onpage_url_components["scheme"]:
 					continue
 
+				if onpage_url_components['path'] == "":
+					onpage_url += '/'
+
 				# Check external links if wanted
 				if "external_links" not in self.settings.get("CRAWL_ITEMS", "") and self.get_domain(onpage_url) != "" and self.is_external(onpage_url):
 					continue
