@@ -262,7 +262,7 @@ class GFlareDB:
 	def chunk_list(self, l: list, chunk_size=100) -> list:
 		return [l[i * chunk_size:(i + 1) * chunk_size] for i in range((len(l) + chunk_size - 1) // chunk_size )] 
 
-	def get_new_urls(self, links, chunk_size=999):
+	def get_new_urls(self, links, chunk_size=999, check_crawled=False):
 		self.cur.row_factory = lambda cursor, row: row[0]
 		chunked_list = self.chunk_list(links, chunk_size=chunk_size)
 		urls_in_db = []
@@ -270,6 +270,8 @@ class GFlareDB:
 		for chunk in chunked_list:
 			try:
 				sql = f"SELECT url FROM crawl WHERE url in ({','.join(['?']*len(chunk))})"
+				if check_crawled:
+					sql = f"SELECT url FROM crawl WHERE url in ({','.join(['?']*len(chunk))}) AND status_code != ''"
 				self.cur.execute(sql, chunk)
 				urls_in_db += self.cur.fetchall()
 				self.cur.row_factory = None
