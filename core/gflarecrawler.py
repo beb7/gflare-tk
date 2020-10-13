@@ -344,33 +344,23 @@ class GFlareCrawler:
 
 				self.gf.set_response(response)
 				data = self.gf.get_data()
+				# print("\n", ">>", data["data"], "\n")
+
 				if self.robots_txt_found.is_set() == False and "url" in data:
 					url = data["url"]
 					if url == self.gf.get_robots_txt_url(url): self.robots_txt_found.set()
 					continue
 
 				if "data" in data:
-					# print("url:", data["url"])
-					# print("data:", data["data"])
-					url = data["url"]
-
-					db.insert_crawl_data(data["data"])
+					urls = [u[0] for u in data["data"]]
+					new_urls = db.get_new_urls(urls, check_crawled=True)
+					new_data = [d for d in data["data"] if d[0] in new_urls]
+					db.insert_crawl_data(new_data)
 					with self.lock:
-						inserted_urls += 1
-						self.urls_crawled += 1
-					if self.gui_mode: self.add_to_gui_queue(data["data"])
+						inserted_urls += len(new_urls)
+						self.urls_crawled += len(new_urls)
+					if self.gui_mode: self.add_to_gui_queue(new_data)
 
-				if "redirects" in data:
-					redirect_urls = [data[0] for data in data["redirects"]]
-					new_redirects = db.get_new_urls(redirect_urls)
-					number_new_redirects = len(new_redirects)
-					db.insert_redirects(data["redirects"])
-					if number_new_redirects > 0:
-						with self.lock:
-							self.urls_crawled += number_new_redirects
-							self.urls_total += number_new_redirects
-						if self.gui_mode: self.add_to_gui_queue([redirect for redirect in data["redirects"] if redirect[0] in new_redirects])
-				
 				extracted_links = data.get("links", []) + data.get("hreflang_links", []) + data.get("canonical_links", []) + data.get("pagination_links", [])
 
 				if len(extracted_links) > 0:
@@ -394,13 +384,6 @@ class GFlareCrawler:
 						self.url_queue.put("END")
 				if self.gui_mode: self.add_to_gui_queue("CRAWL_TIMED_OUT")
 				break
-			# except Exception as e:
-			# 	print("Consumer thread crashed ...")
-			# 	exc_type, exc_obj, exc_tb = sys.exc_info()
-			# 	fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-			# 	print(exc_type, fname, exc_tb.tb_lineno)
-			# 	print(e)
-			# 	self.crawl_running.set()			
 
 		# Always commit to db at the very end
 		db.commit()
