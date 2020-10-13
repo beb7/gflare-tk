@@ -22,17 +22,14 @@ class GFlareResponse:
 		self.CHECK_REDIRECTS_BLOCKED_BY_ROBOTS = False
 		self.CHECK_NOFOLLOW = False
 
-		self.data = None
-
 	def set_response(self, response):
 		self.response = response
-		self.data = {}
-		self.url = self.get_initial_url()
+		# self.url = self.get_initial_url()
+		self.url = str(self.response.url).strip()
 
 	def response_to_robots_txt(self, response):
-		self.data["data"] = self.get_header_info()
 		self.settings["ROOT_DOMAIN"] = self.get_domain(self.url)
-		if self.data["data"]["status_code"] == 200:
+		if self.response.status_code == 200:
 			self.robots_txt = self.response.text
 			self.gfrobots.set_robots_txt(self.robots_txt, user_agent=self.settings.get("USER_AGENT", ''))
 
@@ -45,30 +42,29 @@ class GFlareResponse:
 		# The below is equal to if self.response.status_code != 200: which is not what we want
 		# if not self.response: return {}
 
-		self.url = self.get_initial_url()
 		self.url_components = urllib.parse.urlsplit(self.url)
-		self.data = {"url": self.url}
+		d = {"url": self.url}
 
 		if self.is_robots_txt(self.url):
 			self.response_to_robots_txt(self.response)
+			d["data"] = self.get_header_info()
 
 		else:			
 		
 			if len(self.response.content) > 0:
 				self.tree = self.get_tree()
 				if self.spider_links:
-					self.data["links"] = self.extract_links()
-					if "hreflang" in self.settings.get("CRAWL_LINKS", ""): self.data["hreflang_links"] = self.get_hreflang_links()
-					if "canonicals" in self.settings.get("CRAWL_LINKS", ""): self.data["canonical_links"] = self.get_canonical_links()
-					if "pagination" in self.settings.get("CRAWL_LINKS", ""): self.data["pagination_links"] = self.get_pagination_links()
-				self.data["data"] = self.get_crawl_data()
+					d["links"] = self.extract_links()
+					if "hreflang" in self.settings.get("CRAWL_LINKS", ""): d["hreflang_links"] = self.get_hreflang_links()
+					if "canonicals" in self.settings.get("CRAWL_LINKS", ""): d["canonical_links"] = self.get_canonical_links()
+					if "pagination" in self.settings.get("CRAWL_LINKS", ""): d["pagination_links"] = self.get_pagination_links()
+				d["data"] = self.get_crawl_data()
 			else:
-				self.data["data"] = self.get_header_info()
+				d["data"] = self.get_header_info()
 
-			if self.has_redirected(): self.data["redirects"] = self.process_redirects()
 
-		d = self.data.copy()
-		d["data"] = [self.dict_to_row(self.data["data"])]
+		d["data"] = [self.dict_to_row(d["data"])]
+		if self.has_redirected(): d["data"] += self.process_redirects()
 		return d
 
 	def get_tree(self):
