@@ -245,14 +245,14 @@ class GFlareCrawler:
 
 		try:
 			if self.header_only: 
-				header = self.session.head(url, headers=self.HEADERS, timeout=timeout)
+				header = self.session.head(url, headers=self.HEADERS, allow_redirects=True, timeout=timeout)
 				return header
 			
-			header = self.session.head(url, headers=self.HEADERS, timeout=timeout)
+			header = self.session.head(url, headers=self.HEADERS, allow_redirects=True, timeout=timeout)
 			
 			content_type = header.headers.get("content-type", "")
 			if "text" in content_type:
-				body = self.session.get(url, headers=self.HEADERS, timeout=timeout)
+				body = self.session.get(url, headers=self.HEADERS, allow_redirects=True, timeout=timeout)
 				return body
 			
 			return header
