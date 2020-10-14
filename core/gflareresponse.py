@@ -24,7 +24,6 @@ class GFlareResponse:
 
 	def set_response(self, response):
 		self.response = response
-		# self.url = self.get_initial_url()
 		self.url = str(self.response.url).strip()
 
 	def response_to_robots_txt(self, response):
@@ -39,8 +38,6 @@ class GFlareResponse:
 		return str(self.response.history[0].url).strip()
 
 	def get_data(self):
-		# The below is equal to if self.response.status_code != 200: which is not what we want
-		# if not self.response: return {}
 
 		self.url_components = urllib.parse.urlsplit(self.url)
 		d = {"url": self.url}
@@ -50,7 +47,6 @@ class GFlareResponse:
 			d["data"] = self.get_header_info()
 
 		else:			
-		
 			if len(self.response.content) > 0:
 				self.tree = self.get_tree()
 				if self.spider_links:
@@ -62,9 +58,11 @@ class GFlareResponse:
 			else:
 				d["data"] = self.get_header_info()
 
-
 		d["data"] = [self.dict_to_row(d["data"])]
-		if self.has_redirected(): d["data"] += self.process_redirects()
+		
+		if self.has_redirected(): 
+			d["data"] += self.process_redirects()
+		
 		return d
 
 	def get_tree(self):
@@ -291,7 +289,7 @@ class GFlareResponse:
 	def process_redirects(self):
 		data = []
 		hist = self.response.history
-
+		
 		if len(hist) > 0:
 		
 			for i in range(len(hist)):
