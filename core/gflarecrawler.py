@@ -355,10 +355,13 @@ class GFlareCrawler:
 					urls = [u[0] for u in data["data"]]
 					new_urls = db.get_new_urls(urls, check_crawled=True)
 					new_data = [d for d in data["data"] if d[0] in new_urls]
+					newly_discovered_urls = len(db.get_new_urls(urls, check_crawled=False))
 					db.insert_crawl_data(new_data)
 					with self.lock:
-						inserted_urls += len(new_urls)
-						self.urls_crawled += len(new_urls)
+						inserted_urls += len(new_data)
+						self.urls_crawled += len(new_data)
+						if newly_discovered_urls > 0:
+							self.urls_total += newly_discovered_urls
 					if self.gui_mode: self.add_to_gui_queue(new_data)
 
 				extracted_links = data.get("links", []) + data.get("hreflang_links", []) + data.get("canonical_links", []) + data.get("pagination_links", [])
