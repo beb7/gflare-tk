@@ -2,8 +2,10 @@ import sys
 from cx_Freeze import setup, Executable
 from os import environ
 
+path = sys.path + ['greenflare']
+
 # Dependencies are automatically detected, but it might need fine tuning.
-build_exe_options = {"include_files": ["greenflare-icon-32x32.png"]}
+build_exe_options = {"include_files": ["greenflare/resources/greenflare-icon-32x32.png"]}
 
 shortcut_table = [
     ("DesktopShortcut",        # Shortcut
@@ -25,7 +27,7 @@ shortcut_table = [
 msi_data = {"Shortcut": shortcut_table}
 
 # Change some default MSI options and specify the use of the above defined tables
-bdist_msi_options = {'data': msi_data, 'install_icon': "greenflare-icon-32x32.ico"}
+bdist_msi_options = {'data': msi_data, 'install_icon': "greenflare/resources/greenflare-icon-32x32.ico"}
 
 # MacOS
 bdist_mac_options = {'iconfile': 'greenflare-icon-64x64.icns', 'bundle_name': 'greenflare', 'custom_info_plist': 'Info.plist', 'include_resources': [('/usr/local/Cellar/tcl-tk/8.6.10/lib/tcl8.6', 'tcl8.6'), ('/usr/local/Cellar/tcl-tk/8.6.10/lib/tk8.6', 'tk8.6')]}
@@ -46,14 +48,14 @@ if sys.platform == "win32":
 #     environ['TCL_LIBRARY'] = '/usr/local/Cellar/tcl-tk/8.6.10/lib/tcl8.6/' 
 
 target = Executable(
-    script="greenflare.py",
+    script="greenflare/greenflare.py",
     base=base,
-    icon="greenflare-icon-32x32.ico",
+    icon="greenflare/resources/greenflare-icon-32x32.ico",
     targetName=targetName
     )
 
 setup(  name = "Greenflare SEO Crawler",
-        version = "0.75",
+        version = "0.82",
         author = "Geenflare",
         description = "Greenflare SEO Crawler",
         options = {"build_exe": build_exe_options, "bdist_msi": bdist_msi_options, "bdist_mac": bdist_mac_options, "bdist_dmg": bdist_dmg_options},
