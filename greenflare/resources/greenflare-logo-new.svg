@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="500"
+   height="500"
+   viewBox="0 0 500 500"
+   version="1.1"
+   id="svg29"
+   sodipodi:docname="greenflare-logo-new.svg"
+   inkscape:export-filename="C:\Users\benjamin\gflare-tk\macos\Icon1024.png"
+   inkscape:export-xdpi="196.608"
+   inkscape:export-ydpi="196.608"
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)">
+  <metadata
+     id="metadata33">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>logo</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1027"
+     id="namedview31"
+     showgrid="false"
+     inkscape:zoom="1.4849242"
+     inkscape:cx="212.69169"
+     inkscape:cy="258.59665"
+     inkscape:window-x="1912"
+     inkscape:window-y="22"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg29" />
+  <!-- Generator: Sketch 55.2 (78181) - https://sketchapp.com -->
+  <title
+     id="title2">logo</title>
+  <desc
+     id="desc4">Created with Sketch.</desc>
+  <defs
+     id="defs16">
+    <radialGradient
+       cx="0.5"
+       cy="0.10750106"
+       fx="0.5"
+       fy="0.10750106"
+       r="0.89063799"
+       gradientTransform="matrix(0,1,-0.995164,0,0.60698113,-0.392499)"
+       id="radialGradient-1">
+      <stop
+         stop-color="#95789F"
+         offset="0%"
+         id="stop6" />
+      <stop
+         stop-color="#3F2E46"
+         offset="100%"
+         id="stop8" />
+    </radialGradient>
+    <radialGradient
+       cx="0.5"
+       cy="0"
+       fx="0.5"
+       fy="0"
+       r="1"
+       gradientTransform="matrix(0,1,-0.995164,0,0.5,-0.5)"
+       id="radialGradient-2">
+      <stop
+         stop-color="#46354C"
+         offset="0%"
+         id="stop11" />
+      <stop
+         stop-color="#866A8F"
+         offset="100%"
+         id="stop13" />
+    </radialGradient>
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#radialGradient-1"
+       id="radialGradient858"
+       gradientTransform="scale(1.0024269,0.99757897)"
+       cx="74.778419"
+       cy="16.166193"
+       fx="74.778419"
+       fy="16.166193"
+       r="133.19977"
+       gradientUnits="userSpaceOnUse" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#radialGradient-1"
+       id="radialGradient860"
+       gradientTransform="scale(1.0024269,0.99757897)"
+       cx="74.778419"
+       cy="16.166193"
+       fx="74.778419"
+       fy="16.166193"
+       r="133.19977"
+       gradientUnits="userSpaceOnUse" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#radialGradient-2"
+       id="radialGradient862"
+       gradientTransform="scale(1.0024269,0.99757898)"
+       cx="26.241014"
+       cy="0.10002702"
+       fx="26.241014"
+       fy="0.10002702"
+       r="50.811604"
+       gradientUnits="userSpaceOnUse" />
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#radialGradient-2"
+       id="radialGradient864"
+       gradientTransform="scale(1.0024269,0.99757898)"
+       cx="26.241013"
+       cy="0.10002813"
+       fx="26.241013"
+       fy="0.10002813"
+       r="50.811604"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <g
+     id="Welcome"
+     stroke="none"
+     stroke-width="1"
+     fill="none"
+     fill-rule="evenodd"
+     transform="matrix(2.8469783,0,0,2.8469783,35.734429,0.99265623)">
+    <g
+       id="Desktop-HD"
+       transform="translate(-525,-65)"
+       fill-rule="nonzero">
+      <g
+         id="logo"
+         transform="translate(525,64)">
+        <g
+           id="layer6"
+           transform="translate(0.300797,13.463816)"
+           fill="url(#radialGradient-1)"
+           style="fill:url(#radialGradient860)">
+          <ellipse
+             id="path8456"
+             cx="74.9599"
+             cy="74.685295"
+             rx="74.959206"
+             ry="74.596687"
+             style="fill:url(#radialGradient858)" />
+        </g>
+        <g
+           id="Group"
+           transform="translate(34.177291)"
+           fill="#8fbc8f">
+          <polygon
+             id="rect7868-8"
+             transform="rotate(-25.487087,50.695616,43.818469)"
+             points="62.831554,85.636939 38.717328,85.591599 38.559678,2 62.673904,2.0453397 " />
+          <polygon
+             id="rect7868"
+             transform="rotate(154.51291,31.693921,133.91963)"
+             points="43.828164,174.83927 19.713938,174.79393 19.559678,93 43.673904,93.04534 " />
+          <circle
+             id="path7885"
+             transform="rotate(180,41.236969,88.101974)"
+             cx="41.236969"
+             cy="88.101974"
+             r="40.5" />
+        </g>
+        <g
+           id="layer4"
+           transform="translate(48.932271,62.855263)"
+           fill="url(#radialGradient-2)"
+           style="fill:url(#radialGradient864)">
+          <ellipse
+             id="path7885-3"
+             transform="rotate(180,26.304698,25.444079)"
+             cx="26.304699"
+             cy="25.444078"
+             rx="25.467459"
+             ry="25.344294"
+             style="fill:url(#radialGradient862)" />
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
