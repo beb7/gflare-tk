@@ -92,9 +92,10 @@ class mainWindow(ttk.Frame):
 		if self.crawler.settings["MODE"] == "Spider": self.master.title(f"{self.crawler.settings['ROOT_DOMAIN']} - Greenflare SEO Crawler")
 		elif self.crawler.settings["MODE"] == "List": 
 			self.tab_crawl.show_list_mode()
-
-		self.tab_crawl.load_crawl_to_outputtable()
+		
 		self.update_gui()
+		self.tab_crawl.freeze_input()
+		self.tab_crawl.load_crawl_to_outputtable()
 		self.tab_crawl.update_bottom_stats()
 
 	@daemonize(title="Exporting crawl ...", msg="Exporting to CSV, that might take a while ...")
