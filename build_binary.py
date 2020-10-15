@@ -1,11 +1,13 @@
 import sys
 from cx_Freeze import setup, Executable
-from os import environ
+from os import environ, getcwd, path
 
-path = sys.path + ['greenflare']
+sys.path.append(getcwd() + path.sep + 'greenflare')
+print(sys.path)
+print(getcwd())
 
 # Dependencies are automatically detected, but it might need fine tuning.
-build_exe_options = {"include_files": ["greenflare/resources/greenflare-icon-32x32.png"]}
+build_exe_options = {"include_files": ["greenflare/resources/"]}
 
 shortcut_table = [
     ("DesktopShortcut",        # Shortcut
