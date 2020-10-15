@@ -194,7 +194,7 @@ class CrawlTab(ttk.Frame):
 				continue
 			if item == "CRAWL_TIMED_OUT":
 				messagebox.showerror(title='Error - Timed Out', message='Crawl timed out!')
-				self.button_crawl["text"] = "Restart"
+				self.button_crawl["text"] = "Resume"
 				end = True
 				continue
 			if item == "END":
