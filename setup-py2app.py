@@ -7,7 +7,7 @@ Usage:
 
 from setuptools import setup
 
-APP = ['greenflare.py']
+APP = ['greenflare/greenflare.py']
 DATA_FILES = []
 OPTIONS = {
 	'iconfile': 'macos/greenflare.icns',
