@@ -147,6 +147,14 @@ if __name__ == "__main__":
 	# macOS tkinter cannot handle iconphotos at the time being, disabling it for now
 	if sys.platform != "darwin":
 		root.iconphoto(False, tk.PhotoImage(file=WorkingDir + path.sep + 'resources' + path.sep + 'greenflare-icon-32x32.png'))
+	if sys.platform == "linux":
+		import importlib
+		check = importlib.util.find_spec("ttkthemes")
+		if check:
+			from ttkthemes import ThemedStyle
+			style = ThemedStyle(root)
+			style.set_theme("arc")
+
 
 	globalLock = Lock()
 	crawl_items = ["url", "content_type", "status_code", "indexability", "page_title", "meta_description", "h1", "h2", "unique_inlinks", "canonicals", "canonical_tag", "robots_txt", "redirect_url", "meta_robots", "x_robots_tag", "respect_robots_txt", "report_on_status", "follow_blocked_redirects"]
