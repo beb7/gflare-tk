@@ -15,7 +15,7 @@ OPTIONS = {
 		'CFBundleName': 'Greenflare',
 		'CFBundleIconFile': 'greenflare.icns',
 		'CFBundleIdentifier': 'io.greenflare.crawler',
-		'CFBundleShortVersionString': '0.82',
+		'CFBundleShortVersionString': '0.83',
 		'CFBundleDocumentTypes': [{'CFBundleTypeExtensions': ["gflaredb"], 'CFBundleTypeName': "Greenflare Crawl DB", 'CFBundleTypeRole': "Editor"}]
 		},
 	'argv_emulation': False

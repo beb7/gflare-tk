@@ -3,7 +3,7 @@ version: 2.1
 parameters:
   greenflare-release:
     type: string
-    default: "0.82"
+    default: "0.83"
   python-ver-macos:
     type: string
     default: "3.8.6"
@@ -113,5 +113,5 @@ workflows:
   main:
     jobs:
       # - ubuntu-build
-      # - windows-build
+      - windows-build
       - macos-build
