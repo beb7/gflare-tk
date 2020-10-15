@@ -3,6 +3,5 @@ __pycache__
 *.db
 *.db-journal
 *.gflaredb
-tests/
 build/
 dist/
