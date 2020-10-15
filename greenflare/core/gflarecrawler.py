@@ -2,8 +2,8 @@ from threading import Thread, Event, enumerate as tenum
 from .gflaredb import GFlareDB
 from .gflareresponse import GFlareResponse as gf
 from requests import Session, exceptions
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
+# from requests.adapters import HTTPAdapter
+# from requests.packages.urllib3.util.retry import Retry
 from time import sleep
 import queue
 
@@ -228,11 +228,11 @@ class GFlareCrawler:
 			else:
 				self.session.proxies = { 'https' : f"https://{self.settings['PROXY_USER']}:{self.settings['PROXY_PASSWORD']}@{self.settings['PROXY_HOST']}"}
 
-		retry = Retry(total=retries, read=retries, connect=retries, backoff_factor=0.3, status_forcelist=status_forcelist)
-		# adapter = HTTPAdapter(max_retries=retry)
-		adapter = HTTPAdapter()
-		self.session.mount("http://", adapter)
-		self.session.mount("https://", adapter)
+		# retry = Retry(total=retries, read=retries, connect=retries, backoff_factor=0.3, status_forcelist=status_forcelist)
+		# # adapter = HTTPAdapter(max_retries=retry)
+		# adapter = HTTPAdapter()
+		# self.session.mount("http://", adapter)
+		# self.session.mount("https://", adapter)
 	
 	def crawl_url(self, url):
 
