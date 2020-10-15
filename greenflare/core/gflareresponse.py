@@ -84,13 +84,14 @@ class GFlareResponse:
 				joined_url = urllib.parse.urljoin(self.url, url)
 				scheme, netloc, path, query, frag = urllib.parse.urlsplit(joined_url)
 
-		args = urllib.parse.parse_qsl(query)
-		query = urllib.parse.urlencode(args)
-		path = urllib.parse.quote_plus(path, safe="/+|;")
 		return {"scheme": scheme, "netloc": netloc, "path": path, "query": query, "frag": frag}
 
 	def url_components_to_str(self, comp):
 		return str(urllib.parse.urlunsplit((comp["scheme"], comp["netloc"], comp["path"], comp["query"], "")))
+
+	def normalise_url(self, url):
+		parsed = self.parse_url(url)
+		return self.url_components_to_str(parsed)
 
 	def get_domain(self, url=None):
 		domain = self.parse_url(url)["netloc"]
@@ -169,12 +170,6 @@ class GFlareResponse:
 				# Do not check and report on on-page links 
 				if "check_blocked_urls" not in self.settings.get("CRAWL_ITEMS", "") and self.allowed_by_robots_txt(onpage_url) == False:
 					continue
-
-				if " " in onpage_url:
-					print("Critical flaw in parsing URL see below")
-					print(link.attrib['href'])
-					print(onpage_url_components)
-					print(onpage_url)
 
 				valid_links.append(onpage_url)
 
@@ -293,7 +288,7 @@ class GFlareResponse:
 		if len(hist) > 0:
 		
 			for i in range(len(hist)):
-				hob_url = str(hist[i].url).strip()
+				hob_url = self.normalise_url(hist[i].url)
 
 				if "external_links" not in self.settings.get("CRAWL_LINKS", ""):
 					if self.is_external(hob_url):
@@ -317,8 +312,6 @@ class GFlareResponse:
 	
 	def allowed_by_robots_txt(self, url):
 		return self.gfrobots.is_allowed(url)
-		# result = grobots.allowed_by_robots(self.robots_txt, self.robots_txt_ua, url)
-		# return result[0]
 
 	def get_robots_txt_status(self, url):
 		if self.allowed_by_robots_txt(url): return "allowed"
