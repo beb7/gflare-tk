@@ -105,13 +105,13 @@ class CrawlTab(ttk.Frame):
 
 		self.treeview_table["columns"] = tuple(items)
 		self.treeview_table.heading("#0", text="id", anchor=W)
-		self.treeview_table.column("#0", width=50, stretch=NO)
+		self.treeview_table.column("#0", width=75, stretch=True)
 		for i in self.treeview_table["columns"]:
 			self.treeview_table.heading(i, text=i, anchor=W)
 			if "url" in i.lower():
-				self.treeview_table.column(i, width=250, stretch=NO)
+				self.treeview_table.column(i, minwidth=250, width=400, stretch=True)
 			else:
-				self.treeview_table.column(i, width=100, stretch=NO)
+				self.treeview_table.column(i, width=100, stretch=False)
 
 	def enter_hit(self, event=None):
 		self.btn_crawl_pushed()
