@@ -251,4 +251,7 @@ class CrawlTab(ttk.Frame):
 		self.master.title("List Mode - Greenflare SEO Crawler")
 		self.entry_url_input.delete(0, 'end')
 		self.entry_url_input.insert(0, "List Mode ...")
+		self.freeze_input()
+
+	def freeze_input(self):
 		self.entry_url_input["state"] = "disabled"
