@@ -110,5 +110,16 @@ class TestRobotsTxt(unittest.TestCase):
 		robot = GFlareRobots(robots_txt, user_agent=ua)
 		self.assertEqual(robot.is_allowed(url), True, "Should be allowed")
 
+	def test_rogue_sitemap_entry(self):
+		robots_txt = "User-agent: *\nAllow: /allowed/section\nSitemap: https://www.example.com/sitemap.xml\nDisallow: /disallowed/section\nDisallow: /*section"
+		ua = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+
+		allowed_url = "https://www.example.com/allowed/section"
+		disallowed_url = "https://www.example.com/disallowed/section"
+
+		robot = GFlareRobots(robots_txt, user_agent=ua)
+		self.assertEqual(robot.is_allowed(allowed_url), True, "Should be allowed")
+		self.assertEqual(robot.is_allowed(disallowed_url), False, "Should be disallowed")
+
 if __name__ == '__main__':
 	unittest.main()
