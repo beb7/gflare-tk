@@ -176,6 +176,8 @@ class CrawlTab(ttk.Frame):
 	def add_to_outputtable(self):
 		items = []
 		end = False
+		completed = False
+		timed_out = False
 		try:
 			while not self.crawler.gui_url_queue.empty():
 				items.append(self.crawler.gui_url_queue.get_nowait())
@@ -184,18 +186,10 @@ class CrawlTab(ttk.Frame):
 
 		for item in items:
 			if item == "CRAWL_COMPLETED":
-				self.update_progressbar()
-				self.button_crawl["text"] = "Restart"
-				if self.crawler.settings.get("MODE", "") == "Spider":
-					messagebox.showinfo(title='Crawl completed', message=f'{self.crawler.settings.get("ROOT_DOMAIN", "")} has been crawled successfully!')
-				else:
-					messagebox.showinfo(title='Crawl completed', message='List Mode Crawl has been completed successfully!')
-				end = True
+				completed = True
 				continue
 			if item == "CRAWL_TIMED_OUT":
-				messagebox.showerror(title='Error - Timed Out', message='Crawl timed out!')
-				self.button_crawl["text"] = "Resume"
-				end = True
+				timed_out = True
 				continue
 			if item == "END":
 				end = True
@@ -207,7 +201,20 @@ class CrawlTab(ttk.Frame):
 		self.update_progressbar()
 		self.update_bottom_stats()
 		
-		if end: return
+		if completed:
+			self.button_crawl["text"] = "Restart"
+			if self.crawler.settings.get("MODE", "") == "Spider":
+				messagebox.showinfo(title='Crawl completed', message=f'{self.crawler.settings.get("ROOT_DOMAIN", "")} has been crawled successfully!')
+			else:
+				messagebox.showinfo(title='Crawl completed', message='List Mode Crawl has been completed successfully!')
+			return
+		if timed_out:
+			messagebox.showerror(title='Error - Timed Out', message='Crawl timed out!')
+			self.button_crawl["text"] = "Resume"
+			return
+		if end:
+			return
+
 		self.after(200, self.add_to_outputtable)
 
 	# @daemonize(title="Loading crawl ...", msg="Please wait while the crawl is loading ...")
