@@ -24,7 +24,10 @@ class GFlareResponse:
 
 	def set_response(self, response):
 		self.response = response
-		self.url = str(self.response.url).strip()
+		# requests.get() encodes spaces within the path with %25
+		# If we encode the path beforehand, request.get() will double encode the path again resulting in the generation of endless new urls
+		# we need to decode the path back to what it was before request.get() encoded it
+		self.url = self.unencode_url(self.response.url)
 
 	def response_to_robots_txt(self, response):
 		self.settings["ROOT_DOMAIN"] = self.get_domain(self.url)
@@ -61,7 +64,7 @@ class GFlareResponse:
 		d["data"] = [self.dict_to_row(d["data"])]
 		
 		if self.has_redirected(): 
-			d["data"] += self.process_redirects()
+			d["data"] += self.get_redirects()
 		
 		return d
 
@@ -91,6 +94,11 @@ class GFlareResponse:
 
 	def normalise_url(self, url):
 		parsed = self.parse_url(url)
+		return self.url_components_to_str(parsed)
+
+	def unencode_url(self, url):
+		parsed = self.parse_url(url)
+		parsed["path"] = urllib.parse.unquote(parsed["path"])
 		return self.url_components_to_str(parsed)
 
 	def get_domain(self, url=None):
@@ -281,12 +289,11 @@ class GFlareResponse:
 	def has_redirected(self):
 		return len(self.response.history) > 0
 
-	def process_redirects(self):
+	def get_redirects(self):
 		data = []
 		hist = self.response.history
 		
 		if len(hist) > 0:
-		
 			for i in range(len(hist)):
 				hob_url = self.normalise_url(hist[i].url)
 
@@ -306,7 +313,7 @@ class GFlareResponse:
 				hob_data = {"url": hob_url, "content_type": hist[i].headers.get('Content-Type', ""), "status_code" : hist[i].status_code, "indexability": "non-indexable", "x_robots_tag": hist[i].headers.get('X-Robots-Tag', ""), "redirect_url": redirect_to_url, "robots_txt": robots_status}
 				hob_row = self.dict_to_row(hob_data)
 
-				data.append(hob_row)				
+				data.append(hob_row)
 
 		return data
 	
