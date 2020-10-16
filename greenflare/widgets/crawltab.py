@@ -26,10 +26,10 @@ class CrawlTab(ttk.Frame):
 		self.button_crawl = ttk.Button(self.topframe, text="Start", command=self.btn_crawl_pushed)
 		self.button_crawl.pack(side=LEFT, padx=(0, 20))
 
-		# macOS does not support styling the progressbar to include labels (as far as I know)
-		if sys.platform == "darwin":
+		# macOS and linux have issues with the below style so only use it on windows for now
+		if sys.platform != "win32":
 			self.progressbar = ttk.Progressbar(self.topframe, orient="horizontal", length=150, mode="determinate", maximum=100, value=0)
-		else:
+		elif sys.platform == "win32":
 			self.style = ttk.Style(self)
 			self.style.layout('text.Horizontal.TProgressbar', [('Horizontal.Progressbar.trough', {'children': [('Horizontal.Progressbar.pbar', {'side': 'left', 'sticky': 'ns'})], 'sticky': 'nswe'}), ('Horizontal.Progressbar.label', {'sticky': ''})])
 			self.style.configure('text.Horizontal.TProgressbar', text='0 %')
@@ -222,7 +222,7 @@ class CrawlTab(ttk.Frame):
 			if self.crawler.urls_total > 0:
 				percentage = int((self.crawler.urls_crawled / self.crawler.urls_total) * 100)
 				self.progressbar["value"] = percentage
-				if sys.platform != "darwin": self.style.configure('text.Horizontal.TProgressbar', text=f'{percentage} %')
+				if sys.platform == "win32": self.style.configure('text.Horizontal.TProgressbar', text=f'{percentage} %')
 
 	def update_bottom_stats(self):
 		with self.lock:
