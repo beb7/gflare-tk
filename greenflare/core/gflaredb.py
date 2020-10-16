@@ -282,7 +282,7 @@ class GFlareDB:
 		
 		urls_not_in_db = list(set(links)-set(urls_in_db))
 
-		if len(urls_not_in_db) == 0:
+		if not urls_not_in_db:
 			return []
 		return urls_not_in_db
 
@@ -337,10 +337,27 @@ class GFlareDB:
 			self.cur.executemany(query, data)
 
 	@exception_handler
-	def insert_redirects(self, redirects):
-		for redirect in redirects:
-			redirect_url = redirect[0]
-			if self.url_in_db(redirect_url) == True:
-				self.insert_crawl_data([redirect], new=False)
-			else:
-				self.insert_crawl_data([redirect], new=True)
+	def insert_new_data(self, redirects):
+		new_data = []
+		updated_data = []
+
+		all_urls = [u[0] for u in redirects]
+		new_urls = self.get_new_urls(all_urls)
+
+		# Redirect URLs that were unknown before will be added immediately to the db
+		new_data = [d for d in redirects if d[0] in new_urls]
+		
+		if new_data:
+			self.insert_crawl_data(new_data, new=True)
+
+		# All other URLs have at least been discovered (but not necessarily been crawled)
+		other_urls = [u for u in all_urls if u not in new_urls]
+
+		# check how many of the other URLs actually need updating
+		to_be_updated_urls = self.get_new_urls(other_urls, check_crawled = True)
+		updated_data = [d for d in redirects if d[0] in to_be_updated_urls]
+		
+		if updated_data:
+			self.insert_crawl_data(updated_data, new=False)
+
+		return (new_data, updated_data)
