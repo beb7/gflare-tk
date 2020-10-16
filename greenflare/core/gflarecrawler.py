@@ -285,7 +285,13 @@ class GFlareCrawler:
 		
 		self.add_to_url_queue([url], count=False)
 		return "SKIP_ME"
-
+	
+	def add_to_url_queue(self, urls, count=True):
+		if count:
+			with self.lock:
+				self.urls_total += len(urls)
+		for url in urls:
+			self.url_queue.put(url)
 
 	def add_to_gui_queue(self, data):
 		self.gui_url_queue.put(data)
@@ -302,9 +308,9 @@ class GFlareCrawler:
 			
 			# print(f"{name}: sleeping for {self.rate_limit_delay} seconds ...")
 			sleep(self.rate_limit_delay)
-			
+
 			response = self.crawl_url(url)
-			
+
 			if response == "SKIP_ME": 
 				busy.clear()
 				continue
@@ -314,6 +320,7 @@ class GFlareCrawler:
 
 	def consumer_worker(self):
 		db = self.connect_to_db()
+
 		with self.lock:
 			inserted_urls = 0
 			threads = int(self.settings["THREADS"])
@@ -336,7 +343,8 @@ class GFlareCrawler:
 
 				if isinstance(response, list):
 					db.insert_crawl_data(response)
-					if self.gui_mode: self.add_to_gui_queue(response)
+					if self.gui_mode: 
+						self.add_to_gui_queue(response)
 					with self.lock:
 						inserted_urls += 1
 						self.urls_crawled += 1
@@ -352,17 +360,12 @@ class GFlareCrawler:
 					continue
 
 				if "data" in data:
-					urls = [u[0] for u in data["data"]]
-					new_urls = db.get_new_urls(urls, check_crawled=True)
-					new_data = [d for d in data["data"] if d[0] in new_urls]
-					newly_discovered_urls = len(db.get_new_urls(urls, check_crawled=False))
-					db.insert_crawl_data(new_data)
+					new, updated = db.insert_new_data(data["data"])
 					with self.lock:
-						inserted_urls += len(new_data)
-						self.urls_crawled += len(new_data)
-						if newly_discovered_urls > 0:
-							self.urls_total += newly_discovered_urls
-					if self.gui_mode: self.add_to_gui_queue(new_data)
+						self.urls_crawled += len(updated) + len(new)
+						self.urls_total += len(new)
+					if self.gui_mode:
+						self.add_to_gui_queue(new + updated)
 
 				extracted_links = data.get("links", []) + data.get("hreflang_links", []) + data.get("canonical_links", []) + data.get("pagination_links", [])
 
@@ -395,13 +398,6 @@ class GFlareCrawler:
 		self.crawl_running.set()
 		self.session.close()
 		print("Consumer thread finished")
-
-	def add_to_url_queue(self, urls, count=True):
-		if count:
-			with self.lock:
-				self.urls_total += len(urls)
-		for url in urls:
-			self.url_queue.put(url)
 
 	def get_crawl_data(self):
 		if self.db_file:
