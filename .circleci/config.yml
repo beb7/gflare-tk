@@ -3,7 +3,7 @@ version: 2.1
 parameters:
   greenflare-release:
     type: string
-    default: "0.83"
+    default: "0.84"
   python-ver-macos:
     type: string
     default: "3.8.6"
@@ -27,12 +27,12 @@ jobs:
             python --version
             python build_binary.py build_exe
             tar -zcvf linux-build.tar.gz build/
-            mkdir results/ 
-            mv linux-build.tar.gz results/ 
+            mkdir results/
+            mv linux-build.tar.gz results/
           name: Freeze Linux Binary
       - store_artifacts:
           path: results/
-  
+
   windows-build:
     executor: win/default
     environment:
@@ -60,12 +60,12 @@ jobs:
             python build_binary.py build_exe
             tar.exe -a -c -f greenflare-${GFLAREVER}-x86_64-1.zip build
             mkdir results
-            move greenflare-*.zip results/          
+            move greenflare-*.zip results/
       - store_artifacts:
           path: results/
-  
+
   macos-build:
-    macos: 
+    macos:
       xcode: 12.0.0
     environment:
       GFLAREVER: << pipeline.parameters.greenflare-release >>
@@ -80,10 +80,10 @@ jobs:
           name: Install Python
           command: |
             cd macos
-            chmod +x install-custom-python.sh 
+            chmod +x install-custom-python.sh
             ./install-custom-python.sh
             cd ..
-      - run: 
+      - run:
           name: Install dependencies
           command: |
             /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install pip --upgrade
@@ -106,7 +106,7 @@ jobs:
             mkdir results/
             cd dist/
             hdiutil create ./greenflare-${GFLAREVER}-x86_64-1.dmg -srcfolder Greenflare.app -ov
-            mv greenflare-*.dmg ../results/            
+            mv greenflare-*.dmg ../results/
       - store_artifacts:
           path: results/
 workflows:
