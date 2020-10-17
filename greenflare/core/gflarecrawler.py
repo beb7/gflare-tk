@@ -47,7 +47,7 @@ class GFlareCrawler:
 
 	def connect_to_db(self):
 		return GFlareDB(self.db_file, crawl_items=self.settings.get("CRAWL_ITEMS"), extractions=self.settings.get("EXTRACTIONS", None))
-	
+
 	def init_crawl_headers(self):
 		if not self.settings.get('USER_AGENT', ''): self.settings['USER_AGENT'] = "Greenflare SEO Spider/1.0"
 		self.HEADERS = {'User-Agent': self.settings['USER_AGENT'], 'Accept-Language': 'en-gb', 'Accept-Encoding': 'gzip', 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Cache-Control': 'no-cache', 'Pragma': 'no-cache'}
@@ -63,7 +63,7 @@ class GFlareCrawler:
 		print("Crawl started")
 		self.init_crawl_headers()
 		self.init_session()
-		
+
 		# Set speed limit
 		if int(self.settings.get("URLS_PER_SECOND", 0)) > 0:
 			self.parallel_requests_limit = (1 / int(self.settings["URLS_PER_SECOND"])) * int(self.settings["THREADS"])
@@ -73,7 +73,7 @@ class GFlareCrawler:
 
 		# Reset response object
 		self.gf = gf(self.settings, columns=None)
-		
+
 		self.columns = self.gf.all_items = db.get_columns()
 
 		if self.settings["MODE"] == "Spider":
@@ -98,7 +98,7 @@ class GFlareCrawler:
 		self.start_consumer()
 		Thread(target=self.spawn_threads).start()
 
-	
+
 	def load_crawl(self, db_file):
 		self.db_file = db_file
 		db = self.connect_to_db()
@@ -122,7 +122,7 @@ class GFlareCrawler:
 			self.timestamps_queue = queue.Queue()
 		self.crawl_running.clear()
 		self.robots_txt_found.clear()
-		
+
 		self.urls_crawled = 0
 		self.urls_total = 0
 
@@ -152,7 +152,7 @@ class GFlareCrawler:
 			self.request_robots_txt()
 		else:
 			self.robots_txt_found.set()
-		
+
 		# Reinit URL queue
 		self.add_to_url_queue(db.get_url_queue(), count=False)
 
@@ -161,7 +161,7 @@ class GFlareCrawler:
 
 		self.start_consumer()
 		Thread(target=self.spawn_threads).start()
-		
+
 	def start_consumer(self):
 		self.consumer_thread = Thread(target=self.consumer_worker, name="consumer")
 		self.consumer_thread.start()
@@ -187,17 +187,17 @@ class GFlareCrawler:
 	def urls_per_second_stats(self):
 		url_limit = int(self.settings.get("URLS_PER_SECOND", 0))
 		step = 0.1
-		
+
 		# Set initial limit depending on the number of threads
 		if url_limit > 0 :
 			self.rate_limit_delay = 1 / url_limit * int(self.settings.get("THREADS", 1)) * step
 		while self.crawl_running.is_set() == False:
 			with self.lock:
 				old = self.urls_crawled
-			
+
 			# Wait for 1 second to pass
 			sleep(1)
-		
+
 			with self.lock:
 				self.current_urls_per_second = self.urls_crawled - old
 
@@ -221,7 +221,7 @@ class GFlareCrawler:
 		status_forcelist = (500, 502, 504)
 		retries = self.settings.get("MAX_RETRIES", 0)
 		self.header_only = False
-		
+
 		if self.settings.get("PROXY_HOST", "") != "":
 			if self.settings.get("PROXY_USER", "") == "":
 				self.session.proxies = {"https": f"{self.settings['PROXY_HOST']}"}
@@ -233,7 +233,7 @@ class GFlareCrawler:
 		# adapter = HTTPAdapter()
 		# self.session.mount("http://", adapter)
 		# self.session.mount("https://", adapter)
-	
+
 	def crawl_url(self, url):
 
 		header = None
@@ -244,21 +244,21 @@ class GFlareCrawler:
 		issue = ""
 
 		try:
-			if self.header_only: 
+			if self.header_only:
 				header = self.session.head(url, headers=self.HEADERS, allow_redirects=True, timeout=timeout)
 				return header
-			
+
 			header = self.session.head(url, headers=self.HEADERS, allow_redirects=True, timeout=timeout)
-			
+
 			content_type = header.headers.get("content-type", "")
 			if "text" in content_type:
 				body = self.session.get(url, headers=self.HEADERS, allow_redirects=True, timeout=timeout)
 				return body
-			
+
 			return header
 		except exceptions.TooManyRedirects:
 			return self.deal_with_exception(url, "Too Many Redirects")
-		
+
 		except exceptions.ConnectionError:
 			return self.deal_with_exception(url, "Connection Refused")
 
@@ -271,7 +271,7 @@ class GFlareCrawler:
 		except Exception as e:
 			return self.deal_with_exception(url, "Unknown Exception")
 
-	
+
 	def deal_with_exception(self, url, issue):
 		with self.lock:
 			attempts = self.url_attempts.get(url, 0)
@@ -282,10 +282,10 @@ class GFlareCrawler:
 
 		with self.lock:
 			self.url_attempts[url] = self.url_attempts.get(url, 0) + 1
-		
+
 		self.add_to_url_queue([url], count=False)
 		return "SKIP_ME"
-	
+
 	def add_to_url_queue(self, urls, count=True):
 		if count:
 			with self.lock:
@@ -300,18 +300,18 @@ class GFlareCrawler:
 		busy = Event()
 		with self.lock:
 			self.worker_status.append(busy)
-		
+
 		while self.crawl_running.is_set() == False:
 			url = self.url_queue.get()
 			if url == "END": break
 			busy.set()
-			
+
 			# print(f"{name}: sleeping for {self.rate_limit_delay} seconds ...")
 			sleep(self.rate_limit_delay)
 
 			response = self.crawl_url(url)
 
-			if response == "SKIP_ME": 
+			if response == "SKIP_ME":
 				busy.clear()
 				continue
 
@@ -339,11 +339,18 @@ class GFlareCrawler:
 
 				if "end" in response:
 					self.crawl_running.set()
+
+					# Empty our URL Queue first
+					with self.url_queue.mutex:
+						self.url_queue.queue.clear()
+					# Add signals for our waiting workers that they are done for today
+					[self.url_queue.put("END") for _ in range(int(self.settings["THREADS"]))]
+
 					break
 
 				if isinstance(response, list):
 					db.insert_crawl_data(response)
-					if self.gui_mode: 
+					if self.gui_mode:
 						self.add_to_gui_queue(response)
 					with self.lock:
 						inserted_urls += 1
