@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, Menu, filedialog as fd, messagebox
+from tkinter import ttk, Menu, filedialog as fd, messagebox, TclError
 from core.gflarecrawler import GFlareCrawler
 from widgets.crawltab import CrawlTab
 from widgets.settingstab import SettingsTab
@@ -162,6 +162,15 @@ if __name__ == "__main__":
 
 	root = tk.Tk()
 	root.geometry("1024x768")
+
+	# This ugly step is needed to initialise the filemanager variables we are setting below
+	try:
+		root.tk.call('tk_getOpenFile', '-foobarbaz')
+	except TclError:
+		pass
+	# Disable hidden files in file dialogues by default but show option to show them
+	root.tk.call('set', '::tk::dialog::file::showHiddenBtn', '1')
+	root.tk.call('set', '::tk::dialog::file::showHiddenVar', '0')
 
 	# macOS tkinter cannot handle iconphotos at the time being, disabling it for now
 	if sys.platform != "darwin":
