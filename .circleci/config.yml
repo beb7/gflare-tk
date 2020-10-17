@@ -117,8 +117,12 @@ workflows:
     jobs:
       # - ubuntu-build
       - windows-build
+          filters:
+            branches:
+              only:
+                - master      
       - macos-build
-        filters:
-          branches:
-            only:
-              - master
+          filters:
+            branches:
+              only:
+                - master
