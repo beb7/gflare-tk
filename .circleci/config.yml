@@ -7,38 +7,33 @@ jobs:
       xcode: "12.0.0"
     steps:
       - checkout
-      -
-        restore_cache:
+      - restore_cache:
           keys:
             - python-build-cache-3.8.6
             - python-venv-3.8.6
-      -
-        run:
+      - run:
           command: |
               cd macos
               chmod +x install-custom-python.sh
               ./install-custom-python.sh
               cd ..
           name: "Install Python"
-      -
-        run:
+      - run:
           command: |
               source ~/.venv/glfare/bin/activate
               python -m pip install pip --upgrade
               python -m pip install -r requirements.txt
               python -m pip install py2app==0.22
           name: "Install dependencies"
-      -
-        save_cache:
+      - save_cache:
           key: python-build-cache-3.8.6
           paths:
             - ~/python-build
-      -
-        save_cache:
+      - save_cache:
           key: python-venv-3.8.6
           paths:
-            - ~/.venv      -
-        run:
+            - ~/.venv
+      - run:
           command: |
               source ~/.venv/glfare/bin/activate
               python setup-py2app.py py2app
@@ -46,16 +41,14 @@ jobs:
               cp macos/launch-mac dist/Greenflare.app/Contents/MacOS/
               plutil -replace CFBundleExecutable -string launch-mac dist/Greenflare.app/Contents/Info.plist
           name: "Freeze macOS app"
-      -
-        run:
+      - run:
           command: |
               mkdir results/
               cd dist/
               hdiutil create ./greenflare-${GFLAREVER}-x86_64-1.dmg -srcfolder Greenflare.app -ov
               mv greenflare-*.dmg ../results/
           name: "Package .dmg app bundle"
-      -
-        store_artifacts:
+      - store_artifacts:
           path: results/
   ubuntu-build:
     executor: python/default
@@ -64,8 +57,7 @@ jobs:
       - python/load-cache
       - python/install-deps
       - python/save-cache
-      -
-        run:
+      - run:
           command: |
               python --version
               python build_binary.py build_exe
@@ -73,8 +65,7 @@ jobs:
               mkdir results/
               mv linux-build.tar.gz results/
           name: "Freeze Linux Binary"
-      -
-        store_artifacts:
+      - store_artifacts:
           path: results/
   windows-build:
     environment:
@@ -84,31 +75,27 @@ jobs:
       - checkout
       - python/load-cache
       - python/save-cache
-      -
-        run:
+      - run:
           command: |
               choco install python --version=3.8.6
               refreshenv
               python --version
               $Env:Path
           name: "Install Python"
-      -
-        run:
+      - run:
           command: |
               pip install --user pip --upgrade
               pip install --user -r requirements.txt
               pip install cx-freeze==6.1
           name: "Install dependencies"
-      -
-        run:
+      - run:
           command: |
               python build_binary.py build_exe
               tar.exe -a -c -f greenflare-${GFLAREVER}-x86_64-1.zip build
               mkdir results
               move greenflare-*.zip results/
           name: "Freeze Windows Programme"
-      -
-        store_artifacts:
+      - store_artifacts:
           path: results/
 orbs:
   python: circleci/python@0.3.0
