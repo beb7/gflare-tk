@@ -18,7 +18,7 @@ import argparse
 class mainWindow(ttk.Frame):
 	def __init__(self, crawler=None):
 		ttk.Frame.__init__(self)
-		
+
 		self.crawler = crawler
 		self.executor = futures.ThreadPoolExecutor(max_workers=1)
 		self.tab_parent = ttk.Notebook()
@@ -53,22 +53,28 @@ class mainWindow(ttk.Frame):
 		self.menubar.add_cascade(label="Help", menu=self.aboutmenu)
 
 		root.config(menu=self.menubar)
-	
-	def daemonize(title=None, msg=None):
+
+	def daemonize(title=None, msg=None, callbacks=None):
 		def decorator(target):
 			@functools.wraps(target)
 			def wrapper(*args, **kwargs):
+
 				args[0].win_progress = ProgressWindow(title=title, msg=msg)
 				args[0].win_progress.focus_force()
 				args[0].win_progress.grab_set()
+
 				result = args[0].executor.submit(target, *args, **kwargs)
 				result.add_done_callback(args[0].daemon_call_back)
+
+				if callbacks:
+					for func in callbacks:
+						result.add_done_callback(func)
 				return result
-	 
+
 			return wrapper
-	 
+
 		return decorator
- 
+
 	def daemon_call_back(self, future):
 		self.win_progress.grab_release()
 		self.win_progress.window.destroy()
@@ -82,33 +88,46 @@ class mainWindow(ttk.Frame):
 
 	def load_crawl(self, db_file=None):
 		files = [('Greenflare DB', '*.gflaredb'), ('All files', '.*')]
-		
+
 		if not db_file: db_file = fd.askopenfilename(filetypes=files)
 		# Don't do anything if user does not select a file
 		if not db_file: return
-		
+
 		self.crawler.load_crawl(db_file)
 
 		if self.crawler.settings["MODE"] == "Spider": self.master.title(f"{self.crawler.settings['ROOT_DOMAIN']} - Greenflare SEO Crawler")
-		elif self.crawler.settings["MODE"] == "List": 
+		elif self.crawler.settings["MODE"] == "List":
 			self.tab_crawl.show_list_mode()
-		
+
 		self.update_gui()
 		self.tab_crawl.freeze_input()
 		self.tab_crawl.load_crawl_to_outputtable()
 		self.tab_crawl.update_bottom_stats()
 
-	@daemonize(title="Exporting crawl ...", msg="Exporting to CSV, that might take a while ...")
+
 	def full_export(self):
 		files = [('CSV files', '*.csv')]
 		export_file = fd.asksaveasfilename(filetypes=files)
-		if not export_file: return
-		if not export_file.endswith(".csv"): export_file += ".csv"
-		if path.isfile(export_file): remove(export_file)
+
+		# Don't do anything if no file is being selected
+		if not export_file:
+			return
+
+		self.export_to_csv(export_file)
+
+	def show_export_completed_msg(self):
+		messagebox.showinfo(title='Export completed', message=f'All data has been successfully exported!')
+
+	@daemonize(title="Exporting crawl ...", msg="Exporting to CSV, that might take a while ...", callbacks=[show_export_completed_msg])
+	def export_to_csv(self, filename):
+		if not filename.endswith(".csv"):
+			 filename += ".csv"
+		if path.isfile(filename):
+			remove(filename)
+
 		db = self.crawler.connect_to_db()
-		db.to_csv(export_file, columns=self.crawler.columns)
+		db.to_csv(filename, columns=self.crawler.columns)
 		db.close()
-		messagebox.showinfo(title='Export completed', message=f'All data has been successfully saved to {export_file}!')
 
 	def spider_mode(self):
 		self.crawler.settings['MODE'] = 'Spider'
@@ -125,7 +144,7 @@ class mainWindow(ttk.Frame):
 		self.tab_settings.update()
 		self.tab_exclusions.update()
 		self.tab_extractions.update()
-	
+
 	def on_closing(self):
 		self.crawler.end_crawl_gracefully()
 		self.master.destroy()
@@ -134,16 +153,16 @@ class mainWindow(ttk.Frame):
 		for f in args:
 			if f.endswith('.gflaredb'): self.load_crawl(db_file=f)
 			break
-		
+
 if __name__ == "__main__":
-	if getattr(sys, 'frozen', False): 
+	if getattr(sys, 'frozen', False):
 		WorkingDir = path.dirname(sys.executable)
 	else:
 		WorkingDir = path.dirname(path.realpath(__file__))
 
 	root = tk.Tk()
 	root.geometry("1024x768")
-	
+
 	# macOS tkinter cannot handle iconphotos at the time being, disabling it for now
 	if sys.platform != "darwin":
 		root.iconphoto(False, tk.PhotoImage(file=WorkingDir + path.sep + 'resources' + path.sep + 'greenflare-icon-32x32.png'))
@@ -168,7 +187,7 @@ if __name__ == "__main__":
 	if sys.platform == "darwin":
 		# Use TK's Apple Event Handler to react to clicked/open documents
 		root.createcommand("::tk::mac::OpenDocument", app.open_file_on_macos)
-	
+
 	# Parse and load db file if provided
 	parser = argparse.ArgumentParser()
 	parser.add_argument("file_path", type=Path, nargs='*')
@@ -176,7 +195,7 @@ if __name__ == "__main__":
 	p = parser.parse_args()
 
 	if p.file_path and p.file_path[0].exists():
-		app.load_crawl(db_file=p.file_path[0])	
-	
+		app.load_crawl(db_file=p.file_path[0])
+
 	root.protocol("WM_DELETE_WINDOW", app.on_closing)
 	root.mainloop()
