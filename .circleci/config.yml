@@ -92,6 +92,7 @@ jobs:
           key: python-build-cache-{{ checksum "macos/install-custom-python.sh" }}
           paths:
             - ~/python-build
+      - save_cache:
           key: python-venv-{{ checksum "macos/install-custom-python.sh" }}
           paths:
             - ~/.venv
