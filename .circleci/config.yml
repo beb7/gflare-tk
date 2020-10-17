@@ -73,8 +73,8 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - python-build-cache-{{ checksum "macos/install-custom-python.sh" }}
-            - python-venv-{{ checksum "macos/install-custom-python.sh" }}
+            - python-build-cache-3.8.6
+            - python-venv-3.8.6
       - run:
           name: Install Python
           command: |
@@ -89,11 +89,11 @@ jobs:
             python -m pip install -r requirements.txt
             python -m pip install py2app==0.22
       - save_cache:
-          key: python-build-cache-{{ checksum "macos/install-custom-python.sh" }}
+          key: python-build-cache-3.8.6
           paths:
             - ~/python-build
       - save_cache:
-          key: python-venv-{{ checksum "macos/install-custom-python.sh" }}
+          key: python-venv-3.8.6
           paths:
             - ~/.venv
       - run:
