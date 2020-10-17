@@ -1,9 +1,9 @@
 #!/bin/sh
 
 BUILD_DIR="${HOME}/python-build"
-PY_ENV="${HOME}.venv/gflare"
+PY_ENV="${HOME}/.venv/gflare"
 
-if [ ! -d "$BUILD_DIR" ]; then
+if [ ! -d "$PY_ENV" ]; then
 
 	mkdir ~/Universal
 	cd ~/Universal
@@ -47,9 +47,7 @@ if [ ! -d "$BUILD_DIR" ]; then
 	echo "Starting build ..."
 	mkdir -p $BUILD_DIR
 	python2.7 build-installer.py --universal-archs=intel-64 --dep-target=10.9 --build-dir=$BUILD_DIR
-fi
 
-if [ ! -d "$PY_ENV" ]; then
 	echo "Installing Python ..."
 
 	cd $BUILD_DIR
