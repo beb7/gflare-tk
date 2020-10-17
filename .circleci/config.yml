@@ -118,3 +118,7 @@ workflows:
       # - ubuntu-build
       - windows-build
       - macos-build
+        filters:
+          branches:
+            only:
+              - master
