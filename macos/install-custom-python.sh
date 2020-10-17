@@ -1,6 +1,7 @@
 #!/bin/sh
 
 BUILD_DIR="${HOME}/python-build"
+PY_ENV="${HOME}.venv/gflare"
 
 if [ ! -d "$BUILD_DIR" ]; then
 
@@ -48,9 +49,19 @@ if [ ! -d "$BUILD_DIR" ]; then
 	python2.7 build-installer.py --universal-archs=intel-64 --dep-target=10.9 --build-dir=$BUILD_DIR
 fi
 
-cd $BUILD_DIR
-cd installer/Python.mpkg/Contents/Packages
-sudo pax -z -p e -r -f PythonFramework-3.8.pkg/Contents/Archive.pax.gz
-sudo mkdir -p /Library/Frameworks/Python.framework/
-sudo cp -r Versions /Library/Frameworks/Python.framework/
-sudo ./PythonInstallPip-3.8.pkg/Contents/Resources/postflight
+if [ ! -d "$PY_ENV" ]; then
+	echo "Installing Python ..."
+
+	cd $BUILD_DIR
+	cd installer/Python.mpkg/Contents/Packages
+	sudo pax -z -p e -r -f PythonFramework-3.8.pkg/Contents/Archive.pax.gz
+	sudo mkdir -p /Library/Frameworks/Python.framework/
+	sudo cp -r Versions /Library/Frameworks/Python.framework/
+	sudo ./PythonInstallPip-3.8.pkg/Contents/Resources/postflight
+
+	echo "Creating virtual environment for Python ..."
+	/Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m venv $PY_ENV
+
+	echo "Activating virtual environment ..."
+	source $PY_ENV/bin/activate
+fi

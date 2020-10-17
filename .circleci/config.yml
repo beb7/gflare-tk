@@ -69,13 +69,12 @@ jobs:
       xcode: 12.0.0
     environment:
       GFLAREVER: << pipeline.parameters.greenflare-release >>
-      PYTHONVER: << pipeline.parameters.python-ver-macos >>
-      PYTHONVERMAJOR: << pipeline.parameters.python-ver-macos-major >>
     steps:
       - checkout
       - restore_cache:
           keys:
             - python-build-cache-{{ checksum "macos/install-custom-python.sh" }}
+            - python-venv-{{ checksum "macos/install-custom-python.sh" }}
       - run:
           name: Install Python
           command: |
@@ -86,17 +85,20 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install pip --upgrade
-            /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install -r requirements.txt
-            /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install py2app==0.22
+            python -m pip install pip --upgrade
+            python -m pip install -r requirements.txt
+            python -m pip install py2app==0.22
       - save_cache:
           key: python-build-cache-{{ checksum "macos/install-custom-python.sh" }}
           paths:
             - ~/python-build
+          key: python-venv-{{ checksum "macos/install-custom-python.sh" }}
+          paths:
+            - ~/.venv
       - run:
           name: Freeze macOS app
           command: |
-            /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 setup-py2app.py py2app
+            python setup-py2app.py py2app
             chmod +x macos/launch-mac
             cp macos/launch-mac dist/Greenflare.app/Contents/MacOS/
             plutil -replace CFBundleExecutable -string launch-mac dist/Greenflare.app/Contents/Info.plist

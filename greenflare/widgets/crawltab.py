@@ -34,9 +34,9 @@ class CrawlTab(ttk.Frame):
 			self.style.layout('text.Horizontal.TProgressbar', [('Horizontal.Progressbar.trough', {'children': [('Horizontal.Progressbar.pbar', {'side': 'left', 'sticky': 'ns'})], 'sticky': 'nswe'}), ('Horizontal.Progressbar.label', {'sticky': ''})])
 			self.style.configure('text.Horizontal.TProgressbar', text='0 %')
 			self.progressbar = ttk.Progressbar(self.topframe, orient="horizontal", length=150, mode="determinate", maximum=100, value=0, style='text.Horizontal.TProgressbar')
-		
+
 		self.progressbar.pack(side=LEFT, fill="x")
-		
+
 		self.middle_frame = ttk.Frame(self)
 		self.middle_frame.pack(anchor='center', fill='y', expand=1)
 
@@ -75,12 +75,12 @@ class CrawlTab(ttk.Frame):
 				result = args[0].executor.submit(target, *args, **kwargs)
 				result.add_done_callback(args[0].daemon_call_back)
 				return result
-	 
+
 			return wrapper
-	 
+
 		return decorator
- 
- 
+
+
 	def daemon_call_back(self, future):
 		self.win_progress.grab_release()
 		self.win_progress.window.destroy()
@@ -95,7 +95,7 @@ class CrawlTab(ttk.Frame):
 
 	def populate_columns(self):
 		columns = ["url", "content_type", "indexability", "status_code", "h1", "page_title", "canonical_tag", "robots_txt", "redirect_url"]
-		if self.crawler.columns: 
+		if self.crawler.columns:
 			columns = self.crawler.columns.copy()
 			# if 'unique_inlinks' in columns: columns.remove('unique_inlinks')
 
@@ -115,7 +115,7 @@ class CrawlTab(ttk.Frame):
 
 	def enter_hit(self, event=None):
 		self.btn_crawl_pushed()
-	
+
 	def start_new_crawl(self, url):
 		files = [('Greenflare DB', '*.gflaredb'), ('All files', '.*')]
 		db_file = fd.asksaveasfilename(filetypes=files)
@@ -149,16 +149,16 @@ class CrawlTab(ttk.Frame):
 
 		elif self.button_crawl["text"] == "Pause":
 			self.stop_crawl()
-		
+
 		elif self.button_crawl["text"] == "Resume":
 			self.populate_columns()
 			self.crawler.resume_crawl()
 			self.after(10, self.add_to_outputtable)
 			self.after(10, self.change_btn_text)
-		
+
 		elif self.button_crawl["text"] == "Restart":
 			self.start_new_crawl(url)
-		
+
 		print(self.crawler.settings)
 
 	def change_btn_text(self):
@@ -200,7 +200,7 @@ class CrawlTab(ttk.Frame):
 		self.treeview_table.yview_moveto(1)
 		self.update_progressbar()
 		self.update_bottom_stats()
-		
+
 		if completed:
 			self.button_crawl["text"] = "Restart"
 			if self.crawler.settings.get("MODE", "") == "Spider":
@@ -222,7 +222,7 @@ class CrawlTab(ttk.Frame):
 		items = self.crawler.get_crawl_data()
 		self.clear_output_table()
 		for item in items:
-			self.add_item_to_outputtable([item])		
+			self.add_item_to_outputtable([item])
 
 	def update_progressbar(self):
 		with self.lock:
