@@ -18,13 +18,6 @@ jobs:
               ./install-custom-python.sh
               cd ..
           name: "Install Python"
-      - run:
-          command: |
-              source ~/.venv/glfare/bin/activate
-              python -m pip install pip --upgrade
-              python -m pip install -r requirements.txt
-              python -m pip install py2app==0.22
-          name: "Install dependencies"
       - save_cache:
           key: python-build-cache-3.8.6
           paths:
@@ -35,7 +28,14 @@ jobs:
             - ~/.venv
       - run:
           command: |
-              source ~/.venv/glfare/bin/activate
+              source ~/.venv/gflare/bin/activate
+              python -m pip install pip --upgrade
+              python -m pip install -r requirements.txt
+              python -m pip install py2app==0.22
+          name: "Install dependencies"
+      - run:
+          command: |
+              source ~/.venv/gflare/bin/activate
               python setup-py2app.py py2app
               chmod +x macos/launch-mac
               cp macos/launch-mac dist/Greenflare.app/Contents/MacOS/
