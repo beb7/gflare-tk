@@ -3,6 +3,8 @@ from .gflarerobots import GFlareRobots
 import urllib.parse
 # import grobots
 import re
+from functools import wraps
+from time import time
 
 class GFlareResponse:
 	def __init__(self, settings, columns):
@@ -15,12 +17,22 @@ class GFlareResponse:
 		self.robots_txt = ""
 		self.gfrobots = GFlareRobots(self.robots_txt, self.settings.get("USER_AGENT", ''))
 		self.robots_txt_status = None
-		
+
 		self.spider_links = "Spider" in self.settings.get("MODE", "")
 		if self.robots_txt_status == "BLOCKED": self.spider_links = False
 
 		self.CHECK_REDIRECTS_BLOCKED_BY_ROBOTS = False
 		self.CHECK_NOFOLLOW = False
+
+	def timing(f):
+		@wraps(f)
+		def wrap(*args, **kw):
+			ts = time()
+			result = f(*args, **kw)
+			te = time()
+			print(f'func:{f.__name__} took: {te - ts}')
+			return result
+		return wrap
 
 	def set_response(self, response):
 		self.response = response
@@ -29,7 +41,10 @@ class GFlareResponse:
 		# we need to decode the path back to what it was before request.get() encoded it
 		self.url = self.unencode_url(self.response.url)
 
-	def response_to_robots_txt(self, response):
+		if self.is_robots_txt():
+			self.response_to_robots_txt()
+
+	def response_to_robots_txt(self):
 		self.settings["ROOT_DOMAIN"] = self.get_domain(self.url)
 		if self.response.status_code == 200:
 			self.robots_txt = self.response.text
@@ -40,34 +55,31 @@ class GFlareResponse:
 			return str(self.response.url).strip()
 		return str(self.response.history[0].url).strip()
 
+	# @timing
 	def get_data(self):
 
 		self.url_components = urllib.parse.urlsplit(self.url)
 		d = {"url": self.url}
 
-		if self.is_robots_txt(self.url):
-			self.response_to_robots_txt(self.response)
+		if len(self.response.content) > 0:
+			self.tree = self.get_tree()
+			if self.spider_links:
+				d["links"] = self.extract_links()
+				if "hreflang" in self.settings.get("CRAWL_LINKS", ""): d["hreflang_links"] = self.get_hreflang_links()
+				if "canonicals" in self.settings.get("CRAWL_LINKS", ""): d["canonical_links"] = self.get_canonical_links()
+				if "pagination" in self.settings.get("CRAWL_LINKS", ""): d["pagination_links"] = self.get_pagination_links()
+			d["data"] = self.get_crawl_data()
+		else:
 			d["data"] = self.get_header_info()
 
-		else:			
-			if len(self.response.content) > 0:
-				self.tree = self.get_tree()
-				if self.spider_links:
-					d["links"] = self.extract_links()
-					if "hreflang" in self.settings.get("CRAWL_LINKS", ""): d["hreflang_links"] = self.get_hreflang_links()
-					if "canonicals" in self.settings.get("CRAWL_LINKS", ""): d["canonical_links"] = self.get_canonical_links()
-					if "pagination" in self.settings.get("CRAWL_LINKS", ""): d["pagination_links"] = self.get_pagination_links()
-				d["data"] = self.get_crawl_data()
-			else:
-				d["data"] = self.get_header_info()
-
 		d["data"] = [self.dict_to_row(d["data"])]
-		
-		if self.has_redirected(): 
+
+		if self.has_redirected():
 			d["data"] += self.get_redirects()
-		
+
 		return d
 
+	# @timing
 	def get_tree(self):
 		try:
 			# We need to use page.content rather than page.text because html.fromstring implicitly expects bytes as input.
@@ -77,24 +89,26 @@ class GFlareResponse:
 			print(e)
 
 	def parse_url(self, url):
-		scheme, netloc, path, query, frag = urllib.parse.urlsplit(url)
+		try:
+			scheme, netloc, path, query, frag = urllib.parse.urlsplit(url.strip())
+		except:
+			print(f'Error parsing {url}')
+			return {"scheme": '', "netloc": '', "path": '', "query": '', "frag": ''}
 		if not scheme and not netloc:
-			# Hack needed as non RFC tel references are not detected by urlsplit  
+			# Hack needed as non RFC tel references are not detected by urlsplit
 			if path.startswith("tel:"):
 				path.replace("tel:", "")
 				scheme = "tel"
 			else:
-				joined_url = urllib.parse.urljoin(self.url, url)
-				scheme, netloc, path, query, frag = urllib.parse.urlsplit(joined_url)
+				if not path:
+					path = '/'
+				absolute_url = urllib.parse.urljoin(self.url, url)
+				scheme, netloc, path, query, frag = urllib.parse.urlsplit(absolute_url)
 
 		return {"scheme": scheme, "netloc": netloc, "path": path, "query": query, "frag": frag}
 
 	def url_components_to_str(self, comp):
 		return str(urllib.parse.urlunsplit((comp["scheme"], comp["netloc"], comp["path"], comp["query"], "")))
-
-	def normalise_url(self, url):
-		parsed = self.parse_url(url)
-		return self.url_components_to_str(parsed)
 
 	def unencode_url(self, url):
 		parsed = self.parse_url(url)
@@ -121,7 +135,11 @@ class GFlareResponse:
 		if not pattern: return False
 		return bool(re.match(pattern, url))
 
-	def is_robots_txt(self, url):
+	def is_robots_txt(self, url=None):
+		url = url
+		if not url:
+			url = self.url
+
 		if self.is_external(url): return False
 		return self.parse_url(url)["path"] == "/robots.txt"
 
@@ -136,53 +154,39 @@ class GFlareResponse:
 		if "rel=" in header:
 			return header.split(";")[0].replace("<", "").replace(">", "")
 		return ""
-	
+
 	def get_header_info(self):
 		return {"url": self.url, "status_code": self.response.status_code, "content_type": self.response.headers.get("content-type", ""), "robots_txt": self.get_robots_txt_status(self.url), "x_robots_tag": self.response.headers.get("x_robots_tag", ""), "canonical_http": self.get_canonical_http_header()}
-	
+
+	def valid_url(self, components):
+		if not "http" in components['scheme']:
+			return False
+
+		url = self.url_components_to_str(components)
+		if "mailto" in url:
+			print(components)
+
+		# Filter out external links if needed
+		if "external_links" not in self.settings.get("CRAWL_ITEMS", "") and self.get_domain(url) != "" and self.is_external(url):
+			return False
+
+		if self.is_excluded(url):
+			return False
+
+		# Do not check and report on on-page links
+		if "check_blocked_urls" not in self.settings.get("CRAWL_ITEMS", "") and self.allowed_by_robots_txt(url) == False:
+			return False
+		return True
+
+	# @timing
 	def extract_links(self):
-		links = self.tree.cssselect('a')
+		all_links = list(set(self.tree.iterlinks()))
+		if not all_links:
+			return []
+		paths = [str(l[2]) for l in all_links if 'href' in str(l[1])]
+		parsed_links = [self.parse_url(l) for l in paths]
+		return [self.url_components_to_str(l) for l in parsed_links if self.valid_url(l)]
 
-		valid_links = []
-		
-		for link in links:
-			if 'href' in link.attrib:
-				if 'rel' in link.attrib:
-					if self.CHECK_NOFOLLOW == False:
-						if "nofollow" in link.attrib["rel"]:
-							continue
-			
-				onpage_url = link.attrib['href'].strip()
-				onpage_url_components = self.parse_url(onpage_url)
-				onpage_url = self.url_components_to_str(onpage_url_components)
-
-				# Do not crawl schemes like tel:
-				# Do crawl urls such as news/april
-				if "http" not in onpage_url_components["scheme"]:
-					continue
-
-				if onpage_url_components['path'] == "":
-					onpage_url += '/'
-
-				# Check external links if wanted
-				if "external_links" not in self.settings.get("CRAWL_ITEMS", "") and self.get_domain(onpage_url) != "" and self.is_external(onpage_url):
-					continue
-
-				# Avoid duplicate URLs
-				if onpage_url in valid_links:
-					continue
-
-				if self.is_excluded(onpage_url):
-					continue
-
-				# Do not check and report on on-page links 
-				if "check_blocked_urls" not in self.settings.get("CRAWL_ITEMS", "") and self.allowed_by_robots_txt(onpage_url) == False:
-					continue
-
-				valid_links.append(onpage_url)
-
-		return valid_links
-	
 	def get_txt_by_selector(self, selector, method="css", get="txt"):
 		try:
 			if method == "css": tree_result = self.tree.cssselect(selector)
@@ -198,7 +202,7 @@ class GFlareResponse:
 					txt = tree_result[0].get(get)
 				else:
 					txt = tree_result[0].text_content()
-			
+
 			if txt == None:
 				return ""
 
@@ -208,6 +212,7 @@ class GFlareResponse:
 			print(f"{selector} failed")
 			return ""
 
+	# @timing
 	def extract_onpage_elements(self):
 		d = {}
 		if "h1" in self.all_items: d["h1"] = self.get_txt_by_selector('h1')
@@ -216,6 +221,7 @@ class GFlareResponse:
 		if "meta_description" in self.all_items: d["meta_description"] = self.get_txt_by_selector('[name="description"]', get="content")
 		return d
 
+	# @timing
 	def extract_directives(self):
 		d = {}
 		if "canonical_tag" in self.all_items: d["canonical_tag"] = self.get_txt_by_selector('link[rel="canonical"]', get="href")
@@ -225,12 +231,12 @@ class GFlareResponse:
 
 	def custom_extractions(self):
 		d = {}
-		
+
 		for extraction_name, settings in self.settings.get("EXTRACTIONS", {}).items():
 			method = settings.get("selector", "")
 			if method == "CSS Selector": method = "css"
 			elif method == "XPath": method = "xpath"
-			else: method = "regex" 
+			else: method = "regex"
 
 			d[extraction_name] = self.get_txt_by_selector(settings['value'], method=method, get="txt")
 
@@ -239,7 +245,7 @@ class GFlareResponse:
 	def get_crawl_data(self):
 
 		# if status_code == 200 and "text/html" in content_type and robots_txt_status == "ALLOWED":
-		
+
 		onpage_elements = self.extract_onpage_elements()
 		directives = self.extract_directives()
 
@@ -258,7 +264,7 @@ class GFlareResponse:
 		"""
 		Indexability based on canonicals:
 		Indexable: No canonical tag present
-		
+
 		Indexable: Root without trailing "/" equaling canonical tag with trailing "/"
 		Example:	url: https://www.ayima.com		canonical tag: https://www.ayima.com/
 		"""
@@ -277,7 +283,7 @@ class GFlareResponse:
 					indexability = "non-indexable"
 
 		extraction["indexability"] = indexability
-		
+
 		data = {**self.get_header_info(), **extraction}
 
 		return data
@@ -289,18 +295,19 @@ class GFlareResponse:
 	def has_redirected(self):
 		return len(self.response.history) > 0
 
+	# @timing
 	def get_redirects(self):
 		data = []
 		hist = self.response.history
-		
+
 		if len(hist) > 0:
 			for i in range(len(hist)):
-				hob_url = self.normalise_url(hist[i].url)
+				hob_url = self.url_components_to_str(self.parse_url(hist[i].url))
 
 				if "external_links" not in self.settings.get("CRAWL_LINKS", ""):
 					if self.is_external(hob_url):
 						break
-				
+
 				robots_status = self.get_robots_txt_status(hob_url)
 				if "respect_robots_txt" in self.settings.get("ROBOTS_SETTINGS", "") and "follow_blocked_redirects" not in self.settings.get("ROBOTS_SETTINGS", "") and robots_status == "blocked":
 					continue
@@ -309,14 +316,14 @@ class GFlareResponse:
 					redirect_to_url = str(hist[i + 1].url).strip()
 				else:
 					redirect_to_url = self.get_final_url()
-					
+
 				hob_data = {"url": hob_url, "content_type": hist[i].headers.get('Content-Type', ""), "status_code" : hist[i].status_code, "indexability": "non-indexable", "x_robots_tag": hist[i].headers.get('X-Robots-Tag', ""), "redirect_url": redirect_to_url, "robots_txt": robots_status}
 				hob_row = self.dict_to_row(hob_data)
 
 				data.append(hob_row)
 
 		return data
-	
+
 	def allowed_by_robots_txt(self, url):
 		return self.gfrobots.is_allowed(url)
 
