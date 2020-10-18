@@ -39,13 +39,12 @@ class GFlareResponse:
 		# requests.get() encodes spaces within the path with %25
 		# If we encode the path beforehand, request.get() will double encode the path again resulting in the generation of endless new urls
 		# we need to decode the path back to what it was before request.get() encoded it
-		self.url = self.unencode_url(self.response.url)
+		self.url = self.url_components_to_str(self.parse_url(self.unencode_url(self.response.url)))
 
 		if self.is_robots_txt():
 			self.response_to_robots_txt()
 
 	def response_to_robots_txt(self):
-		self.settings["ROOT_DOMAIN"] = self.get_domain(self.url)
 		if self.response.status_code == 200:
 			self.robots_txt = self.response.text
 			self.gfrobots.set_robots_txt(self.robots_txt, user_agent=self.settings.get("USER_AGENT", ''))
@@ -100,22 +99,23 @@ class GFlareResponse:
 				path.replace("tel:", "")
 				scheme = "tel"
 			else:
-				if not path:
-					path = '/'
 				absolute_url = urllib.parse.urljoin(self.url, url)
 				scheme, netloc, path, query, frag = urllib.parse.urlsplit(absolute_url)
 
 		return {"scheme": scheme, "netloc": netloc, "path": path, "query": query, "frag": frag}
 
 	def url_components_to_str(self, comp):
-		return str(urllib.parse.urlunsplit((comp["scheme"], comp["netloc"], comp["path"], comp["query"], "")))
+		url = str(urllib.parse.urlunsplit((comp["scheme"], comp["netloc"], comp["path"], comp["query"], "")))
+		if comp['path'] == '':
+			url += '/'
+		return url
 
 	def unencode_url(self, url):
 		parsed = self.parse_url(url)
 		parsed["path"] = urllib.parse.unquote(parsed["path"])
 		return self.url_components_to_str(parsed)
 
-	def get_domain(self, url=None):
+	def get_domain(self, url):
 		domain = self.parse_url(url)["netloc"]
 		if "www." in domain:
 			return domain.replace("www.", "")
@@ -127,7 +127,8 @@ class GFlareResponse:
 		return self.url_components_to_str(comps)
 
 	def is_external(self, url):
-		if self.settings.get("ROOT_DOMAIN", "") == "": return False
+		if self.settings.get("ROOT_DOMAIN", "") == "":
+			return False
 		return self.get_domain(url) != self.settings.get("ROOT_DOMAIN", "")
 
 	def is_excluded(self, url):
@@ -144,7 +145,7 @@ class GFlareResponse:
 		return self.parse_url(url)["path"] == "/robots.txt"
 
 	def get_final_url(self):
-		return str(self.response.url).strip()
+		return self.url_components_to_str(self.parse_url(self.response.url))
 
 	def get_text(self):
 		return self.response.text
@@ -163,11 +164,9 @@ class GFlareResponse:
 			return False
 
 		url = self.url_components_to_str(components)
-		if "mailto" in url:
-			print(components)
 
 		# Filter out external links if needed
-		if "external_links" not in self.settings.get("CRAWL_ITEMS", "") and self.get_domain(url) != "" and self.is_external(url):
+		if "external_links" not in self.settings.get("CRAWL_ITEMS", "") and self.is_external(url):
 			return False
 
 		if self.is_excluded(url):
@@ -181,8 +180,6 @@ class GFlareResponse:
 	# @timing
 	def extract_links(self):
 		all_links = list(set(self.tree.iterlinks()))
-		if not all_links:
-			return []
 		paths = [str(l[2]) for l in all_links if 'href' in str(l[1])]
 		parsed_links = [self.parse_url(l) for l in paths]
 		return [self.url_components_to_str(l) for l in parsed_links if self.valid_url(l)]
