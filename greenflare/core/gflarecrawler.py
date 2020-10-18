@@ -2,32 +2,29 @@ from threading import Thread, Event, enumerate as tenum
 from .gflaredb import GFlareDB
 from .gflareresponse import GFlareResponse as gf
 from requests import Session, exceptions
-# from requests.adapters import HTTPAdapter
-# from requests.packages.urllib3.util.retry import Retry
-from time import sleep
+from time import sleep, time
 import queue
 
 class GFlareCrawler:
 	def __init__(self, settings=None, gui_mode=False, lock=None, stats=True):
-		self.data_queue = queue.Queue()
 		self.url_queue = queue.Queue()
-		self.gui_url_queue = None
+		self.data_queue = []
+		self.gui_url_queue = []
 		self.gui_mode = gui_mode
 		self.lock = lock
 		self.stats = stats
 
 		self.list_mode_urls = None
-
-		self.gui_url_queue = None
-		if self.gui_mode: self.gui_url_queue = queue.Queue()
-
 		self.url_attempts = {}
 		self.retries = 5
 
 		self.settings = settings
 		self.gf = gf(self.settings, columns=None)
 		self.crawl_running = Event()
+		self.crawl_completed = Event()
+		self.crawl_timed_out = Event()
 		self.robots_txt_found = Event()
+		self.data_available = Event()
 		self.robots_thread = None
 		self.worker_status = []
 		self.db_file = None
@@ -107,21 +104,19 @@ class GFlareCrawler:
 		self.urls_total = db.get_total_urls()
 		self.settings = db.get_settings()
 		db.extractions = self.settings.get("EXTRACTIONS", "")
-		# db.load_columns()
-		# db.populate_columns()
 		self.columns = db.columns.copy()
-		# print("Loaded settings:\n", self.settings)
 		db.close()
-
 
 	def reset_crawl(self):
 		# Reset queue
 		if self.settings['MODE'] != 'List':
-			self.data_queue = queue.Queue()
+			self.data_queue = []
 			self.url_queue = queue.Queue()
-			self.timestamps_queue = queue.Queue()
+
 		self.crawl_running.clear()
 		self.robots_txt_found.clear()
+		self.crawl_completed.clear()
+		self.crawl_timed_out.clear()
 
 		self.urls_crawled = 0
 		self.urls_total = 0
@@ -136,9 +131,6 @@ class GFlareCrawler:
 
 		db = self.connect_to_db()
 		db.extractions = self.settings.get("EXTRACTIONS", "")
-		# # db.populate_columns()
-		# db.load_columns()
-		# db.add_remove_columns()
 
 		self.reset_crawl()
 
@@ -181,7 +173,6 @@ class GFlareCrawler:
 		for t in ts:
 			if "worker-" in t.name:
 				t.join()
-		if self.gui_mode: self.gui_url_queue.put("END")
 		print("All workers joined ...")
 
 	def urls_per_second_stats(self):
@@ -228,12 +219,6 @@ class GFlareCrawler:
 			else:
 				self.session.proxies = { 'https' : f"https://{self.settings['PROXY_USER']}:{self.settings['PROXY_PASSWORD']}@{self.settings['PROXY_HOST']}"}
 
-		# retry = Retry(total=retries, read=retries, connect=retries, backoff_factor=0.3, status_forcelist=status_forcelist)
-		# # adapter = HTTPAdapter(max_retries=retry)
-		# adapter = HTTPAdapter()
-		# self.session.mount("http://", adapter)
-		# self.session.mount("https://", adapter)
-
 	def crawl_url(self, url):
 
 		header = None
@@ -278,7 +263,7 @@ class GFlareCrawler:
 
 		if attempts >= self.retries:
 			print(f"{url} {issue} after {attempts} attempts.")
-			return [tuple([url, '', '0', issue] + [''] * (len(self.columns) - 4))]
+			return {'url': url, 'data': [tuple([url, '', '0', issue] + [''] * (len(self.columns) - 4))], 'links': []}
 
 		with self.lock:
 			self.url_attempts[url] = self.url_attempts.get(url, 0) + 1
@@ -294,7 +279,19 @@ class GFlareCrawler:
 			self.url_queue.put(url)
 
 	def add_to_gui_queue(self, data):
-		self.gui_url_queue.put(data)
+		with self.lock:
+			self.gui_url_queue += data
+
+	def add_to_data_queue(self, data):
+		with self.lock:
+			self.data_queue.append(data)
+		self.data_available.set()
+
+	def get_data_queue(self):
+		with self.lock:
+			data, self.data_queue = self.data_queue, []
+		self.data_available.clear()
+		return data
 
 	def crawl_worker(self, name):
 		busy = Event()
@@ -315,94 +312,111 @@ class GFlareCrawler:
 				busy.clear()
 				continue
 
-			self.data_queue.put(response)
+			if isinstance(response, dict):
+				self.add_to_data_queue(response)
+				busy.clear()
+				continue
+
+			with self.lock:
+				self.gf.set_response(response)
+				data = self.gf.get_data()
+				if self.gf.is_robots_txt():
+					self.robots_txt_found.set()
+					busy.clear()
+					continue
+
+			self.add_to_data_queue(data)
 			busy.clear()
 
 	def consumer_worker(self):
 		db = self.connect_to_db()
-
+		do_commit = False
 		with self.lock:
-			inserted_urls = 0
-			threads = int(self.settings["THREADS"])
-			# new = bool(self.settings.get("MODE", "") == "List")
+			urls_last = self.urls_crawled
 
-		while True:
-			try:
-				with self.lock:
-					if self.url_queue.empty() and self.data_queue.empty() and self.robots_txt_found.is_set() and all([not i.is_set() for i in self.worker_status]):
-						[self.url_queue.put("END") for _ in range(int(self.settings["THREADS"]))]
-						if self.gui_mode: self.add_to_gui_queue("CRAWL_COMPLETED")
-						break
-
-				# FIXME: Remove timeout as no worker should wait for a requested URL forever. If it takes them longer than 30 secs the crawl will wrongly time out
-				response = self.data_queue.get(timeout=30)
-
-				if "end" in response:
+		while not self.crawl_running.is_set():
+			ts = time()
+			with self.lock:
+				if self.url_queue.empty() and len(self.data_queue) == 0 and self.robots_txt_found.is_set() and all([not i.is_set() for i in self.worker_status]):
 					self.crawl_running.set()
-
-					# Empty our URL Queue first
-					with self.url_queue.mutex:
-						self.url_queue.queue.clear()
-					# Add signals for our waiting workers that they are done for today
-					[self.url_queue.put("END") for _ in range(int(self.settings["THREADS"]))]
-
+					self.crawl_completed.set()
 					break
 
-				if isinstance(response, list):
-					db.insert_crawl_data(response)
-					if self.gui_mode:
-						self.add_to_gui_queue(response)
-					with self.lock:
-						inserted_urls += 1
-						self.urls_crawled += 1
-					continue
+			# print("Data queue size:", len(self.data_queue))
 
-				self.gf.set_response(response)
-				data = self.gf.get_data()
-				# print("\n", ">>", data["data"], "\n")
-
-				if self.robots_txt_found.is_set() == False and "url" in data:
-					url = data["url"]
-					if url == self.gf.get_robots_txt_url(url): self.robots_txt_found.set()
-					continue
-
-				if "data" in data:
-					new, updated = db.insert_new_data(data["data"])
-					with self.lock:
-						self.urls_crawled += len(updated) + len(new)
-						self.urls_total += len(new)
-					if self.gui_mode:
-						self.add_to_gui_queue(new + updated)
-
-				extracted_links = data.get("links", []) + data.get("hreflang_links", []) + data.get("canonical_links", []) + data.get("pagination_links", [])
-
-				if len(extracted_links) > 0:
-					new_urls = db.get_new_urls(extracted_links)
-					if len(new_urls) > 0 :
-						db.insert_new_urls(new_urls)
-						self.add_to_url_queue(new_urls)
-						inserted_urls += len(new_urls)
-					if "unique_inlinks" in self.settings.get("CRAWL_ITEMS", ""): db.insert_inlinks(extracted_links, data["url"])
-
-				if inserted_urls >= (100 * threads):
-					db.commit()
-					inserted_urls = 0
-
-			except queue.Empty:
+			try:
+				self.data_available.wait(timeout=30)
+			except:
 				print("Consumer thread timed out")
 				self.crawl_running.set()
 				self.robots_txt_found.set()
+				self.crawl_timed_out.set()
 				for t in tenum():
 					if "worker-" in t.name:
 						self.url_queue.put("END")
-				if self.gui_mode: self.add_to_gui_queue("CRAWL_TIMED_OUT")
 				break
+
+			# data structure:
+			# [{'url': 'https://example.com/page.html', 'data': [(...), (...)]}]
+			data = self.get_data_queue()
+
+			x_data = [d['data'] for d in data]
+			all_data = [item for list_of_tuples in x_data for item in list_of_tuples]
+			# print("all_data:", all_data)
+			new, updated = db.insert_new_data(all_data)
+			with self.lock:
+				self.urls_crawled += len(updated) + len(new)
+				self.urls_total += len(new)
+			if self.gui_mode:
+				if new or updated:
+					self.add_to_gui_queue(new + updated)
+
+			x_links = [d.get("links", []) + d.get("hreflang_links", []) + d.get("canonical_links", []) + d.get("pagination_links", []) for d in data]
+			extracted_links = list(set([item for list_of_lists in x_links for item in list_of_lists]))
+			# print("extracted_links:", len(extracted_links))
+
+			if len(extracted_links) > 0:
+				new_urls = db.get_new_urls(extracted_links)
+				if len(new_urls) > 0 :
+					db.insert_new_urls(new_urls)
+					self.add_to_url_queue(new_urls)
+
+				before = time()
+				if "unique_inlinks" in self.settings.get("CRAWL_ITEMS", ""):
+					for d in data:
+						inlinks = d.get("links", []) + d.get("hreflang_links", []) + d.get("canonical_links", []) + d.get("pagination_links", [])
+						db.insert_inlinks(inlinks, d['url'])
+				# print(f"Inserting inlinks took {time() - before}")
+
+			with self.lock:
+				if self.urls_crawled - urls_last >= 100:
+					do_commit = True
+					urls_last = self.urls_crawled
+
+			if do_commit:
+				db.commit()
+				do_commit = False
+
+			time_spent = time() - ts
+			if time_spent < 0.25:
+				sleep_time = 0.25 - time_spent
+				# print("sleeping", sleep_time, "seconds")
+				sleep(sleep_time)
+			# print(f"Iteration took {time() - ts}")
+
+		# Outside while loop, wrap things up
+		self.crawl_running.set()
+
+		# Empty our URL Queue first
+		with self.url_queue.mutex:
+			self.url_queue.queue.clear()
+		# Add signals for our waiting workers that they are done for today
+		[self.url_queue.put("END") for _ in range(int(self.settings["THREADS"]))]
 
 		# Always commit to db at the very end
 		db.commit()
 		db.close()
 
-		self.crawl_running.set()
 		self.session.close()
 		print("Consumer thread finished")
 
@@ -423,6 +437,12 @@ class GFlareCrawler:
 
 	def end_crawl_gracefully(self):
 		print("Ending all worker threads gracefully ...")
-		self.data_queue.put({"end": ""})
+
+		# Clear data queue
+		# with self.data_queue.mutex:
+		# 	self.data_queue.queue.clear()
+
+		# self.data_queue.put({"end": ""})
+		self.crawl_running.set()
 		self.wait_for_threads()
 		self.save_config(self.settings)
