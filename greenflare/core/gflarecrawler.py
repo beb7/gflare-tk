@@ -123,19 +123,15 @@ class GFlareCrawler:
 		self.urls_crawled = 0
 		self.urls_total = 0
 
-		self.settings['STARTING_URL'] = ''
-		self.settings["ROOT_DOMAIN"] = ""
-
 	def resume_crawl(self):
 		print("Resuming crawl ...")
 		self.init_crawl_headers()
 		# Reinit session
 		self.init_session()
 
-		db = self.connect_to_db()
-		db.extractions = self.settings.get("EXTRACTIONS", "")
-
 		self.reset_crawl()
+
+		db = self.connect_to_db()
 
 		self.urls_crawled = db.get_urls_crawled()
 		self.urls_total = db.get_total_urls()
