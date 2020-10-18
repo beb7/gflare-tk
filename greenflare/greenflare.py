@@ -169,7 +169,8 @@ if __name__ == "__main__":
 	except TclError:
 		pass
 	# Disable hidden files in file dialogues by default but show option to show them
-	root.tk.call('set', '::tk::dialog::file::showHiddenBtn', '1')
+	if sys.platform == 'linux':
+		root.tk.call('set', '::tk::dialog::file::showHiddenBtn', '1')
 	root.tk.call('set', '::tk::dialog::file::showHiddenVar', '0')
 
 	# macOS tkinter cannot handle iconphotos at the time being, disabling it for now
