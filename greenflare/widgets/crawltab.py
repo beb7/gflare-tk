@@ -108,8 +108,9 @@ class CrawlTab(ttk.Frame):
 		self.treeview_table.column("#0", width=50, stretch=False)
 		self.treeview_table.heading("URL", text="URL", anchor=W)
 		self.treeview_table.column("URL", width=750, stretch=False)
+
+		# Set width and stretch for all other columns
 		for e in self.treeview_table["columns"][1:]:
-			print(e)
 			self.treeview_table.heading(e, text=e, anchor=W)
 			self.treeview_table.column(e, width=85, stretch=False)
 
@@ -130,8 +131,6 @@ class CrawlTab(ttk.Frame):
 			self.crawler.start_crawl()
 			self.clear_output_table()
 			self.populate_columns()
-			print("db_file", self.crawler.db_file)
-			print("STARTING_URL", self.crawler.settings["STARTING_URL"])
 			self.master.title(f"{self.crawler.gf.get_domain(self.crawler.settings['STARTING_URL'])} - Greenflare SEO Crawler")
 
 			self.after(10, self.add_to_outputtable)
@@ -143,8 +142,25 @@ class CrawlTab(ttk.Frame):
 		self.after(10, self.change_btn_text)
 
 	def btn_crawl_pushed(self):
-		url = self.entry_url_input.get()
-		if self.button_crawl["text"] == "Start" and url != "":
+		url = self.entry_url_input.get().strip()
+		if self.button_crawl["text"] == "Start":
+			# Validate input url
+			url_components = self.crawler.gf.parse_url(url)
+
+			if url_components['scheme'] == '':
+				url = 'http://' + url
+				url_components = self.crawler.gf.parse_url(url)
+				print(url_components, url)
+
+			if url_components['netloc'] == '' or ' ' in url_components['netloc']:
+				messagebox.showerror(title='Invalid URL', message='Please enter a valid URL!')
+				return
+
+			url = self.crawler.gf.url_components_to_str(url_components)
+
+			self.entry_url_input.delete(0, 'end')
+			self.entry_url_input.insert(0, url)
+
 			self.start_new_crawl(url)
 
 		elif self.button_crawl["text"] == "Pause":
@@ -175,7 +191,7 @@ class CrawlTab(ttk.Frame):
 	def add_to_outputtable(self):
 		items = []
 
-		with self.crawler.lock:
+		with self.lock:
 			if self.crawler.gui_url_queue:
 				items = self.crawler.gui_url_queue.copy()
 				self.crawler.gui_url_queue = []
