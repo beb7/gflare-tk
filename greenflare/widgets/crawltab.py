@@ -105,13 +105,13 @@ class CrawlTab(ttk.Frame):
 
 		self.treeview_table["columns"] = tuple(items)
 		self.treeview_table.heading("#0", text="id", anchor=W)
-		self.treeview_table.column("#0", width=75, stretch=True)
-		for i in self.treeview_table["columns"]:
-			self.treeview_table.heading(i, text=i, anchor=W)
-			if "url" in i.lower():
-				self.treeview_table.column(i, minwidth=250, width=400, stretch=True)
-			else:
-				self.treeview_table.column(i, width=100, stretch=False)
+		self.treeview_table.column("#0", width=50, stretch=False)
+		self.treeview_table.heading("URL", text="URL", anchor=W)
+		self.treeview_table.column("URL", width=750, stretch=False)
+		for e in self.treeview_table["columns"][1:]:
+			print(e)
+			self.treeview_table.heading(e, text=e, anchor=W)
+			self.treeview_table.column(e, width=85, stretch=False)
 
 	def enter_hit(self, event=None):
 		self.btn_crawl_pushed()
@@ -169,60 +169,47 @@ class CrawlTab(ttk.Frame):
 		elif btn_txt == "Restart": self.button_crawl["text"] = "Pause"
 
 	def add_item_to_outputtable(self, item):
-		for row in item:
-			self.treeview_table.insert('', 'end', text=self.row_counter, values=row)
-			with self.lock: self.row_counter += 1
+		self.treeview_table.insert('', 'end', text=self.row_counter, values=item)
+		with self.lock: self.row_counter += 1
 
 	def add_to_outputtable(self):
 		items = []
-		end = False
-		completed = False
-		timed_out = False
-		try:
-			while not self.crawler.gui_url_queue.empty():
-				items.append(self.crawler.gui_url_queue.get_nowait())
-		except queue.Empty:
-			pass
 
-		for item in items:
-			if item == "CRAWL_COMPLETED":
-				completed = True
-				continue
-			if item == "CRAWL_TIMED_OUT":
-				timed_out = True
-				continue
-			if item == "END":
-				end = True
-				continue
+		with self.crawler.lock:
+			if self.crawler.gui_url_queue:
+				items = self.crawler.gui_url_queue.copy()
+				self.crawler.gui_url_queue = []
 
-			self.add_item_to_outputtable(item)
+		if len(items) > 0:
+			for item in items:
+				self.add_item_to_outputtable(item)
 
-		self.treeview_table.yview_moveto(1)
-		self.update_progressbar()
-		self.update_bottom_stats()
+			self.treeview_table.yview_moveto(1)
+			self.update_progressbar()
+			self.update_bottom_stats()
 
-		if completed:
+		if self.crawler.crawl_completed.is_set():
 			self.button_crawl["text"] = "Restart"
 			if self.crawler.settings.get("MODE", "") == "Spider":
 				messagebox.showinfo(title='Crawl completed', message=f'{self.crawler.settings.get("ROOT_DOMAIN", "")} has been crawled successfully!')
 			else:
 				messagebox.showinfo(title='Crawl completed', message='List Mode Crawl has been completed successfully!')
 			return
-		if timed_out:
+		if self.crawler.crawl_timed_out.is_set():
 			messagebox.showerror(title='Error - Timed Out', message='Crawl timed out!')
 			self.button_crawl["text"] = "Resume"
 			return
-		if end:
+		if self.crawler.crawl_running.is_set():
 			return
 
-		self.after(200, self.add_to_outputtable)
+		self.after(250, self.add_to_outputtable)
 
 	# @daemonize(title="Loading crawl ...", msg="Please wait while the crawl is loading ...")
 	def load_crawl_to_outputtable(self):
 		items = self.crawler.get_crawl_data()
 		self.clear_output_table()
 		for item in items:
-			self.add_item_to_outputtable([item])
+			self.add_item_to_outputtable(item)
 
 	def update_progressbar(self):
 		with self.lock:
