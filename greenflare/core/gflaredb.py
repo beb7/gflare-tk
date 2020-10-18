@@ -30,7 +30,7 @@ class GFlareDB:
 		self.columns = self.get_columns()
 		self.columns_total = len(self.columns)
 		self.table_created = False
-		
+
 	def exception_handler(func):
 		@functools.wraps(func)
 		def wrapper(*args, **kwargs):
@@ -52,7 +52,7 @@ class GFlareDB:
 	@exception_handler
 	def load_columns(self):
 		print("REPLACE me with get_columns()!")
-	
+
 	@exception_handler
 	def get_soft_columns(self):
 		if not self.crawl_items: self.crawl_items = []
@@ -63,7 +63,7 @@ class GFlareDB:
 	def get_table_columns(self):
 		self.cur.execute("""SELECT * FROM crawl""")
 		out = [description[0] for description in self.cur.description]
-		
+
 		# remove id from our output
 		out.pop(0)
 		return out
@@ -74,7 +74,7 @@ class GFlareDB:
 			out = self.get_soft_columns()
 			print("get_columns:", out)
 			return out
-		
+
 		out = self.get_table_columns()
 		print("loaded columns", out)
 		return out
@@ -86,7 +86,7 @@ class GFlareDB:
 		out = [(k, v) for k,v in self.columns_map.items() if k in self.crawl_items] + [(k.lower().replace(' ', '_'), 'TEXT') for k in self.extractions.keys()]
 		print("get_sql_columns:", out)
 		return out
-	
+
 	def create(self):
 		self.create_data_table()
 		self.create_config_table()
@@ -98,7 +98,7 @@ class GFlareDB:
 		con = sqlite.connect(self.db_name)
 		cur = con.cursor()
 		return (con,cur)
-	
+
 	@exception_handler
 	def items_to_sql(self, items, op=None, remove=None):
 		if op and not remove: return ", ".join(f"{i} {op}" for i in items)
@@ -135,8 +135,8 @@ class GFlareDB:
 			self.cur.execute("DROP TABLE IF EXISTS extractions")
 			self.create_extractions_table()
 			self.cur.executemany("REPLACE INTO extractions (name, type, value) VALUES (?, ?, ?)", rows)
-		
-		rows = [(k, v) for k, v in settings.items() if isinstance(v, str) or isinstance(v, int)] 
+
+		rows = [(k, v) for k, v in settings.items() if isinstance(v, str) or isinstance(v, int)]
 		self.cur.executemany("REPLACE INTO config (setting, value) VALUES (?, ?)", rows)
 
 	@exception_handler
@@ -213,7 +213,7 @@ class GFlareDB:
 	@exception_handler
 	def to_csv(self, file_name, filters=None, columns=None):
 		print( "Exporting crawl to", file_name, "...")
-		
+
 		if not columns and not filters:
 			query = "SELECT url, content_type, indexability, status_code, h1, h2, page_title, robots_txt, meta_robots, x_robots_tag, redirect_url, meta_description, count(*) AS unique_inlinks FROM inlinks INNER JOIN crawl ON crawl.id = inlinks.url_to_id WHERE crawl.status_code != '' GROUP BY url_to_id"
 		elif filters and columns:
@@ -229,7 +229,7 @@ class GFlareDB:
 		else:
 			inlink_query = ""
 			group_by = ""
-			if "unique_inlinks" in columns: 
+			if "unique_inlinks" in columns:
 				inlink_query = ", count(*) AS unique_inlinks FROM inlinks INNER JOIN crawl ON crawl.id = inlinks.url_to_id"
 				group_by = "GROUP BY url_to_id"
 				query = f"SELECT {', '.join(columns)}{inlink_query} WHERE status_code != '' {group_by}"
@@ -238,7 +238,7 @@ class GFlareDB:
 
 		print(query)
 		self.cur.execute(query)
-		
+
 		with open(file_name, "w", newline='', encoding='utf-8-sig') as csv_file:
 			csv_writer = csvwriter(csv_file, delimiter=",", dialect='excel')
 			csv_writer.writerow([i[0] for i in self.cur.description])
@@ -260,13 +260,13 @@ class GFlareDB:
 
 	@exception_handler
 	def chunk_list(self, l: list, chunk_size=100) -> list:
-		return [l[i * chunk_size:(i + 1) * chunk_size] for i in range((len(l) + chunk_size - 1) // chunk_size )] 
+		return [l[i * chunk_size:(i + 1) * chunk_size] for i in range((len(l) + chunk_size - 1) // chunk_size )]
 
 	def get_new_urls(self, links, chunk_size=999, check_crawled=False):
 		self.cur.row_factory = lambda cursor, row: row[0]
 		chunked_list = self.chunk_list(links, chunk_size=chunk_size)
 		urls_in_db = []
-	
+
 		for chunk in chunked_list:
 			try:
 				sql = f"SELECT url FROM crawl WHERE url in ({','.join(['?']*len(chunk))})"
@@ -279,7 +279,7 @@ class GFlareDB:
 				print("ERROR returning new urls")
 				print(e)
 				print(f"input: {links}")
-		
+
 		urls_not_in_db = list(set(links)-set(urls_in_db))
 
 		if not urls_not_in_db:
@@ -303,7 +303,7 @@ class GFlareDB:
 			sql = f"SELECT id FROM crawl WHERE url IN ({','.join(['?']*len(chunk))})"
 			self.cur.execute(sql, chunk)
 			results += self.cur.fetchall()
-		
+
 		self.cur.row_factory = None
 		return results
 
@@ -322,7 +322,7 @@ class GFlareDB:
 		l = list(t)
 		top = l.pop(0)
 		l.append(top)
-		return tuple(l) 
+		return tuple(l)
 
 	@exception_handler
 	def insert_crawl_data(self, data, new=False):
@@ -346,7 +346,7 @@ class GFlareDB:
 
 		# Redirect URLs that were unknown before will be added immediately to the db
 		new_data = [d for d in redirects if d[0] in new_urls]
-		
+
 		if new_data:
 			self.insert_crawl_data(new_data, new=True)
 
@@ -356,7 +356,7 @@ class GFlareDB:
 		# check how many of the other URLs actually need updating
 		to_be_updated_urls = self.get_new_urls(other_urls, check_crawled = True)
 		updated_data = [d for d in redirects if d[0] in to_be_updated_urls]
-		
+
 		if updated_data:
 			self.insert_crawl_data(updated_data, new=False)
 
