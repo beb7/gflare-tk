@@ -24,6 +24,8 @@ class GFlareResponse:
 		self.CHECK_REDIRECTS_BLOCKED_BY_ROBOTS = False
 		self.CHECK_NOFOLLOW = False
 
+		self.xpath_link_extraction = self.get_link_extraction_xpath()
+
 	def timing(f):
 		@wraps(f)
 		def wrap(*args, **kw):
@@ -54,6 +56,29 @@ class GFlareResponse:
 			return str(self.response.url).strip()
 		return str(self.response.history[0].url).strip()
 
+	def get_link_extraction_xpath(self):
+
+		xpaths = []
+		xpaths.append("//a/@href")
+
+		crawl_items = self.settings['CRAWL_ITEMS']
+
+		if "canonical_tag" in crawl_items:
+			xpaths.append('link[rel="canonical"]/@href')
+		if "hreflang" in crawl_items:
+			xpaths.append('//link[@rel="alternate"]/@href')
+		if "pagination" in crawl_items:
+			xpaths.append('//link[@rel="next"]/@href|//link[@rel="prev"]/@href')
+		if "images" in crawl_items:
+			xpaths.append('//img/@src')
+		if "stylesheets" in crawl_items:
+			xpaths.append('//link[@rel="stylesheet"]/@href')
+		if "javascript" in crawl_items:
+			xpaths.append('//script/@src')
+
+		return '|'.join(xpaths)
+
+
 	# @timing
 	def get_data(self):
 
@@ -64,9 +89,6 @@ class GFlareResponse:
 			self.tree = self.get_tree()
 			if self.spider_links:
 				d["links"] = self.extract_links()
-				if "hreflang" in self.settings.get("CRAWL_LINKS", ""): d["hreflang_links"] = self.get_hreflang_links()
-				if "canonicals" in self.settings.get("CRAWL_LINKS", ""): d["canonical_links"] = self.get_canonical_links()
-				if "pagination" in self.settings.get("CRAWL_LINKS", ""): d["pagination_links"] = self.get_pagination_links()
 			d["data"] = self.get_crawl_data()
 		else:
 			d["data"] = self.get_header_info()
@@ -181,11 +203,12 @@ class GFlareResponse:
 	def extract_links(self):
 		links = []
 		try:
-			for link in self.tree.xpath('//a/@href'):
+			for link in self.tree.xpath(self.xpath_link_extraction):
 				links.append(link)
 		except:
 			return []
 
+		links = list(set(links))
 		parsed_links = [self.parse_url(l) for l in links]
 		return [self.url_components_to_str(l) for l in parsed_links if self.valid_url(l)]
 
