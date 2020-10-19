@@ -185,7 +185,7 @@ class GFlareResponse:
 				links.append(link)
 		except:
 			return []
-		# paths = [str(l[2]) for l in all_links if 'href' in str(l[1])]
+
 		parsed_links = [self.parse_url(l) for l in links]
 		return [self.url_components_to_str(l) for l in parsed_links if self.valid_url(l)]
 
