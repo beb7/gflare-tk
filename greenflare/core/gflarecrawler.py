@@ -8,7 +8,7 @@ import queue
 class GFlareCrawler:
 	def __init__(self, settings=None, gui_mode=False, lock=None, stats=True):
 		self.url_queue = queue.Queue()
-		self.data_queue = []
+		self.data_queue = queue.Queue(maxsize=25)
 		self.gui_url_queue = []
 		self.gui_mode = gui_mode
 		self.lock = lock
@@ -23,7 +23,6 @@ class GFlareCrawler:
 		self.crawl_running = Event()
 		self.crawl_completed = Event()
 		self.crawl_timed_out = Event()
-		self.data_available = Event()
 		self.worker_status = []
 		self.db_file = None
 
@@ -71,15 +70,17 @@ class GFlareCrawler:
 		if self.settings["MODE"] == "Spider":
 			self.settings['STARTING_URL'] = self.gf.url_components_to_str(self.gf.parse_url(self.settings['STARTING_URL']))
 			self.settings["ROOT_DOMAIN"] = self.gf.get_domain(self.settings['STARTING_URL'])
-			data = self.crawl_url(self.settings['STARTING_URL'])
+			response = self.crawl_url(self.settings['STARTING_URL'])
 			print('STARTING_URL', self.settings['STARTING_URL'])
 			# Check if we are dealing with a reachable host
 
-			if data == 'SKIP_ME':
+			if response == 'SKIP_ME':
 				self.crawl_timed_out.set()
 				self.crawl_running.set()
 				db.close()
 				return
+
+			data = self.response_to_data(response)
 
 			self.add_to_data_queue(data)
 			self.request_robots_txt(data['url'])
@@ -104,6 +105,7 @@ class GFlareCrawler:
 		self.urls_crawled = db.get_urls_crawled()
 		self.urls_total = db.get_total_urls()
 		self.settings = db.get_settings()
+		print(self.settings)
 		db.extractions = self.settings.get("EXTRACTIONS", "")
 		self.columns = db.columns.copy()
 		db.close()
@@ -111,7 +113,7 @@ class GFlareCrawler:
 	def reset_crawl(self):
 		# Reset queue
 		if self.settings['MODE'] != 'List':
-			self.data_queue = []
+			self.data_queue = queue.Queue(maxsize=25)
 			self.url_queue = queue.Queue()
 
 		self.gf = gf(self.settings, columns=None)
@@ -140,8 +142,8 @@ class GFlareCrawler:
 		self.gf = gf(self.settings, columns=db.get_columns())
 
 		if self.settings['MODE'] != 'List':
-			check = self.request_robots_txt(self.settings.get('STARTING_URL'))
-			if check == 'SKIP_ME':
+			response = self.request_robots_txt(self.settings.get('STARTING_URL'))
+			if response == 'SKIP_ME':
 				self.crawl_timed_out.set()
 				self.crawl_running.set()
 				db.close()
@@ -221,9 +223,8 @@ class GFlareCrawler:
 				self.session.proxies = { 'https' : f"https://{self.settings['PROXY_USER']}:{self.settings['PROXY_PASSWORD']}@{self.settings['PROXY_HOST']}"}
 
 	def response_to_data(self, response):
-		with self.lock:
-			self.gf.set_response(response)
-			return self.gf.get_data()
+		self.gf.set_response(response)
+		return self.gf.get_data()
 
 	def crawl_url(self, url, header_only=False):
 		header = None
@@ -236,16 +237,16 @@ class GFlareCrawler:
 		try:
 			if header_only:
 				header = self.session.head(url, headers=self.HEADERS, allow_redirects=True, timeout=timeout)
-				return self.response_to_data(header)
+				return header
 
 			header = self.session.head(url, headers=self.HEADERS, allow_redirects=True, timeout=timeout)
 
 			content_type = header.headers.get("content-type", "")
 			if "text" in content_type:
 				body = self.session.get(url, headers=self.HEADERS, allow_redirects=True, timeout=timeout)
-				return self.response_to_data(body)
+				return body
 
-			return self.response_to_data(header)
+			return header
 		except exceptions.TooManyRedirects:
 			return self.deal_with_exception(url, "Too Many Redirects")
 
@@ -288,36 +289,39 @@ class GFlareCrawler:
 			self.gui_url_queue += data
 
 	def add_to_data_queue(self, data):
-		with self.lock:
-			# print(">>", data)
-			self.data_queue.append(data)
-			self.data_available.set()
-
-	def get_data_queue(self):
-		with self.lock:
-			data, self.data_queue = self.data_queue, []
-			self.data_available.clear()
-			return data
+		self.data_queue.put(data)
 
 	def crawl_worker(self, name):
 		busy = Event()
+		response = None
+
 		with self.lock:
 			self.worker_status.append(busy)
 
 		while self.crawl_running.is_set() == False:
-			url = self.url_queue.get()
-			if url == "END": break
-			busy.set()
 
 			sleep(self.rate_limit_delay)
 
-			data = self.crawl_url(url)
+			if not response:
+				url = self.url_queue.get()
+				if url == "END": break
+				busy.set()
+				response = self.crawl_url(url)				
 
-			if data == "SKIP_ME":
+			if response == "SKIP_ME":
+				response = None
 				busy.clear()
 				continue
 
-			self.add_to_data_queue(data)
+			try:
+				self.data_queue.put(response, timeout=0.25)
+				response = None
+			except queue.Full:
+					print(f'{name} has hit a full queue, retrying ...')
+					if self.crawl_running.is_set():
+						busy.clear()
+						break
+
 			busy.clear()
 
 	def consumer_worker(self):
@@ -329,14 +333,17 @@ class GFlareCrawler:
 		while not self.crawl_running.is_set():
 			ts = time()
 			with self.lock:
-				if self.url_queue.empty() and len(self.data_queue) == 0 and all([not i.is_set() for i in self.worker_status]):
+				if self.url_queue.empty() and self.data_queue.empty() and all([not i.is_set() for i in self.worker_status]):
 					self.crawl_running.set()
 					self.crawl_completed.set()
 					break
-
+			after_lock = time() - ts
 			try:
-				self.data_available.wait(timeout=30)
-			except:
+				print(f"Queue size: {self.data_queue.qsize()}")
+				wait_before = time()
+				response = self.data_queue.get(timeout=30)
+				wait_after = time() - wait_before
+			except queue.Empty:
 				print("Consumer thread timed out")
 				self.crawl_running.set()
 				self.crawl_timed_out.set()
@@ -345,53 +352,65 @@ class GFlareCrawler:
 						self.url_queue.put("END")
 				break
 
-			# data structure:
-			# [{'url': 'https://example.com/page.html', 'data': [(...), (...)]}]
-			data = self.get_data_queue()
 
-			x_data = [d['data'] for d in data]
-			all_data = [item for list_of_tuples in x_data for item in list_of_tuples]
-			new, updated = db.insert_new_data(all_data)
-			# print(">>", [(d[0],d[2]) for d in all_data])
+			response_to_data_time = 0
+			if isinstance(response, dict):
+				data = response
 
+			else:
+				before = time()
+				data = self.response_to_data(response)
+				response_to_data_time = time() - before
+
+			
+			crawl_data = data['data']
+
+			before_insert = time()
+			new, updated = db.insert_new_data(crawl_data)
+			after_insert = time() - before_insert
+
+			before_gui = time()
 			with self.lock:
 				self.urls_crawled += len(updated) + len(new)
 				self.urls_total += len(new)
 			if self.gui_mode:
 				if new or updated:
 					self.add_to_gui_queue(new + updated)
+			after_gui = time() - before_gui
 
-			x_links = [d.get("links", []) + d.get("hreflang_links", []) + d.get("canonical_links", []) + d.get("pagination_links", []) for d in data]
-			extracted_links = list(set([item for list_of_lists in x_links for item in list_of_lists]))
-
+			before_links = time()
+			extracted_links = data.get("links", []) + data.get("hreflang_links", []) + data.get("canonical_links", []) + data.get("pagination_links", [])
+			
 			if len(extracted_links) > 0:
 				new_urls = db.get_new_urls(extracted_links)
 				if len(new_urls) > 0 :
 					db.insert_new_urls(new_urls)
 					self.add_to_url_queue(new_urls)
+				after_links = time() - before_links
 
-				before = time()
+				inlink_before = time()
 				if "unique_inlinks" in self.settings.get("CRAWL_ITEMS", ""):
-					for d in data:
-						inlinks = d.get("links", []) + d.get("hreflang_links", []) + d.get("canonical_links", []) + d.get("pagination_links", [])
-						db.insert_inlinks(inlinks, d['url'])
-				# print(f"Inserting inlinks took {time() - before}")
+					db.insert_inlinks(extracted_links, data['url'])
+				after_inlink = time() - inlink_before
 
 			with self.lock:
 				if self.urls_crawled - urls_last >= 100:
 					do_commit = True
 					urls_last = self.urls_crawled
 
+			after_commit = 0
+			before_commit = time()
 			if do_commit:
 				db.commit()
 				do_commit = False
+				after_commit = time() - before_commit
 
-			time_spent = time() - ts
-			if time_spent < 0.25:
-				sleep_time = 0.25 - time_spent
-				# print("sleeping", sleep_time, "seconds")
-				sleep(sleep_time)
-			# print(f"Iteration took {time() - ts}")
+			# time_spent = time() - ts
+			# if time_spent < 0.25:
+			# 	sleep_time = 0.25 - time_spent
+			# 	# print("sleeping", sleep_time, "seconds")
+			# 	sleep(sleep_time)
+			print(f"Iteration took {time() - ts:.2f} sec | waited {wait_after:.2f} sec | response_to_data {response_to_data_time:.2f} sec | insert took {after_insert:.2f} sec | commit took {after_commit:.2f} | links took {after_links:.2f}| inlinks took {after_inlink:.2f} sec | gui took {after_gui:.2f} | locked for {after_lock:.2f} secs")
 
 		# Outside while loop, wrap things up
 		self.crawl_running.set()
