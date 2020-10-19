@@ -29,7 +29,7 @@ class ProgressWindow(ttk.Frame):
 		x = self.master.winfo_rootx()
 		y = self.master.winfo_rooty()
 
-		x_offset = width // 2 - pop_up_width
+		x_offset = width // 2 - 2 * pop_up_width
 		y_offset = height // 2 - pop_up_height
 
 		# and where it is placed
