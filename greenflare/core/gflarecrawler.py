@@ -294,6 +294,9 @@ class GFlareCrawler:
 	def crawl_worker(self, name):
 		busy = Event()
 		response = None
+		timeout = 0.25
+		backoff_factor = 1
+		adj_timeout = timeout
 
 		with self.lock:
 			self.worker_status.append(busy)
@@ -306,7 +309,7 @@ class GFlareCrawler:
 				url = self.url_queue.get()
 				if url == "END": break
 				busy.set()
-				response = self.crawl_url(url)				
+				response = self.crawl_url(url)
 
 			if response == "SKIP_ME":
 				response = None
@@ -314,10 +317,12 @@ class GFlareCrawler:
 				continue
 
 			try:
-				self.data_queue.put(response, timeout=0.25)
+				self.data_queue.put(response, timeout=adj_timeout)
 				response = None
+				adj_timeout = timeout
 			except queue.Full:
-					print(f'{name} has hit a full queue, retrying ...')
+					print(f'{name} has hit a full queue, retrying in {adj_timeout} ...')
+					adj_timeout += backoff_factor * timeout
 					if self.crawl_running.is_set():
 						busy.clear()
 						break
@@ -362,7 +367,7 @@ class GFlareCrawler:
 				data = self.response_to_data(response)
 				response_to_data_time = time() - before
 
-			
+
 			crawl_data = data['data']
 
 			before_insert = time()
@@ -380,7 +385,7 @@ class GFlareCrawler:
 
 			before_links = time()
 			extracted_links = data.get("links", []) + data.get("hreflang_links", []) + data.get("canonical_links", []) + data.get("pagination_links", [])
-			
+
 			if len(extracted_links) > 0:
 				new_urls = db.get_new_urls(extracted_links)
 				if len(new_urls) > 0 :
