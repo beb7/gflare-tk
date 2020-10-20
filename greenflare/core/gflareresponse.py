@@ -277,6 +277,7 @@ class GFlareResponse:
 		extraction = {**onpage_elements, **directives, **self.custom_extractions()}
 
 		canonical_tag = extraction.get("canonical_tag", "")
+		indexability = "indexable"
 
 		"""
 		Indexability based on status codes:
@@ -284,7 +285,8 @@ class GFlareResponse:
 		Non-Idexable: Non 200 OK status codes
 		"""
 
-		indexability = "indexable"
+		if self.response.status_code != 200:
+			indexability = "non-indexable"
 
 		"""
 		Indexability based on canonicals:
