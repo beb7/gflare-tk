@@ -164,20 +164,17 @@ if __name__ == "__main__":
 	root = tk.Tk()
 	root.geometry("1024x768")
 
-	# This ugly step is needed to initialise the filemanager variables we are setting below
-	try:
-		root.tk.call('tk_getOpenFile', '-foobarbaz')
-	except TclError:
-		pass
 	# Disable hidden files in file dialogues by default but show option to show them
 	if sys.platform == 'linux':
+		# This ugly step is needed to initialise the filemanager variables we are setting below
+		try:
+			root.tk.call('tk_getOpenFile', '-foobarbaz')
+		except TclError:
+			pass
+
 		root.tk.call('set', '::tk::dialog::file::showHiddenBtn', '1')
 		root.tk.call('set', '::tk::dialog::file::showHiddenVar', '0')
 
-	# macOS tkinter cannot handle iconphotos at the time being, disabling it for now
-	if sys.platform != "darwin":
-		root.iconphoto(False, tk.PhotoImage(file=WorkingDir + path.sep + 'resources' + path.sep + 'greenflare-icon-32x32.png'))
-	if sys.platform == "linux":
 		import importlib
 		check = importlib.util.find_spec("ttkthemes")
 		if check:
@@ -185,6 +182,9 @@ if __name__ == "__main__":
 			style = ThemedStyle(root)
 			style.set_theme("arc")
 
+	# macOS tkinter cannot handle iconphotos at the time being, disabling it for now
+	elif sys.platform != "darwin":
+		root.iconphoto(False, tk.PhotoImage(file=WorkingDir + path.sep + 'resources' + path.sep + 'greenflare-icon-32x32.png'))
 
 	globalLock = Lock()
 	crawl_items = ["url", "content_type", "status_code", "indexability", "page_title", "meta_description", "h1", "h2", "unique_inlinks", "canonicals", "canonical_tag", "pagination", "hreflang", "canonical_http_header", "robots_txt", "redirect_url", "meta_robots", "x_robots_tag", "respect_robots_txt", "report_on_status", "follow_blocked_redirects"]
