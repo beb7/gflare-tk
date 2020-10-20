@@ -81,36 +81,29 @@ class SettingsTab(ttk.Frame):
 		self.entry_password.insert(0, "")
 		self.entry_password.grid(row=2, column=1, sticky=E, padx=15, pady=5)
 
-		
-		"""
-		Second row
-		"""
+		# Second row
 		self.frame_second = ttk.Frame(self)
 		self.frame_second.grid(row=1, column=0, sticky=W, padx=10, pady=10)
-
-		"""
-		On-Page Group
-		"""
+		
+		# On-Page Group
 		self.checkboxgroup_onpage = CheckboxGroup(self.frame_second, "On-Page", ["Indexability", "Page Title", "Meta Description", "H1", "H2"], self.crawler.settings, "CRAWL_ITEMS")
 		self.checkboxgroup_onpage.grid(row=0, column=0, sticky=NW, padx=10, pady=10)
 
-		"""
-		Links Group
-		"""
+		# Links Group
 		self.checkboxgroup_links = CheckboxGroup(self.frame_second, "Links", ["Unique Inlinks", "External Links", "Canonicals", "Pagination", "Hreflang"], self.crawler.settings, "CRAWL_ITEMS")
 		self.checkboxgroup_links.grid(row=0, column=1, sticky=NW, padx=10, pady=10)
 		
-		"""
-		Directives Group
-		"""
+		# Directives Group
 		self.checkboxgroup_directives = CheckboxGroup(self.frame_second, "Directives", ["Canonical Tag", "Canonical HTTP Header", "Meta Robots", "X-Robots-Tag"], self.crawler.settings, "CRAWL_ITEMS")
 		self.checkboxgroup_directives.grid(row=0, column=2, sticky=NW, padx=10, pady=10)
 
-		"""
-		robots.txt Group
-		"""
+		# robots.txt Group
 		self.checkboxgroup_robots_txt = CheckboxGroup(self.frame_second, "robots.txt", ["Respect robots.txt", "Report on status", "Check blocked URLs", "Follow blocked redirects"], self.crawler.settings, "CRAWL_ITEMS")
 		self.checkboxgroup_robots_txt.grid(row=0, column=3, sticky=NW, padx=10, pady=10)
+
+		# Resources Group
+		self.checkboxgroup_resources = CheckboxGroup(self.frame_second, "Resources", ['Images', 'JavaScript', 'Stylesheets'], self.crawler.settings, 'CRAWL_ITEMS')
+		self.checkboxgroup_resources.grid(row=0, column=4, sticky=NW, padx=10, pady=10)
 
 	def update(self):
 		self.spinbox_threads.set(int(self.crawler.settings["THREADS"]))
