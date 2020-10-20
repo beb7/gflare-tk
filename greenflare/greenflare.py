@@ -187,7 +187,7 @@ if __name__ == "__main__":
 
 
 	globalLock = Lock()
-	crawl_items = ["url", "content_type", "status_code", "indexability", "page_title", "meta_description", "h1", "h2", "unique_inlinks", "canonicals", "canonical_tag", "canonical_http_header", "robots_txt", "redirect_url", "meta_robots", "x_robots_tag", "respect_robots_txt", "report_on_status", "follow_blocked_redirects"]
+	crawl_items = ["url", "content_type", "status_code", "indexability", "page_title", "meta_description", "h1", "h2", "unique_inlinks", "canonicals", "canonical_tag", "pagination", "hreflang", "canonical_http_header", "robots_txt", "redirect_url", "meta_robots", "x_robots_tag", "respect_robots_txt", "report_on_status", "follow_blocked_redirects"]
 	Settings  = {"MODE": "Spider", "THREADS": 5, "URLS_PER_SECOND": 0, "USER_AGENT": "Greenflare SEO Spider/1.0",
 				 "UA_SHORT": "Greenflare", "MAX_RETRIES": 3, "CRAWL_ITEMS": crawl_items}
 	Crawler = GFlareCrawler(settings=Settings, gui_mode=True, lock=globalLock)
