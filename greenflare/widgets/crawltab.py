@@ -297,17 +297,23 @@ class CrawlTab(ttk.Frame):
 		region = self.treeview_table.identify("region", event.x, event.y)
 
 		if region == 'cell':
-			self.treeview_table.focus()
-			try:
-				self.action_menu.tk_popup(event.x_root, event.y_root + 20, 0)
-			finally:
-				self.action_menu.grab_release()
-			item = self.treeview_table.selection()
-			self.row_values = self.treeview_table.item(item)['values']
+
+			iid = self.treeview_table.identify_row(event.y)
+				
+			if iid:
+				self.treeview_table.selection_set(iid)
+				item = self.treeview_table.selection()
+				self.row_values = self.treeview_table.item(item)['values']
+				
+				try:
+					self.action_menu.tk_popup(event.x_root, event.y_root + 20, 0)
+				finally:
+					self.action_menu.grab_release()
 
 		elif region == 'heading':
 			col = self.treeview_table.identify_column(event.x)
 			self.selected_column = self.treeview_table.heading(col)['text']
+			
 			try:
 				self.popup_menu.tk_popup(event.x_root, event.y_root + 20, 0)
 			finally:
