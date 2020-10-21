@@ -298,14 +298,20 @@ class CrawlTab(ttk.Frame):
 
 		if region == 'cell':
 			self.treeview_table.focus()
-			self.action_menu.tk_popup(event.x_root, event.y_root + 20, 0)
+			try:
+				self.action_menu.tk_popup(event.x_root, event.y_root + 20, 0)
+			finally:
+				self.action_menu.grab_release()
 			item = self.treeview_table.selection()
 			self.row_values = self.treeview_table.item(item)['values']
-		
+
 		elif region == 'heading':
 			col = self.treeview_table.identify_column(event.x)
 			self.selected_column = self.treeview_table.heading(col)['text']
-			self.popup_menu.tk_popup(event.x_root, event.y_root + 20, 0)
+			try:
+				self.popup_menu.tk_popup(event.x_root, event.y_root + 20, 0)
+			finally:
+				self.popup_menu.grab_release()
 
 	def show_filter_window(self, label):
 		columns = ["url", "content_type", "indexability", "status_code", "h1", "page_title", "canonical_tag", "robots_txt", "redirect_url"]
@@ -315,7 +321,7 @@ class CrawlTab(ttk.Frame):
 
 	def show_action_window(self, label):
 		url = ''
-		
+
 		if self.row_values:
 			url = self.row_values[0]
 
