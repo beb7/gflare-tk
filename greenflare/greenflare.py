@@ -77,7 +77,7 @@ class mainWindow(ttk.Frame):
 
 	def daemon_call_back(self, future):
 		self.win_progress.grab_release()
-		self.win_progress.window.destroy()
+		self.win_progress.destroy()
 		exception = future.exception()
 		if exception:
 			raise exception
