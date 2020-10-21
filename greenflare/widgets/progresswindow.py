@@ -1,14 +1,13 @@
-from tkinter import ttk, Toplevel, BOTH, TOP
+from tkinter import ttk, Toplevel, TOP
 
-class ProgressWindow(ttk.Frame):
+class ProgressWindow(Toplevel):
 	def __init__(self, title=None, msg=None):
-		ttk.Frame.__init__(self)
-		self.window = Toplevel(self.master)
+		Toplevel.__init__(self)
 
-		self.topframe = ttk.Frame(self.window)
+		self.topframe = ttk.Frame(self)
 		self.topframe.pack(anchor='center', padx=20, pady=20, fill="x")
 
-		if title: self.window.title(title)
+		if title: self.title(title)
 		if msg:
 			self.lbl = ttk.Label(self.topframe, text=msg)
 			self.lbl.pack(padx=20, pady=20, side=TOP, expand=True)
@@ -23,8 +22,8 @@ class ProgressWindow(ttk.Frame):
 		height = self.master.winfo_height()
 		width = self.master.winfo_width()
 
-		pop_up_height = self.window.winfo_height()
-		pop_up_width = self.window.winfo_width()
+		pop_up_height = self.winfo_height()
+		pop_up_width = self.winfo_width()
 
 		x = self.master.winfo_rootx()
 		y = self.master.winfo_rooty()
@@ -33,4 +32,5 @@ class ProgressWindow(ttk.Frame):
 		y_offset = height // 2 - pop_up_height
 
 		# and where it is placed
-		self.window.geometry('+%d+%d' % (x+x_offset, y+y_offset))
+		self.geometry('+%d+%d' % (x+x_offset, y//2+y_offset))
+		self.lift()
