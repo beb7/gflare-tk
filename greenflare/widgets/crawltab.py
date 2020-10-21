@@ -1,8 +1,11 @@
-from tkinter import LEFT, RIGHT, ttk, W, NO, filedialog as fd, messagebox, StringVar
+from tkinter import LEFT, RIGHT, ttk, W, NO, filedialog as fd, messagebox, StringVar, Menu
 from widgets.progresswindow import ProgressWindow
+from widgets.filterwindow import FilterWindow
 from concurrent import futures
 import functools
+from functools import partial
 from os import path, remove
+from webbrowser import open as open_in_browser
 import queue
 import sys
 
@@ -41,6 +44,8 @@ class CrawlTab(ttk.Frame):
 		self.middle_frame.pack(anchor='center', fill='y', expand=1)
 
 		self.treeview_table = ttk.Treeview(self.middle_frame, selectmode="browse")
+		# Capture right clicks on table
+		self.treeview_table.bind("<Button-3>", self.assign_treeview_click)
 
 		self.scrollbar_vertical = ttk.Scrollbar(self.middle_frame, orient="vertical", command=self.treeview_table.yview)
 		self.scrollbar_vertical.pack(side="right", fill="y")
@@ -65,6 +70,18 @@ class CrawlTab(ttk.Frame):
 		self.populate_columns()
 		self.row_counter = 1
 
+		# pop up menu for treeview header items
+		self.popup_menu = Menu(self, tearoff=0)
+		labels = ['Equals', 'Does Not Equal', '_', 'Begins Width', 'Ends With', '_', 'Contains', 'Does Not Contain', '_', 'Greater Than', 'Greater Than Or Equal To', 'Less Than', 'Less Than Or Equal To', 'Between', '_', 'Custom Filter']
+		self.generate_menu(self.popup_menu, labels, self.show_filter_window)
+		self.selected_column = ''
+
+		# action menu for treeview row items
+		self.action_menu = Menu(self, tearoff=0)
+		labels = ['Copy URL', 'Open URL in Browser']
+		self.generate_menu(self.action_menu, labels, self.show_action_window)
+		self.row_values = []
+
 	def daemonize(title=None, msg=None):
 		def decorator(target):
 			@functools.wraps(target)
@@ -83,7 +100,7 @@ class CrawlTab(ttk.Frame):
 
 	def daemon_call_back(self, future):
 		self.win_progress.grab_release()
-		self.win_progress.window.destroy()
+		self.win_progress.destroy()
 		exception = future.exception()
 		if exception:
 			raise exception
@@ -136,7 +153,7 @@ class CrawlTab(ttk.Frame):
 			self.after(10, self.add_to_outputtable)
 			self.after(10, self.change_btn_text)
 
-	@daemonize(title="Stopping crawl ...", msg="Waiting for the crawl to finish ...")
+	@daemonize(title="Stopping crawl ...", msg="Waiting for crawl to finish ...")
 	def stop_crawl(self):
 		self.crawler.end_crawl_gracefully()
 		self.after(10, self.change_btn_text)
@@ -265,3 +282,45 @@ class CrawlTab(ttk.Frame):
 
 	def freeze_input(self):
 		self.entry_url_input["state"] = "disabled"
+
+
+	def generate_menu(self, menu, labels, func):
+		for label in labels:
+			if label != '_':
+				action_with_arg = partial(func, label)
+				menu.add_command(label=label, command=action_with_arg)
+			else:
+				menu.add_separator()
+
+	def assign_treeview_click(self, event):
+
+		region = self.treeview_table.identify("region", event.x, event.y)
+
+		if region == 'cell':
+			self.treeview_table.focus()
+			self.action_menu.tk_popup(event.x_root, event.y_root + 20, 0)
+			item = self.treeview_table.selection()
+			self.row_values = self.treeview_table.item(item)['values']
+		
+		elif region == 'heading':
+			col = self.treeview_table.identify_column(event.x)
+			self.selected_column = self.treeview_table.heading(col)['text']
+			self.popup_menu.tk_popup(event.x_root, event.y_root + 20, 0)
+
+	def show_filter_window(self, label):
+		columns = ["url", "content_type", "indexability", "status_code", "h1", "page_title", "canonical_tag", "robots_txt", "redirect_url"]
+		if self.crawler and self.crawler.columns:
+			columns = self.crawler.columns.copy()
+		window = FilterWindow(label, self.selected_column, columns, title=f'Filter By {self.selected_column}')
+
+	def show_action_window(self, label):
+		url = ''
+		
+		if self.row_values:
+			url = self.row_values[0]
+
+		if label == "Copy URL" and url:
+				self.master.clipboard_clear()
+				self.master.clipboard_append(url)
+		elif label == "Open URL in Browser" and url:
+			open_in_browser(url, new=2)
