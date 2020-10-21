@@ -161,27 +161,33 @@ if __name__ == "__main__":
 	else:
 		WorkingDir = path.dirname(path.realpath(__file__))
 
-	root = tk.Tk()
-	root.geometry("1024x768")
-
-	# Disable hidden files in file dialogues by default but show option to show them
+	# Linux specific settings
 	if sys.platform == 'linux':
+
+		import importlib
+		check = importlib.util.find_spec("ttkthemes")
+
+		# Use arc theme if available
+		if check:
+			from ttkthemes import ThemedTk
+			root = ThemedTk(theme="arc")
+		else:
+			root = tk.Tk()
+
 		# This ugly step is needed to initialise the filemanager variables we are setting below
 		try:
 			root.tk.call('tk_getOpenFile', '-foobarbaz')
 		except TclError:
 			pass
 
+		# Disable hidden files in file dialogues by default but show option to show them
 		root.tk.call('set', '::tk::dialog::file::showHiddenBtn', '1')
 		root.tk.call('set', '::tk::dialog::file::showHiddenVar', '0')
 
-		import importlib
-		check = importlib.util.find_spec("ttkthemes")
-		if check:
-			from ttkthemes import ThemedStyle
-			style = ThemedStyle(root)
-			style.set_theme("arc")
+	else:
+		root = tk.Tk()
 
+	root.geometry("1024x768")
 	# macOS tkinter cannot handle iconphotos at the time being, disabling it for now
 	if sys.platform != "darwin":
 		root.iconphoto(False, tk.PhotoImage(file=WorkingDir + path.sep + 'resources' + path.sep + 'greenflare-icon-32x32.png'))
@@ -191,8 +197,6 @@ if __name__ == "__main__":
 	Settings  = {"MODE": "Spider", "THREADS": 5, "URLS_PER_SECOND": 0, "USER_AGENT": "Greenflare SEO Spider/1.0",
 				 "UA_SHORT": "Greenflare", "MAX_RETRIES": 3, "CRAWL_ITEMS": crawl_items}
 	Crawler = GFlareCrawler(settings=Settings, gui_mode=True, lock=globalLock)
-
-	app = mainWindow(crawler=Crawler)
 
 	# running on macOS
 	if sys.platform == "darwin":
@@ -204,6 +208,8 @@ if __name__ == "__main__":
 	parser.add_argument("file_path", type=Path, nargs='*')
 
 	p = parser.parse_args()
+
+	app = mainWindow(crawler=Crawler)
 
 	if p.file_path and p.file_path[0].exists():
 		app.load_crawl(db_file=p.file_path[0])
