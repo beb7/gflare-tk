@@ -183,7 +183,7 @@ if __name__ == "__main__":
 			style.set_theme("arc")
 
 	# macOS tkinter cannot handle iconphotos at the time being, disabling it for now
-	elif sys.platform != "darwin":
+	if sys.platform != "darwin":
 		root.iconphoto(False, tk.PhotoImage(file=WorkingDir + path.sep + 'resources' + path.sep + 'greenflare-icon-32x32.png'))
 
 	globalLock = Lock()
