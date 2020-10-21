@@ -123,6 +123,11 @@ class GFlareResponse:
 			else:
 				absolute_url = urllib.parse.urljoin(self.url, url)
 				scheme, netloc, path, query, frag = urllib.parse.urlsplit(absolute_url)
+		if ':' in netloc:
+			if scheme == 'https' and ':443' in netloc:
+				netloc = netloc.replace(':443', '')
+			elif scheme == 'http' and ':80' in netloc:
+				netloc = netloc.replace(':80', '')
 
 		return {"scheme": scheme, "netloc": netloc, "path": path, "query": query, "frag": frag}
 
