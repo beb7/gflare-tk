@@ -209,6 +209,8 @@ if __name__ == "__main__":
 				 "UA_SHORT": "Greenflare", "MAX_RETRIES": 3, "CRAWL_ITEMS": crawl_items}
 	Crawler = GFlareCrawler(settings=Settings, gui_mode=True, lock=globalLock)
 
+	app = mainWindow(crawler=Crawler)
+	
 	# running on macOS
 	if sys.platform == "darwin":
 		# Use TK's Apple Event Handler to react to clicked/open documents
@@ -219,8 +221,6 @@ if __name__ == "__main__":
 	parser.add_argument("file_path", type=Path, nargs='*')
 
 	p = parser.parse_args()
-
-	app = mainWindow(crawler=Crawler)
 
 	if p.file_path and p.file_path[0].exists():
 		app.load_crawl(db_file=p.file_path[0])
