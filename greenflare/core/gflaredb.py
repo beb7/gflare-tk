@@ -214,44 +214,52 @@ class GFlareDB:
 	def to_csv(self, file_name, filters=None, columns=None):
 		print( "Exporting crawl to", file_name, "...")
 
-		if not columns and not filters:
-			query = "SELECT url, content_type, indexability, status_code, h1, h2, page_title, robots_txt, meta_robots, x_robots_tag, redirect_url, meta_description, count(*) AS unique_inlinks FROM inlinks INNER JOIN crawl ON crawl.id = inlinks.url_to_id WHERE crawl.status_code != '' GROUP BY url_to_id"
-		elif filters and columns:
-			negate, column, operator, value = filters
-			inlink_query = ""
-			group_by = ""
-			if "unique_inlinks" in columns:
-				inlink_query = ", count(*) AS unique_inlinks FROM inlinks INNER JOIN crawl ON crawl.id = inlinks.url_to_id"
-				group_by = "GROUP BY url_to_id"
-				query = f"SELECT {', '.join(columns)}{inlink_query} WHERE {column} {negate} {operator} '{value}' AND status_code != '' {group_by}"
-			else:
-				query =  f"SELECT {', '.join(columns)} FROM crawl WHERE {column} {negate} {operator} '{value}' AND status_code != ''"
+		if not filters:
+			data = self.get_crawl_data()
 		else:
-			inlink_query = ""
-			group_by = ""
-			if "unique_inlinks" in columns:
-				inlink_query = ", count(*) AS unique_inlinks FROM inlinks INNER JOIN crawl ON crawl.id = inlinks.url_to_id"
-				group_by = "GROUP BY url_to_id"
-				query = f"SELECT {', '.join(columns)}{inlink_query} WHERE status_code != '' {group_by}"
-			else:
-				query =  f"SELECT {', '.join(columns)} FROM crawl WHERE status_code != ''"
+			data = self.query(filters, columns=columns)
 
-		print(query)
-		self.cur.execute(query)
+		if not columns:
+			columns = self.columns
 
 		with open(file_name, "w", newline='', encoding='utf-8-sig') as csv_file:
 			csv_writer = csvwriter(csv_file, delimiter=",", dialect='excel')
-			csv_writer.writerow([i[0] for i in self.cur.description])
-			csv_writer.writerows(self.cur)
+			csv_writer.writerow([i for i in self.columns])
+			csv_writer.writerows(data)
 
 	def regexp(self, expr, item):
 		reg = re.compile(expr)
 		return reg.search(item) is not None
 
 	@exception_handler
-	def query(self, negate, column, operator, value, columns=None):
-		selection = f"{', '.join(columns)}"
-		query = f"SELECT {selection} FROM crawl WHERE {column} {negate} {operator} '{value}' AND status_code != ''"
+	def query(self, filters, columns=None):
+
+		operator_mapping = {'Equals': '==', 'Does Not Equal': '!=', 'Begins With': 'LIKE', 'Ends With': 'LIKE', 'Contains': 'LIKE', 'Does Not Contain': 'NOT LIKE', 'Greater Than': '>', 'Greater Than Or Equal To': '>=', 'Less Than': '<', 'Less Than Or Equal To': '<='}
+
+
+		if columns:
+			columns = f"{', '.join(columns)}"
+		else:
+			columns = f"{', '.join(self.columns)}"
+
+		query_head = f'SELECT {columns} FROM crawl WHERE '
+		queries = []
+
+		for f in filters:
+			column, operator, value = f
+			
+			if operator == 'Begins With':
+				value = f'{value}%'
+			elif operator == 'Ends With':
+				value = f'%{value}'
+			elif 'Contain' in operator:
+				value = f'%{value}%'
+
+			operator = operator_mapping[operator]
+			queries.append(f"{column} {operator} '{value}'")
+
+		query = query_head + ' AND '.join(queries) + " AND status_code != ''"
+
 		print(query)
 		self.cur.execute(query)
 		rows = self.cur.fetchall()
