@@ -10,7 +10,7 @@ jobs:
       - restore_cache:
           keys:
             - python-build-cache-3.8.6
-            - python-venv-3.8.6
+            - python-venv-3.8.6-2
       - run:
           command: |
               cd macos
@@ -22,10 +22,6 @@ jobs:
           key: python-build-cache-3.8.6
           paths:
             - ~/python-build
-      - save_cache:
-          key: python-venv-3.8.6
-          paths:
-            - ~/.venv
       - run:
           command: |
               source ~/.venv/gflare/bin/activate
@@ -33,6 +29,10 @@ jobs:
               python -m pip install -r requirements.txt
               python -m pip install py2app==0.22
           name: "Install dependencies"
+      - save_cache:
+          key: python-venv-3.8.6-2
+          paths:
+            - ~/.venv
       - run:
           command: |
               source ~/.venv/gflare/bin/activate
