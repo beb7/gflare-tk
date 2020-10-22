@@ -47,6 +47,9 @@ if [ ! -d "$BUILD_DIR" ]; then
 	echo "Starting build ..."
 	mkdir -p $BUILD_DIR
 	python2.7 build-installer.py --universal-archs=intel-64 --dep-target=10.9 --build-dir=$BUILD_DIR
+fi
+
+if [ ! -d "$PY_ENV" ]; then
 
 	echo "Installing Python ..."
 
@@ -56,9 +59,6 @@ if [ ! -d "$BUILD_DIR" ]; then
 	sudo mkdir -p /Library/Frameworks/Python.framework/
 	sudo cp -r Versions /Library/Frameworks/Python.framework/
 	sudo ./PythonInstallPip-3.8.pkg/Contents/Resources/postflight
-fi
-
-if [ ! -d "$PY_ENV" ]; then
 
 	echo "Creating virtual environment for Python ..."
 	/Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m venv $PY_ENV
