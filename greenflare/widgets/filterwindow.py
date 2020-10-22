@@ -1,13 +1,15 @@
 from tkinter import ttk, Toplevel, LEFT, RIGHT
 
 class FilterWindow(Toplevel):
-	def __init__(self, label, column, columns, title=None):
+	def __init__(self, crawl_tab, label, column, columns, title=None):
 		Toplevel.__init__(self)
+		
+		self.crawl_tab = crawl_tab
 		self.label = label
 		self.column = column
 		self.columns = columns
 		self.widgets = []
-		self.operators = ['Equals', 'Does Not Equal', 'Begins Width', 'Ends With', 'Contains', 'Does Not Contain', 'Greater Than', 'Greater Than Or Equal To', 'Less Than', 'Less Than Or Equal To', 'Between', 'Custom Filter']
+		self.operators = ['Equals', 'Does Not Equal', 'Begins With', 'Ends With', 'Contains', 'Does Not Contain', 'Greater Than', 'Greater Than Or Equal To', 'Less Than', 'Less Than Or Equal To']
 
 		if title: 
 			self.title(title)
@@ -33,6 +35,8 @@ class FilterWindow(Toplevel):
 
 		self.button_cancel = ttk.Button(self.bottom_frame, text="Cancel", command=self.destroy)
 		self.button_cancel.pack(side='right')
+
+		self.filters = []
 
 		# The window needs to be placed after its elements have been assigned
 		# get window width and height
@@ -69,11 +73,30 @@ class FilterWindow(Toplevel):
 
 		entry = ttk.Entry(self.widgets[-1], width=75)
 		entry.pack(side=LEFT, padx=10)
+		entry.bind('<Return>', self.enter_hit)
 
 	def btn_ok_pushed(self):
 
+		if len(self.widgets) == 1 and self.widgets[0].winfo_children()[2] == "":
+			return
+		
+		filters = []
+
 		for w in self.widgets:
 			children = w.winfo_children()
-			operation = children[0].get()
-			values = children[1].get()
-			print(operation, values)
+			column = children[0].get()
+			operation = children[1].get()
+			values = children[2].get()
+
+			if not values:
+				continue
+			
+			filters.append((column, operation, values))
+
+		self.crawl_tab.filters = filters
+		self.crawl_tab.load_crawl_to_outputtable(filters=filters)
+		self.master.title(self.master.title() + ' (Filtered View)')
+		self.destroy()
+
+	def enter_hit(self, event=None):
+		self.btn_ok_pushed()
