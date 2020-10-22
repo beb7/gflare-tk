@@ -102,7 +102,7 @@ orbs:
   win: circleci/windows@2.4.0
 parameters:
   greenflare-release:
-    default: "0.84"
+    default: "0.90"
     type: string
   python-ver-macos:
     default: "3.8.6"
