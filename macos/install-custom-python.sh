@@ -51,6 +51,7 @@ fi
 
 if [ ! -d "$PY_ENV" ]; then
 
+<<<<<<< HEAD
 	echo "Installing Python ..."
 
 	cd $BUILD_DIR
@@ -59,6 +60,21 @@ if [ ! -d "$PY_ENV" ]; then
 	sudo mkdir -p /Library/Frameworks/Python.framework/
 	sudo cp -r Versions /Library/Frameworks/Python.framework/
 	sudo ./PythonInstallPip-3.8.pkg/Contents/Resources/postflight
+=======
+fi
+
+echo "Installing Python ..."
+
+cd $BUILD_DIR
+cd installer/Python.mpkg/Contents/Packages
+sudo pax -z -p e -r -f PythonFramework-3.8.pkg/Contents/Archive.pax.gz
+sudo mkdir -p /Library/Frameworks/Python.framework/
+sudo cp -r Versions /Library/Frameworks/Python.framework/
+sudo ./PythonInstallPip-3.8.pkg/Contents/Resources/postflight
+
+
+if [ ! -d "$PY_ENV" ]; then
+>>>>>>> staging
 
 	echo "Creating virtual environment for Python ..."
 	/Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m venv $PY_ENV
