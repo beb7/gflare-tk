@@ -59,7 +59,6 @@ sudo mkdir -p /Library/Frameworks/Python.framework/
 sudo cp -r Versions /Library/Frameworks/Python.framework/
 sudo ./PythonInstallPip-3.8.pkg/Contents/Resources/postflight
 
-
 if [ ! -d "$PY_ENV" ]; then
 
 	echo "Creating virtual environment for Python ..."
