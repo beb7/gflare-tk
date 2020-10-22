@@ -431,10 +431,13 @@ class GFlareCrawler:
 		self.session.close()
 		print("Consumer thread finished")
 
-	def get_crawl_data(self):
+	def get_crawl_data(self, filters=None):
 		if self.db_file:
 			db = self.connect_to_db()
-			data = db.get_crawl_data()
+			if not filters:
+				data = db.get_crawl_data()
+			else:
+				data = db.query(filters)
 			db.close()
 			return data
 		return []
