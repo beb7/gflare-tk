@@ -41,6 +41,7 @@ class mainWindow(ttk.Frame):
 		self.filemenu.add_command(label="Load Crawl", command=self.load_crawl)
 		self.filemenu.add_separator()
 		self.filemenu.add_command(label="Full Export", command=self.full_export)
+		self.filemenu.add_command(label="Export View", command=self.export_view)
 		self.menubar.add_cascade(label="File", menu=self.filemenu)
 
 		self.modemenu = Menu(self.menubar, tearoff=0)
@@ -116,18 +117,28 @@ class mainWindow(ttk.Frame):
 
 		self.export_to_csv(export_file)
 
+	def export_view(self):
+		files = [('CSV files', '*.csv')]
+		export_file = fd.asksaveasfilename(filetypes=files)
+
+		# Don't do anything if no file is being selected
+		if not export_file:
+			return
+
+		self.export_to_csv(export_file, filters=self.tab_crawl.filters)		
+
 	def show_export_completed_msg(self):
 		messagebox.showinfo(title='Export completed', message=f'All data has been successfully exported!')
 
 	@daemonize(title="Exporting crawl ...", msg="Exporting to CSV, that might take a while ...", callbacks=[show_export_completed_msg])
-	def export_to_csv(self, filename):
+	def export_to_csv(self, filename, filters=None):
 		if not filename.endswith(".csv"):
 			 filename += ".csv"
 		if path.isfile(filename):
 			remove(filename)
 
 		db = self.crawler.connect_to_db()
-		db.to_csv(filename, columns=self.crawler.columns)
+		db.to_csv(filename, columns=self.crawler.columns, filters=filters)
 		db.close()
 
 	def spider_mode(self):
