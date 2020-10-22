@@ -72,9 +72,13 @@ class CrawlTab(ttk.Frame):
 
 		# pop up menu for treeview header items
 		self.popup_menu = Menu(self, tearoff=0)
-		labels = ['Equals', 'Does Not Equal', '_', 'Begins Width', 'Ends With', '_', 'Contains', 'Does Not Contain', '_', 'Greater Than', 'Greater Than Or Equal To', 'Less Than', 'Less Than Or Equal To', 'Between', '_', 'Custom Filter']
+		self.popup_menu.add_command(label='Reset Filters', command=self.load_crawl_to_outputtable)
+		self.popup_menu.add_separator()
+		labels = ['Equals', 'Does Not Equal', '_', 'Begins With', 'Ends With', '_', 'Contains', 'Does Not Contain', '_', 'Greater Than', 'Greater Than Or Equal To', 'Less Than', 'Less Than Or Equal To']
 		self.generate_menu(self.popup_menu, labels, self.show_filter_window)
 		self.selected_column = ''
+
+		self.filters = None
 
 		# action menu for treeview row items
 		self.action_menu = Menu(self, tearoff=0)
@@ -96,7 +100,6 @@ class CrawlTab(ttk.Frame):
 			return wrapper
 
 		return decorator
-
 
 	def daemon_call_back(self, future):
 		self.win_progress.grab_release()
@@ -238,8 +241,11 @@ class CrawlTab(ttk.Frame):
 		self.after(250, self.add_to_outputtable)
 
 	# @daemonize(title="Loading crawl ...", msg="Please wait while the crawl is loading ...")
-	def load_crawl_to_outputtable(self):
-		items = self.crawler.get_crawl_data()
+	def load_crawl_to_outputtable(self, filters=None):
+		if not filters:
+			self.master.title(self.master.title().replace(' (Filtered View)', ''))
+
+		items = self.crawler.get_crawl_data(filters=filters)
 		self.clear_output_table()
 		for item in items:
 			self.add_item_to_outputtable(item)
@@ -323,7 +329,8 @@ class CrawlTab(ttk.Frame):
 		columns = ["url", "content_type", "indexability", "status_code", "h1", "page_title", "canonical_tag", "robots_txt", "redirect_url"]
 		if self.crawler and self.crawler.columns:
 			columns = self.crawler.columns.copy()
-		window = FilterWindow(label, self.selected_column, columns, title=f'Filter By {self.selected_column}')
+		window = FilterWindow(self, label, self.selected_column, columns, title=f'Filter By {self.selected_column}')
+		self.filters = window.filters.copy()
 
 	def show_action_window(self, label):
 		url = ''
