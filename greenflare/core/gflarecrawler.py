@@ -306,7 +306,6 @@ class GFlareCrawler:
 			self.worker_status.append(busy)
 
 		while self.crawl_running.is_set() == False:
-
 			sleep(self.rate_limit_delay)
 
 			if not response:
@@ -319,19 +318,18 @@ class GFlareCrawler:
 				response = None
 				busy.clear()
 				continue
-
 			try:
+				adj_timeout = timeout
 				self.data_queue.put(response, timeout=adj_timeout)
 				response = None
-				adj_timeout = timeout
 			except queue.Full:
 					# print(f'{name} has hit a full queue, retrying in {adj_timeout} ...')
 					adj_timeout += backoff_factor * timeout
+					continue
 					if self.crawl_running.is_set():
 						busy.clear()
-						break
-
-			busy.clear()
+						break	
+			busy.clear()		
 
 	def consumer_worker(self):
 		db = self.connect_to_db()
@@ -348,7 +346,7 @@ class GFlareCrawler:
 					break
 			after_lock = time() - ts
 			try:
-				print(f"Queue size: {self.data_queue.qsize()}")
+				# print(f"Queue size: {self.data_queue.qsize()}")
 				wait_before = time()
 				response = self.data_queue.get(timeout=30)
 				wait_after = time() - wait_before
@@ -365,12 +363,10 @@ class GFlareCrawler:
 			response_to_data_time = 0
 			if isinstance(response, dict):
 				data = response
-
 			else:
 				before = time()
 				data = self.response_to_data(response)
 				response_to_data_time = time() - before
-
 
 			crawl_data = data['data']
 
@@ -394,6 +390,7 @@ class GFlareCrawler:
 
 			if len(extracted_links) > 0:
 				new_urls = db.get_new_urls(extracted_links)
+
 				if len(new_urls) > 0 :
 					db.insert_new_urls(new_urls)
 					self.add_to_url_queue(new_urls)
@@ -416,12 +413,7 @@ class GFlareCrawler:
 				do_commit = False
 				after_commit = time() - before_commit
 
-			# time_spent = time() - ts
-			# if time_spent < 0.25:
-			# 	sleep_time = 0.25 - time_spent
-			# 	# print("sleeping", sleep_time, "seconds")
-			# 	sleep(sleep_time)
-			print(f"Iteration took {time() - ts:.2f} sec | waited {wait_after:.2f} sec | response_to_data {response_to_data_time:.2f} sec | insert took {after_insert:.2f} sec | commit took {after_commit:.2f} | links took {after_links:.2f}| inlinks took {after_inlink:.2f} sec | gui took {after_gui:.2f} | locked for {after_lock:.2f} secs")
+			# print(f"Iteration took {time() - ts:.2f} sec | waited {wait_after:.2f} sec | response_to_data {response_to_data_time:.2f} sec | insert took {after_insert:.2f} sec | commit took {after_commit:.2f} | links took {after_links:.2f}| inlinks took {after_inlink:.2f} sec | gui took {after_gui:.2f} | locked for {after_lock:.2f} secs")
 
 		# Outside while loop, wrap things up
 		self.crawl_running.set()
