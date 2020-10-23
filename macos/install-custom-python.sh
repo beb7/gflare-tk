@@ -59,11 +59,11 @@ sudo mkdir -p /Library/Frameworks/Python.framework/
 sudo cp -r Versions /Library/Frameworks/Python.framework/
 sudo ./PythonInstallPip-3.8.pkg/Contents/Resources/postflight
 
-if [ ! -d "$PY_ENV" ]; then
+# if [ ! -d "$PY_ENV" ]; then
 
-	echo "Creating virtual environment for Python ..."
-	/Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m venv $PY_ENV
+# 	echo "Creating virtual environment for Python ..."
+# 	/Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m venv $PY_ENV
 
-	echo "Activating virtual environment ..."
-	source $PY_ENV/bin/activate
-fi
+# 	echo "Activating virtual environment ..."
+# 	source $PY_ENV/bin/activate
+# fi
