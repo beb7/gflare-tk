@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, Menu, filedialog as fd, messagebox, TclError
 from core.gflarecrawler import GFlareCrawler
+from core.defaults import Defaults
 from widgets.crawltab import CrawlTab
 from widgets.settingstab import SettingsTab
 from widgets.exclusionstab import ExclusionsTab
@@ -168,10 +169,12 @@ class mainWindow(ttk.Frame):
 			break
 
 if __name__ == "__main__":
+	
+	# Check if Greenflare has been launched as part of a binary bundle as this impacts the working_dir
 	if getattr(sys, 'frozen', False):
-		WorkingDir = path.dirname(sys.executable)
+		Defaults.set_working_dir(path.dirname(sys.executable))
 	else:
-		WorkingDir = path.dirname(path.realpath(__file__))
+		Defaults.set_working_dir(path.dirname(path.realpath(__file__)))
 
 	# Linux specific settings
 	if sys.platform == 'linux':
@@ -202,12 +205,11 @@ if __name__ == "__main__":
 	root.geometry("1024x768")
 	# macOS tkinter cannot handle iconphotos at the time being, disabling it for now
 	if sys.platform != "darwin":
-		root.iconphoto(False, tk.PhotoImage(file=WorkingDir + path.sep + 'resources' + path.sep + 'greenflare-icon-32x32.png'))
+		root.iconphoto(False, tk.PhotoImage(file=Defaults.root_icon()))
 
 	globalLock = Lock()
-	crawl_items = ["url", "content_type", "status_code", "indexability", "page_title", "meta_description", "h1", "h2", "unique_inlinks", "canonicals", "canonical_tag", "pagination", "hreflang", "canonical_http_header", "robots_txt", "redirect_url", "meta_robots", "x_robots_tag", "respect_robots_txt", "report_on_status", "follow_blocked_redirects"]
-	Settings  = {"MODE": "Spider", "THREADS": 5, "URLS_PER_SECOND": 0, "USER_AGENT": "Greenflare SEO Spider/1.0",
-				 "UA_SHORT": "Greenflare", "MAX_RETRIES": 3, "CRAWL_ITEMS": crawl_items}
+	crawl_items = Defaults.crawl_items
+	Settings  = Defaults.settings
 	Crawler = GFlareCrawler(settings=Settings, gui_mode=True, lock=globalLock)
 
 	app = mainWindow(crawler=Crawler)
