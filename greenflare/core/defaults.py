@@ -5,6 +5,7 @@ from os import path
 class Defaults:
 
     version = '0.91'
+
     crawl_items = [
         'url',
         'content_type',
