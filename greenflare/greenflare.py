@@ -7,6 +7,7 @@ from widgets.exclusionstab import ExclusionsTab
 from widgets.extractionstab import ExtractionsTab
 from widgets.listcrawl import ListModeWindow
 from widgets.progresswindow import ProgressWindow
+from widgets.aboutwindow import AboutWindow
 from concurrent import futures
 import functools
 from threading import Lock
@@ -149,7 +150,7 @@ class mainWindow(ttk.Frame):
 		lm_wnd = ListModeWindow(crawler=self.crawler, crawl_tab=self.tab_crawl, root=self.master)
 
 	def show_about(self):
-		pass
+		AboutWindow()
 
 	def update_gui(self):
 		self.tab_crawl.update()
