@@ -1,5 +1,6 @@
 from tkinter import ttk, Toplevel, TOP, LEFT, Text, END
 from PIL import ImageTk, Image
+from core.defaults import Defaults
 
 class AboutWindow(Toplevel):
 	def __init__(self):
@@ -15,7 +16,7 @@ class AboutWindow(Toplevel):
 		self.rightframe = ttk.Frame(self)
 		self.rightframe.pack(side=LEFT, padx=20, pady=20, fill="x")
 
-		self.render = ImageTk.PhotoImage(Image.open('resources/greenflare-icon-192x192.png'))
+		self.render = ImageTk.PhotoImage(Image.open(Defaults.about_icon()))
 		self.img = ttk.Label(self.leftframe, image=self.render)
 		self.img.pack(padx=(20, 0))
 
