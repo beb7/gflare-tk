@@ -1,5 +1,5 @@
 from tkinter import ttk, Toplevel, LEFT, RIGHT
-
+from core.defaults import Defaults
 class FilterWindow(Toplevel):
 	def __init__(self, crawl_tab, label, column, columns, title=None):
 		Toplevel.__init__(self)
@@ -9,11 +9,10 @@ class FilterWindow(Toplevel):
 		self.column = column
 		self.columns = columns
 		self.widgets = []
-		self.operators = ['Equals', 'Does Not Equal', 'Begins With', 'Ends With', 'Contains', 'Does Not Contain', 'Greater Than', 'Greater Than Or Equal To', 'Less Than', 'Less Than Or Equal To']
+		self.operators = [l for l in Defaults.popup_menu_labels if l != '_']
 
 		if title: 
 			self.title(title)
-
 		
 		self.top_frame = ttk.Frame(self)
 		self.top_frame.pack(anchor='w', padx=20, pady=20, fill='x')
