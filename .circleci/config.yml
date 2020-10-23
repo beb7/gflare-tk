@@ -41,7 +41,7 @@ jobs:
           name: "Freeze macOS app"
       - run:
           command: |
-              export GFLAREVERSION=$(/Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -c "from greenflare.core.defaults import Defaults; print(Defaults.version)")
+              export GFLAREVER=$(/Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -c "from greenflare.core.defaults import Defaults; print(Defaults.version)")
               mkdir results/
               cd dist/
               hdiutil create ./greenflare-${GFLAREVER}-x86_64-1.dmg -srcfolder Greenflare.app -ov
