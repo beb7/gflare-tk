@@ -41,6 +41,7 @@ jobs:
           name: "Freeze macOS app"
       - run:
           command: |
+              export GFLAREVERSION=$(/Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -c "from greenflare.core.defaults import Defaults; print(Defaults.version)")
               mkdir results/
               cd dist/
               hdiutil create ./greenflare-${GFLAREVER}-x86_64-1.dmg -srcfolder Greenflare.app -ov
@@ -58,6 +59,7 @@ jobs:
       - run:
           command: |
               python --version
+              export GFLAREVER=$(python -c "from greenflare.core.defaults import Defaults; print(Defaults.version)")
               python build_binary.py build_exe
               tar -zcvf linux-build.tar.gz build/
               mkdir results/
@@ -88,11 +90,13 @@ jobs:
           name: "Install dependencies"
       - run:
           command: |
+              $env:GFLAREVER=$(python -c "from greenflare.core.defaults import Defaults; print(Defaults.version)")
               python build_binary.py build_exe
-              tar.exe -a -c -f greenflare-${GFLAREVER}-x86_64-1.zip build
+              tar.exe -a -c -f greenflare-$env:GFLAREVER-x86_64-1.zip build
               mkdir results
               move greenflare-*.zip results/
           name: "Freeze Windows Programme"
+          shell: powershell.exe
       - store_artifacts:
           path: results/
 orbs:
@@ -100,14 +104,9 @@ orbs:
   win: circleci/windows@2.4.0
 parameters:
   greenflare-release:
-    default: "0.90"
+    default: "0.0"
     type: string
-  python-ver-macos:
-    default: "3.8.6"
-    type: string
-  python-ver-macos-major:
-    default: "3.8"
-    type: string
+
 version: 2.1
 workflows:
   main:
