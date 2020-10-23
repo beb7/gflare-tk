@@ -1,5 +1,6 @@
 from tkinter import ttk, W, E, NW, StringVar, IntVar
-from .checkboxgroup import CheckboxGroup
+from widgets.checkboxgroup import CheckboxGroup
+from core.defaults import Defaults
 
 class SettingsTab(ttk.Frame):
 	def __init__(self, crawler=None):
@@ -39,14 +40,7 @@ class SettingsTab(ttk.Frame):
 		self.label_ua = ttk.Label(self.group_crawler, text="User-Agent")
 		self.label_ua.grid(row=3, column=0, sticky=W)
         
-		self.user_agents = {"Greenflare": "Greenflare SEO Crawler/1.0",
-		"Windows Chrome": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36", 
-		"Macintosh Chrome": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.122 Safari/537.36",
-		"Googlebot Desktop": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
-		"Googlebot Mobile": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.122 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
-		"Bingbot Desktop": "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)",
-		"Bingbot Mobile": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.122 Mobile Safari/537.36 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)"
-		}
+		self.user_agents = Defaults.user_agents
 
 		self.ua_names = [k for k in self.user_agents.keys()]
 		self.combobox_ua = ttk.Combobox(self.group_crawler, values=self.ua_names, state="readonly")
