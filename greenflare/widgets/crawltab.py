@@ -1,6 +1,7 @@
 from tkinter import LEFT, RIGHT, ttk, W, NO, filedialog as fd, messagebox, StringVar, Menu
 from widgets.progresswindow import ProgressWindow
 from widgets.filterwindow import FilterWindow
+from core.defaults import Defaults
 from concurrent import futures
 import functools
 from functools import partial
@@ -80,7 +81,7 @@ class CrawlTab(ttk.Frame):
 		self.popup_menu = Menu(self, tearoff=0)
 		self.popup_menu.add_command(label='Reset Filters', command=self.load_crawl_to_outputtable)
 		self.popup_menu.add_separator()
-		labels = ['Equals', 'Does Not Equal', '_', 'Begins With', 'Ends With', '_', 'Contains', 'Does Not Contain', '_', 'Greater Than', 'Greater Than Or Equal To', 'Less Than', 'Less Than Or Equal To']
+		labels = Defaults.popup_menu_labels
 		self.generate_menu(self.popup_menu, labels, self.show_filter_window)
 		self.selected_column = ''
 
