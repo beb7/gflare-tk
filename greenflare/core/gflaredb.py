@@ -7,21 +7,22 @@ class GFlareDB:
 	def __init__(self, db_name, crawl_items=None, extractions=None):
 		self.db_name = db_name
 
-		self.columns_map = {"url": "TEXT type UNIQUE",
-							"content_type": "TEXT",
-							"status_code": "INT",
-							"indexability": "TEXT",
-							"h1": "TEXT",
-							"h2": "TEXT",
-							"page_title": "TEXT",
-							"meta_description": "TEXT",
-							"canonical_tag": "TEXT",
-							"robots_txt": "TEXT",
-							"redirect_url": "TEXT",
-							"meta_robots": "TEXT",
-							"x_robots_tag": "TEXT",
-							"unique_inlinks": "INT"
-							}
+		self.columns_map = {
+			"url": "TEXT type UNIQUE",
+			"content_type": "TEXT",
+			"status_code": "INT",
+			"indexability": "TEXT",
+			"h1": "TEXT",
+			"h2": "TEXT",
+			"page_title": "TEXT",
+			"meta_description": "TEXT",
+			"canonical_tag": "TEXT",
+			"robots_txt": "TEXT",
+			"redirect_url": "TEXT",
+			"meta_robots": "TEXT",
+			"x_robots_tag": "TEXT",
+			"unique_inlinks": "INT"
+		}
 
 		self.crawl_items = crawl_items
 		self.extractions = extractions
