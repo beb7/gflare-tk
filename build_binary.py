@@ -14,7 +14,7 @@ shortcut_table = [
      "DesktopFolder",          # Directory_
      "Greenflare SEO Crawler",  # Name
      "TARGETDIR",              # Component_
-     "[TARGETDIR]greenflare.exe",# Target
+     "[TARGETDIR]greenflare.exe",  # Target
      None,                     # Arguments
      None,                     # Description
      None,                     # Hotkey
@@ -23,42 +23,47 @@ shortcut_table = [
      None,                     # ShowCmd
      'TARGETDIR'               # WkDir
      )
-    ]
+]
 
 # Now create the table dictionary
 msi_data = {"Shortcut": shortcut_table}
 
-# Change some default MSI options and specify the use of the above defined tables
-bdist_msi_options = {'data': msi_data, 'install_icon': "greenflare/resources/greenflare-icon-32x32.ico"}
+# Change some default MSI options and specify the use of the above defined
+# tables
+bdist_msi_options = {'data': msi_data,
+                     'install_icon': "greenflare/resources/greenflare-icon-32x32.ico"}
 
 # MacOS
-bdist_mac_options = {'iconfile': 'greenflare-icon-64x64.icns', 'bundle_name': 'greenflare', 'custom_info_plist': 'Info.plist', 'include_resources': [('/usr/local/Cellar/tcl-tk/8.6.10/lib/tcl8.6', 'tcl8.6'), ('/usr/local/Cellar/tcl-tk/8.6.10/lib/tk8.6', 'tk8.6')]}
+bdist_mac_options = {'iconfile': 'greenflare-icon-64x64.icns', 'bundle_name': 'greenflare', 'custom_info_plist': 'Info.plist',
+                     'include_resources': [('/usr/local/Cellar/tcl-tk/8.6.10/lib/tcl8.6', 'tcl8.6'), ('/usr/local/Cellar/tcl-tk/8.6.10/lib/tk8.6', 'tk8.6')]}
 # bdist_mac_options = {'iconfile': 'greenflare-icon-64x64.icns', 'bundle_name': 'greenflare', 'custom_info_plist': 'Info.plist'}
-bdist_dmg_options = {'applications_shortcut': True, "volume_label": "Greenflare SEO Crawler"}
+bdist_dmg_options = {'applications_shortcut': True,
+                     "volume_label": "Greenflare SEO Crawler"}
 
 # GUI applications require a different base on Windows (the default is for a
 # console application).
 base = None
 
-targetName="greenflare"
+targetName = "greenflare"
 if sys.platform == "win32":
-	base = "Win32GUI"
-	targetName="greenflare.exe"
+    base = "Win32GUI"
+    targetName = "greenflare.exe"
 # elif sys.platform == "darwin":
 #     print("Applying tcl-tk hack ...")
 #     environ['TK_LIBRARY'] = '/usr/local/Cellar/tcl-tk/8.6.10/lib/tk8.6/'
-#     environ['TCL_LIBRARY'] = '/usr/local/Cellar/tcl-tk/8.6.10/lib/tcl8.6/' 
+#     environ['TCL_LIBRARY'] = '/usr/local/Cellar/tcl-tk/8.6.10/lib/tcl8.6/'
 
 target = Executable(
     script="greenflare/greenflare.py",
     base=base,
     icon="greenflare/resources/greenflare-icon-32x32.ico",
     targetName=targetName
-    )
+)
 
-setup(  name = "Greenflare SEO Crawler",
-        version = "0.82",
-        author = "Geenflare",
-        description = "Greenflare SEO Crawler",
-        options = {"build_exe": build_exe_options, "bdist_msi": bdist_msi_options, "bdist_mac": bdist_mac_options, "bdist_dmg": bdist_dmg_options},
-        executables = [target])
+setup(name="Greenflare SEO Crawler",
+      version="0.82",
+      author="Geenflare",
+      description="Greenflare SEO Crawler",
+      options={"build_exe": build_exe_options, "bdist_msi": bdist_msi_options,
+               "bdist_mac": bdist_mac_options, "bdist_dmg": bdist_dmg_options},
+      executables=[target])
