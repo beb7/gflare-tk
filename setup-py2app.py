@@ -6,6 +6,7 @@ Usage:
 """
 
 from setuptools import setup
+from greenflare.core.defaults import Defaults
 
 APP = ['greenflare/greenflare.py']
 DATA_FILES = []
@@ -15,7 +16,7 @@ OPTIONS = {
         'CFBundleName': 'Greenflare',
                 'CFBundleIconFile': 'greenflare.icns',
                 'CFBundleIdentifier': 'io.greenflare.crawler',
-                'CFBundleShortVersionString': '0.90',
+                'CFBundleShortVersionString': Defaults.version,
                 'CFBundleDocumentTypes': [{'CFBundleTypeExtensions': ["gflaredb"], 'CFBundleTypeName': "Greenflare Crawl DB", 'CFBundleTypeRole': "Editor"}]
     },
     'argv_emulation': False
