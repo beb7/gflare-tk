@@ -38,6 +38,20 @@ class Defaults:
 		'CRAWL_ITEMS': crawl_items
 	}
 
+	popup_menu_labels = [
+		'Equals',
+		'Does Not Equal',
+		'_',
+		'Begins With',
+		'Ends With',
+		'_',
+		'Contains',
+		'Does Not Contain',
+		'_',
+		'Greater Than',
+		'Greater Than Or Equal To',
+		'Less Than',
+		'Less Than Or Equal To']
 
 	@classmethod
 	def set_working_dir(cls, directory):
