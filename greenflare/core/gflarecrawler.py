@@ -1,6 +1,7 @@
 from threading import Thread, Event, enumerate as tenum
 from .gflaredb import GFlareDB
 from .gflareresponse import GFlareResponse as gf
+from core.defaults import Defaults
 from requests import Session, exceptions
 from time import sleep, time
 import queue
@@ -44,7 +45,7 @@ class GFlareCrawler:
 
 	def init_crawl_headers(self):
 		if not self.settings.get('USER_AGENT', ''): self.settings['USER_AGENT'] = "Greenflare SEO Spider/1.0"
-		self.HEADERS = {'User-Agent': self.settings['USER_AGENT'], 'Accept-Language': 'en-gb', 'Accept-Encoding': 'gzip', 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Cache-Control': 'no-cache', 'Pragma': 'no-cache'}
+		self.HEADERS = {'User-Agent': self.settings['USER_AGENT'], **Defaults.headers}
 
 	def request_robots_txt(self, url):
 		robots_txt_url = self.gf.get_robots_txt_url(url)

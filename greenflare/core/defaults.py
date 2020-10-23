@@ -38,6 +38,14 @@ class Defaults:
 		'CRAWL_ITEMS': crawl_items
 	}
 
+	headers = {
+		'Accept-Language': 'en-gb',
+		'Accept-Encoding': 'gzip',
+		'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+		'Cache-Control': 'no-cache',
+		'Pragma': 'no-cache'
+	}
+
 	popup_menu_labels = [
 		'Equals',
 		'Does Not Equal',
