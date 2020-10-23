@@ -185,7 +185,7 @@ if __name__ == "__main__":
 		# Use arc theme if available
 		if check:
 			from ttkthemes import ThemedTk
-			root = ThemedTk(theme="arc")
+			root = ThemedTk(theme=Defaults.linux_theme)
 		else:
 			root = tk.Tk()
 

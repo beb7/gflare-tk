@@ -28,16 +28,6 @@ class Defaults:
 		'follow_blocked_redirects'
   	]
 
-	settings = {
-		'MODE': 'Spider',
-		'THREADS': 5,
-		'URLS_PER_SECOND': 0,
-		'USER_AGENT': 'Greenflare SEO Spider/1.0',
-		'UA_SHORT': 'Greenflare',
-		'MAX_RETRIES': 3,
-		'CRAWL_ITEMS': crawl_items
-	}
-
 	headers = {
 		'Accept-Language': 'en-gb',
 		'Accept-Encoding': 'gzip',
@@ -55,6 +45,16 @@ class Defaults:
 		'Bingbot Desktop': 'Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)',
 		'Bingbot Mobile': 'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.122 Mobile Safari/537.36 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)'
 		}
+	
+	settings = {
+		'MODE': 'Spider',
+		'THREADS': 5,
+		'URLS_PER_SECOND': 0,
+		'USER_AGENT': user_agents['Greenflare'],
+		'UA_SHORT': 'Greenflare',
+		'MAX_RETRIES': 3,
+		'CRAWL_ITEMS': crawl_items
+	}
 
 	popup_menu_labels = [
 		'Equals',
@@ -71,6 +71,8 @@ class Defaults:
 		'Less Than',
 		'Less Than Or Equal To']
 
+	linux_theme = 'arc'
+
 	@classmethod
 	def set_working_dir(cls, directory):
 		cls.working_dir = directory
@@ -82,5 +84,3 @@ class Defaults:
 	@classmethod
 	def about_icon(cls):
 		return cls.working_dir + path.sep + 'resources' + path.sep + 'greenflare-icon-192x192.png'
-
-	# platform specific settings
