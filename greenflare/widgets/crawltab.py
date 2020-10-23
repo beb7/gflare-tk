@@ -167,7 +167,7 @@ class CrawlTab(ttk.Frame):
 			# Validate input url
 			url_components = self.crawler.gf.parse_url(url)
 
-			if self.crawler.settings.get('Mode', '') == 'Spider':
+			if self.crawler.settings.get('MODE', '') == 'Spider':
 
 				if url_components['scheme'] == '':
 					url = 'http://' + url
