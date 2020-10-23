@@ -15,12 +15,12 @@ class AboutWindow(Toplevel):
 		self.rightframe = ttk.Frame(self)
 		self.rightframe.pack(side=LEFT, padx=20, pady=20, fill="x")
 
-		self.render = ImageTk.PhotoImage(Image.open('resources/greenflare-icon-256x256.png'))
+		self.render = ImageTk.PhotoImage(Image.open('resources/greenflare-icon-192x192.png'))
 		self.img = ttk.Label(self.leftframe, image=self.render)
-		self.img.pack(padx=20, pady=20)
+		self.img.pack(padx=(20, 0))
 
 		self.info_text = Text(self)
-		self.info_text.pack(padx=20, pady=20)
+		self.info_text.pack(padx=(0, 20), pady=20)
 
 		self.info_text.tag_configure('h1', font=('Arial', 16, 'bold'))
 		self.info_text.tag_configure('h2', font=('Arial', 14))
