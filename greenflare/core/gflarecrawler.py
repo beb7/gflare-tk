@@ -1,6 +1,6 @@
 from threading import Thread, Event, enumerate as tenum
-from .gflaredb import GFlareDB
-from .gflareresponse import GFlareResponse as gf
+from core.gflaredb import GFlareDB
+from core.gflareresponse import GFlareResponse as gf
 from core.defaults import Defaults
 from requests import Session, exceptions
 from time import sleep, time
