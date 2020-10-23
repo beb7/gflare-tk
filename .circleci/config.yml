@@ -10,7 +10,7 @@ jobs:
       - restore_cache:
           keys:
             - python-build-cache-3.8.6-3
-            - python-venv-3.8.6-3
+            # - python-venv-3.8.6-3
       - run:
           command: |
               cd macos
@@ -24,19 +24,17 @@ jobs:
             - ~/python-build
       - run:
           command: |
-              source ~/.venv/gflare/bin/activate
-              python -m pip install pip --upgrade
-              python -m pip install -r requirements.txt
-              python -m pip install py2app==0.22
+              /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install pip --upgrade
+              /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install -r requirements.txt
+              /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install py2app==0.22
           name: "Install dependencies"
-      - save_cache:
-          key: python-venv-3.8.6-3
-          paths:
-            - ~/.venv
+      # - save_cache:
+      #     key: python-venv-3.8.6-3
+      #     paths:
+      #       - ~/.venv
       - run:
           command: |
-              source ~/.venv/gflare/bin/activate
-              python setup-py2app.py py2app
+              /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 setup-py2app.py py2app
               chmod +x macos/launch-mac
               cp macos/launch-mac dist/Greenflare.app/Contents/MacOS/
               plutil -replace CFBundleExecutable -string launch-mac dist/Greenflare.app/Contents/Info.plist
