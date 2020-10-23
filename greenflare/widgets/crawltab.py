@@ -44,8 +44,14 @@ class CrawlTab(ttk.Frame):
 		self.middle_frame.pack(anchor='center', fill='y', expand=1)
 
 		self.treeview_table = ttk.Treeview(self.middle_frame, selectmode="browse")
+		
 		# Capture right clicks on table
-		self.treeview_table.bind("<Button-3>", self.assign_treeview_click)
+		right_click = '<Button-3>'
+
+		if sys.platform == 'darwin':
+			right_click = '<Button-2>'
+
+		self.treeview_table.bind(right_click, self.assign_treeview_click)
 
 		self.scrollbar_vertical = ttk.Scrollbar(self.middle_frame, orient="vertical", command=self.treeview_table.yview)
 		self.scrollbar_vertical.pack(side="right", fill="y")
