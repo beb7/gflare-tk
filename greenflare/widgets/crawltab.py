@@ -167,14 +167,16 @@ class CrawlTab(ttk.Frame):
 			# Validate input url
 			url_components = self.crawler.gf.parse_url(url)
 
-			if url_components['scheme'] == '':
-				url = 'http://' + url
-				url_components = self.crawler.gf.parse_url(url)
-				print(url_components, url)
+			if self.crawler.settings.get('Mode', '') == 'Spider':
 
-			if url_components['netloc'] == '' or ' ' in url_components['netloc']:
-				messagebox.showerror(title='Invalid URL', message='Please enter a valid URL!')
-				return
+				if url_components['scheme'] == '':
+					url = 'http://' + url
+					url_components = self.crawler.gf.parse_url(url)
+					print(url_components, url)
+
+				if url_components['netloc'] == '' or ' ' in url_components['netloc']:
+					messagebox.showerror(title='Invalid URL', message='Please enter a valid URL!')
+					return
 
 			url = self.crawler.gf.url_components_to_str(url_components)
 

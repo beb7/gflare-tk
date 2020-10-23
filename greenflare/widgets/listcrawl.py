@@ -1,24 +1,23 @@
 from tkinter import LEFT, RIGHT, Toplevel, ttk, Text, messagebox
 import urllib.parse
 
-class ListModeWindow(ttk.Frame):	
+class ListModeWindow(Toplevel):	
 	def __init__(self, crawler=None, crawl_tab=None, root=None):
-		ttk.Frame.__init__(self)
+		Toplevel.__init__(self)
 
 		self.crawler = crawler
 		self.crawl_tab = crawl_tab
-		self.list_crawl_window = Toplevel(root)
 
-		self.list_crawl_window.resizable(False, False)
-		self.list_crawl_window.title("Greenflare SEO Crawler - List Mode Input URLs")
+		self.resizable(False, False)
+		self.title("Greenflare SEO Crawler - List Mode Input URLs")
 
-		self.top_frame = ttk.Frame(self.list_crawl_window)
+		self.top_frame = ttk.Frame(self)
 		self.top_frame.pack(anchor='center', padx=5, pady=5, fill='x')
 
-		self.middle_frame = ttk.Frame(self.list_crawl_window)
+		self.middle_frame = ttk.Frame(self)
 		self.middle_frame.pack(anchor='center', padx=5, pady=5, fill='x')
 
-		self.bottom_frame = ttk.Frame(self.list_crawl_window)
+		self.bottom_frame = ttk.Frame(self)
 		self.bottom_frame.pack(anchor='center', padx=5, pady=5, fill='x')
 
 		self.label_input = ttk.Label(self.top_frame, text="Enter or paste URLs to spider list crawl, one per line.")
@@ -45,7 +44,7 @@ class ListModeWindow(ttk.Frame):
 			self.crawler.list_mode_urls = urls
 			self.crawl_tab.show_list_mode()
 			messagebox.showinfo(title='Reading URLs completed', message=f'Loaded {len(urls)} valid and unique URLs!')
-			self.list_crawl_window.destroy()
+			self.destroy()
 		else:
 			messagebox.showerror(title='Reading URLs failed', message='No valid URLs found, please check your input!')
 
