@@ -48,7 +48,7 @@ class AboutWindow(Toplevel):
         self.lift()
 
         heading_1 = 'Greenflare SEO Crawler'
-        heading_2 = '\nVersion 0.90'
+        heading_2 = f'\nVersion {Defaults.version}'
 
         text = '\n\n© Greenflare Developers 2020\n\nCreated By Benjamin Görler (ben@greenflare.io)'
 
