@@ -73,6 +73,10 @@ class Defaults:
         'Less Than',
         'Less Than Or Equal To']
 
+    window_title = 'Greenflare SEO Crawler'
+
+    file_extension = '.gflaredb'
+
     linux_theme = 'arc'
 
     @classmethod

@@ -36,7 +36,7 @@ class mainWindow(ttk.Frame):
         self.tab_parent.add(self.tab_exclusions, text="Exclusions")
         self.tab_parent.add(self.tab_extractions, text="Extractions")
         self.tab_parent.pack(expand=1, fill="both")
-        self.master.title("Greenflare SEO Crawler")
+        self.master.title(Defaults.window_title)
 
         self.menubar = Menu(self)
 
@@ -92,10 +92,10 @@ class mainWindow(ttk.Frame):
     def reset_ui(self):
         self.tab_crawl.reset()
         self.crawler.reset_crawl()
-        self.master.title("Greenflare SEO Crawler")
+        self.master.title(Defaults.window_title)
 
     def load_crawl(self, db_file=None):
-        files = [('Greenflare DB', '*.gflaredb'), ('All files', '.*')]
+        files = [('Greenflare DB', f'*{Defaults.file_extension}'), ('All files', '.*')]
 
         if not db_file:
             db_file = fd.askopenfilename(filetypes=files)
@@ -106,7 +106,7 @@ class mainWindow(ttk.Frame):
         self.crawler.load_crawl(db_file)
 
         if self.crawler.settings["MODE"] == "Spider":
-            self.master.title(f"{self.crawler.settings['ROOT_DOMAIN']} - Greenflare SEO Crawler")
+            self.master.title(f"{self.crawler.settings['ROOT_DOMAIN']} - {Defaults.window_title}")
         elif self.crawler.settings["MODE"] == "List":
             self.tab_crawl.show_list_mode()
 
@@ -172,7 +172,7 @@ class mainWindow(ttk.Frame):
 
     def open_file_on_macos(self, *args):
         for f in args:
-            if f.endswith('.gflaredb'):
+            if f.endswith(Defaults.file_extension):
                 self.load_crawl(db_file=f)
             break
 
