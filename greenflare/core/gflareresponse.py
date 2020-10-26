@@ -231,13 +231,11 @@ class GFlareResponse:
     def extract_links(self):
         links = []
         try:
-            for link in self.tree.xpath(self.xpath_link_extraction):
-                links.append(link)
+            parsed_links = [self.parse_url(l) for l in self.tree.xpath(self.xpath_link_extraction)]
         except:
             return []
 
         links = list(set(links))
-        parsed_links = [self.parse_url(l) for l in links]
         return [self.url_components_to_str(l) for l in parsed_links if self.valid_url(l)]
 
     def get_txt_by_selector(self, selector, method="css", get="txt"):
@@ -310,8 +308,6 @@ class GFlareResponse:
                 pass
 
             d["meta_robots"] = ', '.join(rules)
-
-            print(d)
 
         return d
 
