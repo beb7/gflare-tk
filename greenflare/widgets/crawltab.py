@@ -136,8 +136,7 @@ class CrawlTab(ttk.Frame):
         self.row_counter = 1
 
     def populate_columns(self):
-        columns = ["url", "content_type", "indexability", "status_code",
-                   "h1", "page_title", "canonical_tag", "robots_txt", "redirect_url"]
+        columns = Defaults.display_columns.copy()
         if self.crawler.columns:
             columns = self.crawler.columns.copy()
             # if 'unique_inlinks' in columns: columns.remove('unique_inlinks')
@@ -161,11 +160,11 @@ class CrawlTab(ttk.Frame):
         self.btn_crawl_pushed()
 
     def start_new_crawl(self, url):
-        files = [('Greenflare DB', '*.gflaredb'), ('All files', '.*')]
+        files = [('Greenflare DB', f'*{Defaults.file_extension}'), ('All files', '.*')]
         db_file = fd.asksaveasfilename(filetypes=files)
         if db_file:
-            if not db_file.endswith(".gflaredb"):
-                db_file += ".gflaredb"
+            if not db_file.endswith(Defaults.file_extension):
+                db_file += Defaults.file_extension
             if path.isfile(db_file):
                 remove(db_file)
             self.crawler.reset_crawl()
@@ -176,7 +175,7 @@ class CrawlTab(ttk.Frame):
             self.crawler.start_crawl()
             self.clear_output_table()
             self.populate_columns()
-            self.master.title(f"{self.crawler.gf.get_domain(self.crawler.settings['STARTING_URL'])} - Greenflare SEO Crawler")
+            self.master.title(f"{self.crawler.gf.get_domain(self.crawler.settings['STARTING_URL'])} - {Defaults.window_title}")
 
             self.after(10, self.add_to_outputtable)
             self.after(10, self.change_btn_text)
@@ -265,13 +264,16 @@ class CrawlTab(ttk.Frame):
             else:
                 messagebox.showinfo(
                     title='Crawl completed', message='List Mode Crawl has been completed successfully!')
+            self.update_bottom_stats()
             return
         if self.crawler.crawl_timed_out.is_set():
             messagebox.showerror(title='Error - Timed Out',
                                  message='Crawl timed out!')
             self.button_crawl["text"] = "Resume"
+            self.update_bottom_stats()
             return
         if self.crawler.crawl_running.is_set():
+            self.update_bottom_stats()
             return
 
         self.after(250, self.add_to_outputtable)
@@ -320,7 +322,7 @@ class CrawlTab(ttk.Frame):
 
     def show_list_mode(self):
         self.reset()
-        self.master.title("List Mode - Greenflare SEO Crawler")
+        self.master.title(f'List Mode - {Defaults.window_title}')
         self.entry_url_input.delete(0, 'end')
         self.entry_url_input.insert(0, "List Mode ...")
         self.freeze_input()
@@ -365,8 +367,7 @@ class CrawlTab(ttk.Frame):
                 self.popup_menu.grab_release()
 
     def show_filter_window(self, label):
-        columns = ["url", "content_type", "indexability", "status_code",
-                   "h1", "page_title", "canonical_tag", "robots_txt", "redirect_url"]
+        columns = Defaults.display_columns.copy()
         if self.crawler and self.crawler.columns:
             columns = self.crawler.columns.copy()
         window = FilterWindow(self, label, self.selected_column, columns, title=f'Filter By {self.selected_column}')
