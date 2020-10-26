@@ -52,7 +52,8 @@ class GFlareCrawler:
 
     def request_robots_txt(self, url):
         robots_txt_url = self.gf.get_robots_txt_url(url)
-        return self.crawl_url(robots_txt_url)
+        response = self.crawl_url(robots_txt_url)
+        return self.response_to_data(response)
 
     def start_crawl(self):
         print("Crawl started")
@@ -78,9 +79,8 @@ class GFlareCrawler:
             self.settings["ROOT_DOMAIN"] = self.gf.get_domain(
                 self.settings['STARTING_URL'])
             response = self.crawl_url(self.settings['STARTING_URL'])
-            print('STARTING_URL', self.settings['STARTING_URL'])
+            
             # Check if we are dealing with a reachable host
-
             if response == 'SKIP_ME':
                 self.crawl_timed_out.set()
                 self.crawl_running.set()
