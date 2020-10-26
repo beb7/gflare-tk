@@ -295,8 +295,6 @@ class GFlareResponse:
             all_fields = self.get_meta_name_fields()
             matching_ua = [f for f in all_fields if f.lower() in self.robots_txt_ua.lower()]
             rules = []
-            print("ua", self.robots_txt_ua)
-            print("matching_ua", matching_ua)
 
             if len(matching_ua) > 0:
                 ua = matching_ua[0]
