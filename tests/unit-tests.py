@@ -3,6 +3,7 @@ import unittest
 
 sys.path.append('..')
 from greenflare.core.gflarerobots import GFlareRobots
+from greenflare.core.gflareresponse import GFlareResponse
 
 
 class TestRobotsTxt(unittest.TestCase):
@@ -128,6 +129,26 @@ class TestRobotsTxt(unittest.TestCase):
                          True, "Should be allowed")
         self.assertEqual(robot.is_allowed(disallowed_url),
                          False, "Should be disallowed")
+
+
+class TestFullStatus(unittest.TestCase):
+
+    def test_canonical(self):
+        gf = GFlareResponse({
+            'CRAWL_ITEMS': [
+                'canonical_tag',
+                'canonical_http_header',
+                'robots_txt',
+                'meta_robots',
+                'x_robots_tag'
+            ]
+        }, columns=None)
+        seo_items = {'status_code': 200,
+                     'canonical_tag': 'https://www.example.com/'}
+        url = 'https://www.example.com'
+
+        self.assertEqual(gf.get_full_status(
+            url, seo_items), 'ok', 'Should return ok')
 
 if __name__ == '__main__':
     unittest.main()

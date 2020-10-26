@@ -1,5 +1,6 @@
 from lxml.html import fromstring
 from .gflarerobots import GFlareRobots
+from requests import status_codes
 import urllib.parse
 import re
 from functools import wraps
@@ -15,9 +16,7 @@ class GFlareResponse:
         self.url = None
         self.url_components = None
         self.robots_txt_ua = "Googlebot"
-        self.robots_txt = ""
-        self.gfrobots = GFlareRobots(
-            self.robots_txt, self.settings.get("USER_AGENT", ''))
+        self.gfrobots = GFlareRobots('', self.settings.get("USER_AGENT", ''))
         self.robots_txt_status = None
 
         self.spider_links = "Spider" in self.settings.get("MODE", "")
@@ -52,10 +51,13 @@ class GFlareResponse:
             self.response_to_robots_txt()
 
     def response_to_robots_txt(self):
+        print(">> Setting response to robots.txt")
         if self.response.status_code == 200:
             self.robots_txt = self.response.text
             self.gfrobots.set_robots_txt(
                 self.robots_txt, user_agent=self.settings.get("USER_AGENT", ''))
+            self.robots_txt_ua = self.gfrobots.get_short_ua(
+                self.settings.get("USER_AGENT", ''))
 
     def get_initial_url(self):
         if len(self.response.history) == 0:
@@ -89,20 +91,21 @@ class GFlareResponse:
     def get_data(self):
 
         self.url_components = urllib.parse.urlsplit(self.url)
-        d = {"url": self.url}
+        d = {'url': self.url}
+        d['data'] = self.get_header_info()
 
         if len(self.response.content) > 0:
             self.tree = self.get_tree()
             if self.spider_links:
-                d["links"] = self.extract_links()
-            d["data"] = self.get_crawl_data()
-        else:
-            d["data"] = self.get_header_info()
+                d['links'] = self.extract_links()
+            d['data'] = {**d['data'], **self.get_crawl_data()}
 
-        d["data"] = [self.dict_to_row(d["data"])]
+        d['data'] = {**d['data'], **{'full_status': self.get_full_status(self.url, d['data'])}}
+
+        d['data'] = [self.dict_to_row(d['data'])]
 
         if self.has_redirected():
-            d["data"] += self.get_redirects()
+            d['data'] += self.get_redirects()
 
         return d
 
@@ -176,7 +179,6 @@ class GFlareResponse:
         return bool(re.match(pattern, url))
 
     def is_robots_txt(self, url=None):
-        url = url
         if not url:
             url = self.url
 
@@ -197,7 +199,15 @@ class GFlareResponse:
         return ""
 
     def get_header_info(self):
-        return {"url": self.url, "status_code": self.response.status_code, "content_type": self.response.headers.get("content-type", ""), "robots_txt": self.get_robots_txt_status(self.url), "x_robots_tag": self.response.headers.get("x_robots_tag", ""), "canonical_http": self.get_canonical_http_header()}
+        header = {
+            'url': self.url,
+            'status_code': self.response.status_code,
+            'content_type': self.response.headers.get('content-type', ''),
+            'robots_txt': self.get_robots_txt_status(self.url),
+            'x_robots_tag': self.response.headers.get('x-robots-tag', ''),
+            'canonical_http': self.get_canonical_http_header()
+        }
+        return header
 
     def valid_url(self, components):
         if not "http" in components['scheme']:
@@ -280,9 +290,31 @@ class GFlareResponse:
                 'link[rel="canonical"]', get="href")
         if "canonical_http_header" in self.all_items:
             d["canonical_http_header"] = self.get_canonical_http_header()
+
         if "meta_robots" in self.all_items:
-            d["meta_robots"] = self.get_txt_by_selector(
-                '[name="robots"]', get="content")
+            all_fields = self.get_meta_name_fields()
+            matching_ua = [f for f in all_fields if f.lower() in self.robots_txt_ua.lower()]
+            rules = []
+            print("ua", self.robots_txt_ua)
+            print("matching_ua", matching_ua)
+
+            if len(matching_ua) > 0:
+                ua = matching_ua[0]
+
+                try:
+                    rules = self.tree.xpath(f'//meta[@name="{ua}"]/@content')
+                except:
+                    pass
+
+            try:
+                rules += self.tree.xpath('//meta[@name="robots"]/@content')
+            except:
+                pass
+
+            d["meta_robots"] = ', '.join(rules)
+
+            print(d)
+
         return d
 
     def custom_extractions(self):
@@ -303,53 +335,61 @@ class GFlareResponse:
         return d
 
     def get_crawl_data(self):
+        return {**self.extract_onpage_elements(), **self.extract_directives(), **self.custom_extractions()}
 
-        # if status_code == 200 and "text/html" in content_type and
-        # robots_txt_status == "ALLOWED":
+    def is_canonicalised(self, url, canonical):
+        if not canonical:
+            return False
+        if self.url_components_to_str(self.parse_url(canonical)) != self.url_components_to_str(self.parse_url(url)):
+            return True
+        return False
 
-        onpage_elements = self.extract_onpage_elements()
-        directives = self.extract_directives()
+    def get_full_status(self, url, seo_items):
+        status = []
 
-        extraction = {**onpage_elements, **directives, **self.custom_extractions()}
+        # Evaluate status code
+        code_description = status_codes._codes[
+            seo_items['status_code']][0].replace('_', ' ')
+        status.append(code_description)
 
-        canonical_tag = extraction.get("canonical_tag", "")
-        indexability = "indexable"
+        # Check against X-Robots
+        # No checking against User-Agents is done
+        # As the following setup can not be evaluated:
+        # X-Robots-Tag: bingbot: noindex
+        # X-Robots-Tag: nofollow, nosnippet
+        # response.headers['X-Robots-Tag'] would return a combined result
+        # 'X-Robots-Tag': 'bingbot: noindex, nofun, norisk, nofollow, nosnippet'
+        # Which CANNOT be deconstructed again
+        # This is actually compliant to RFC2616
+        # https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2
+        if 'noindex' in seo_items.get('x_robots_tag', ''):
+            status.append('blocked by x-robots-tag')
 
-        """
-		Indexability based on status codes:
-		Indexable: 200 OK status codes
-		Non-Idexable: Non 200 OK status codes
-		"""
+        # Check against robots.txt
+        if 'blocked' in seo_items.get('robots_txt', ''):
+            status.append('blocked by robots.txt')
 
-        if self.response.status_code != 200:
-            indexability = "non-indexable"
+        # Check against meta robots.txt
+        if 'noindex' in seo_items.get('meta_robots', ''):
+            status.append('noindex')
 
-        """
-		Indexability based on canonicals:
-		Indexable: No canonical tag present
+        # Canonical Tag
+        if self.is_canonicalised(url, seo_items.get('canonical_tag', '')):
+            status.append('canonicalised')
 
-		Indexable: Root without trailing "/" equaling canonical tag with trailing "/"
-		Example:	url: https://www.ayima.com		canonical tag: https://www.ayima.com/
-		"""
+        # Canonical Header
+        if self.is_canonicalised(url, seo_items.get('canonical_http_header', '')):
+            status.append('header canonicalised')
 
-        if canonical_tag != "" and canonical_tag != self.url and (self.url + "/") != canonical_tag:
-            indexability = "non-indexable"
+        return ', '.join(status)
 
-        """
-		Indexability based on meta robots
-		If the comma separated list contains a noindex - non indexable
-		"""
-        if indexability == "indexable":
-            meta_robots = extraction.get("meta_robots", "")
-            if meta_robots != "":
-                if "noindex" in meta_robots.lower().split(","):
-                    indexability = "non-indexable"
-
-        extraction["indexability"] = indexability
-
-        data = {**self.get_header_info(), **extraction}
-
-        return data
+    def get_meta_name_fields(self):
+        fields = []
+        try:
+            fields = self.tree.xpath('//meta/@name')
+        except:
+            pass
+        return fields
 
     def dict_to_row(self, data):
         out = tuple(data.get(item, "") for item in self.all_items)
@@ -381,8 +421,9 @@ class GFlareResponse:
                 else:
                     redirect_to_url = self.get_final_url()
 
-                hob_data = {"url": hob_url, "content_type": hist[i].headers.get('Content-Type', ""), "status_code": hist[i].status_code, "indexability": "non-indexable", "x_robots_tag": hist[
+                hob_data = {"url": hob_url, "content_type": hist[i].headers.get('Content-Type', ""), "status_code": hist[i].status_code, "x_robots_tag": hist[
                     i].headers.get('X-Robots-Tag', ""), "redirect_url": redirect_to_url, "robots_txt": robots_status}
+                hob_data['full_status'] = self.get_full_status(hob_url, hob_data)
                 hob_row = self.dict_to_row(hob_data)
 
                 data.append(hob_row)

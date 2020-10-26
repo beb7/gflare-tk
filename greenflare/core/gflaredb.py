@@ -11,9 +11,9 @@ class GFlareDB:
 
         self.columns_map = {
             "url": "TEXT type UNIQUE",
+            "full_status": "TEXT",
             "content_type": "TEXT",
             "status_code": "INT",
-            "indexability": "TEXT",
             "h1": "TEXT",
             "h2": "TEXT",
             "page_title": "TEXT",

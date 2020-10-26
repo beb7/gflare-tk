@@ -89,7 +89,7 @@ class SettingsTab(ttk.Frame):
 
         # On-Page Group
         self.checkboxgroup_onpage = CheckboxGroup(self.frame_second, "On-Page", [
-                                                  "Indexability", "Page Title", "Meta Description", "H1", "H2"], self.crawler.settings, "CRAWL_ITEMS")
+                                                  "Page Title", "Meta Description", "H1", "H2"], self.crawler.settings, "CRAWL_ITEMS")
         self.checkboxgroup_onpage.grid(
             row=0, column=0, sticky=NW, padx=10, pady=10)
 

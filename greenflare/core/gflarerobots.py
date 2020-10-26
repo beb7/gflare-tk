@@ -19,6 +19,7 @@ class GFlareRobots:
             self.parse_rules()
             self.allows = self.process_rules(self.allows)
             self.disallows = self.process_rules(self.disallows)
+        print(">>>", self.user_agent)
 
     def get_matching_user_agent(self, robots_txt, user_agent):
 
@@ -44,14 +45,16 @@ class GFlareRobots:
 		"""
         return pattern
 
-    def get_ua_rules(self, crawler_user_agent, robots_txt):
-
-        ua = crawler_user_agent
-        parsed_ua = user_agent_parser.Parse(crawler_user_agent)
+    def get_short_ua(self, user_agent):
+        parsed_ua = user_agent_parser.Parse(user_agent)
 
         if 'user_agent' in parsed_ua:
-            ua = parsed_ua['user_agent']['family']
+            return parsed_ua['user_agent']['family']
+        return ''
 
+    def get_ua_rules(self, crawler_user_agent, robots_txt):
+
+        ua = self.get_short_ua(crawler_user_agent)
         matching_ua = self.get_matching_user_agent(robots_txt, ua)
 
         if matching_ua:
