@@ -58,6 +58,18 @@ class Defaults:
         'CRAWL_ITEMS': crawl_items
     }
 
+    display_columns = [
+        'url',
+        'content_type',
+        'indexability',
+        'status_code',
+        'h1',
+        'page_title',
+        'canonical_tag',
+        'robots_txt',
+        'redirect_url'
+    ]
+
     popup_menu_labels = [
         'Equals',
         'Does Not Equal',
