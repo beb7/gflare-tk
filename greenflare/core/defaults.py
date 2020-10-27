@@ -8,7 +8,7 @@ class Defaults:
 
     crawl_items = [
         'url',
-        'full_status',
+        'access_status',
         'status_code',
         'content_type',                
         'page_title',
@@ -60,9 +60,9 @@ class Defaults:
 
     display_columns = [
         'url',
-        'full_status',
-        'content_type',
+        'access_status',
         'status_code',
+        'content_type',
         'h1',
         'page_title',
         'canonical_tag',

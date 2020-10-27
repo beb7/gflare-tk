@@ -13,8 +13,9 @@ import sys
 
 class CrawlTab(ttk.Frame):
 
-    def __init__(self, crawler=None):
+    def __init__(self, root, crawler=None):
         ttk.Frame.__init__(self)
+        self.root = root
         self.crawler = crawler
         self.lock = crawler.lock
 
@@ -104,6 +105,7 @@ class CrawlTab(ttk.Frame):
 
         # action menu for treeview row items
         self.action_menu = Menu(self, tearoff=0)
+        #labels = ['Copy URL', 'Open URL in Browser', '_', 'Inspect']
         labels = ['Copy URL', 'Open URL in Browser']
         self.generate_menu(self.action_menu, labels, self.show_action_window)
         self.row_values = []
@@ -379,8 +381,11 @@ class CrawlTab(ttk.Frame):
         if self.row_values:
             url = self.row_values[0]
 
-        if label == "Copy URL" and url:
+        if label == 'Copy URL' and url:
             self.master.clipboard_clear()
             self.master.clipboard_append(url)
-        elif label == "Open URL in Browser" and url:
+        elif label == 'Open URL in Browser' and url:
             open_in_browser(url, new=2)
+        elif label == 'Inspect' and url:
+        	print(self.row_values)
+        	self.root.add_url_tab(dict(zip(self.crawler.columns, self.row_values)))

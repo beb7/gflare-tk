@@ -122,6 +122,7 @@ class GFlareCrawler:
         if self.settings['MODE'] != 'List':
             self.data_queue = queue.Queue(maxsize=25)
             self.url_queue = queue.Queue()
+            self.gui_url_queue = []
 
         self.gf = gf(self.settings, columns=None)
 

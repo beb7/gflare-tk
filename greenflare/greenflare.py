@@ -9,6 +9,7 @@ from widgets.extractionstab import ExtractionsTab
 from widgets.listcrawl import ListModeWindow
 from widgets.progresswindow import ProgressWindow
 from widgets.aboutwindow import AboutWindow
+from widgets.urltab import URLTab
 from concurrent import futures
 import functools
 from threading import Lock
@@ -26,7 +27,7 @@ class mainWindow(ttk.Frame):
         self.crawler = crawler
         self.executor = futures.ThreadPoolExecutor(max_workers=1)
         self.tab_parent = ttk.Notebook()
-        self.tab_crawl = CrawlTab(crawler)
+        self.tab_crawl = CrawlTab(self, crawler)
         self.tab_settings = SettingsTab(crawler)
         self.tab_exclusions = ExclusionsTab(crawler)
         self.tab_extractions = ExtractionsTab(crawler)
@@ -82,6 +83,12 @@ class mainWindow(ttk.Frame):
 
         return decorator
 
+    def add_url_tab(self, data):
+        if data.get('page_title', None):
+            self.tab_parent.add(URLTab(data), text=data['page_title'])
+        else:
+            self.tab_parent.add(URLTab(data), text=data['url'])
+
     def daemon_call_back(self, future):
         self.win_progress.grab_release()
         self.win_progress.destroy()
@@ -92,6 +99,7 @@ class mainWindow(ttk.Frame):
     def reset_ui(self):
         self.tab_crawl.reset()
         self.crawler.reset_crawl()
+        self.crawler.settings = Defaults.settings.copy()
         self.master.title(Defaults.window_title)
 
     def load_crawl(self, db_file=None):
@@ -221,7 +229,7 @@ if __name__ == "__main__":
 
     globalLock = Lock()
     crawl_items = Defaults.crawl_items
-    Settings = Defaults.settings
+    Settings = Defaults.settings.copy()
     Crawler = GFlareCrawler(settings=Settings, gui_mode=True, lock=globalLock)
 
     app = mainWindow(crawler=Crawler)
