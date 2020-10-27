@@ -7,7 +7,7 @@ class AboutWindow(Toplevel):
 
     def __init__(self):
         Toplevel.__init__(self)
-
+        self.geometry('750x400')
         self.resizable(False, False)
 
         self.title('About Greenflare SEO Crawler')
@@ -28,6 +28,15 @@ class AboutWindow(Toplevel):
         self.info_text.tag_configure('h1', font=('Arial', 16, 'bold'))
         self.info_text.tag_configure('h2', font=('Arial', 14))
 
+        heading_1 = 'Greenflare SEO Crawler'
+        heading_2 = f'\nVersion {Defaults.version}'
+
+        text = '\n\n© Greenflare Developers 2020\n\nCreated By Benjamin Görler (ben@greenflare.io)'
+
+        self.info_text.insert(END, heading_1, 'h1')
+        self.info_text.insert(END, heading_2, 'h2')
+        self.info_text.insert(END, text)
+
         # The window needs to be placed after its elements have been assigned
         # get window width and height
 
@@ -46,12 +55,3 @@ class AboutWindow(Toplevel):
         # and where it is placed
         self.geometry('+%d+%d' % (x + x_offset, y // 2 + y_offset))
         self.lift()
-
-        heading_1 = 'Greenflare SEO Crawler'
-        heading_2 = f'\nVersion {Defaults.version}'
-
-        text = '\n\n© Greenflare Developers 2020\n\nCreated By Benjamin Görler (ben@greenflare.io)'
-
-        self.info_text.insert(END, heading_1, 'h1')
-        self.info_text.insert(END, heading_2, 'h2')
-        self.info_text.insert(END, text)
