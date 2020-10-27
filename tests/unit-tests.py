@@ -150,5 +150,10 @@ class TestFullStatus(unittest.TestCase):
         self.assertEqual(gf.get_full_status(
             url, seo_items), 'ok', 'Should return ok')
 
+
+        url = 'https://www.example.com/'
+        self.assertEqual(gf.get_full_status(
+            url, seo_items), 'ok', 'Should return ok')
+
 if __name__ == '__main__':
     unittest.main()
