@@ -51,7 +51,6 @@ class GFlareResponse:
             self.response_to_robots_txt()
 
     def response_to_robots_txt(self):
-        print(">> Setting response to robots.txt")
         if self.response.status_code == 200:
             self.robots_txt = self.response.text
             self.gfrobots.set_robots_txt(
