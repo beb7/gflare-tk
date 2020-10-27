@@ -99,7 +99,7 @@ class GFlareResponse:
                 d['links'] = self.extract_links()
             d['data'] = {**d['data'], **self.get_crawl_data()}
 
-        d['data'] = {**d['data'], **{'access_status': self.get_full_status(self.url, d['data'])}}
+        d['data'] = {**d['data'], **{'crawl_status': self.get_full_status(self.url, d['data'])}}
 
         d['data'] = [self.dict_to_row(d['data'])]
 
@@ -420,7 +420,7 @@ class GFlareResponse:
 
                 hob_data = {"url": hob_url, "content_type": hist[i].headers.get('Content-Type', ""), "status_code": hist[i].status_code, "x_robots_tag": hist[
                     i].headers.get('X-Robots-Tag', ""), "redirect_url": redirect_to_url, "robots_txt": robots_status}
-                hob_data['access_status'] = self.get_full_status(hob_url, hob_data)
+                hob_data['crawl_status'] = self.get_full_status(hob_url, hob_data)
                 hob_row = self.dict_to_row(hob_data)
 
                 data.append(hob_row)
