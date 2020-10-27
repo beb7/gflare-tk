@@ -19,7 +19,6 @@ class GFlareRobots:
             self.parse_rules()
             self.allows = self.process_rules(self.allows)
             self.disallows = self.process_rules(self.disallows)
-        print(">>>", self.user_agent)
 
     def get_matching_user_agent(self, robots_txt, user_agent):
 
