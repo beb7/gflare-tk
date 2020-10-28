@@ -25,9 +25,9 @@ jobs:
       - run:
           command: |
               /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install pip --upgrade
+              /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install wheel==0.35.1
               /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install -r requirements.txt
               /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install py2app==0.22
-              /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install macholib==1.14
           name: "Install dependencies"
       # - save_cache:
       #     key: python-venv-3.8.6-3
