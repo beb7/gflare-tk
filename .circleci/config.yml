@@ -93,7 +93,9 @@ jobs:
           command: |
               $env:GFLAREVER=$(python -c "from greenflare.core.defaults import Defaults; print(Defaults.version)")
               python build_binary.py build_exe
-              tar.exe -a -c -f greenflare-$env:GFLAREVER-portable-x86_64-1.zip build/exe.win-amd64-3.8/
+              cd .\build\exe.win-amd64-3.8\
+              tar.exe -a -c -f ..\..\greenflare-$env:GFLAREVER-portable-x86_64-1.zip *
+              cd ..\..
               mkdir results
               move greenflare-*.zip results/
           name: "Freeze Windows Programme"
