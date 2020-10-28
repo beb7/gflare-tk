@@ -4,7 +4,7 @@ from os import path
 
 class Defaults:
 
-    version = '0.91'
+    version = '0.92'
 
     crawl_items = [
         'url',
