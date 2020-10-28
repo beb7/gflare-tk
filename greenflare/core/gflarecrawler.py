@@ -287,7 +287,7 @@ class GFlareCrawler:
 
         if attempts >= self.retries:
             print(f"{url} {issue} after {attempts} attempts.")
-            return {'url': url, 'data': [tuple([url, '', '0', issue] + [''] * (len(self.columns) - 4))], 'links': []}
+            return {'url': url, 'data': [tuple([url, issue.lower(), '0', ''] + [''] * (len(self.columns) - 4))], 'links': []}
 
         with self.lock:
             self.url_attempts[url] = self.url_attempts.get(url, 0) + 1
