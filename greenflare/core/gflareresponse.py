@@ -26,6 +26,15 @@ class GFlareResponse:
         self.CHECK_REDIRECTS_BLOCKED_BY_ROBOTS = False
         self.CHECK_NOFOLLOW = False
 
+        self.xpath_mapping = {
+            'canonical_tag': 'link[rel="canonical"]/@href',
+            'hreflang': '//link[@rel="alternate"]/@href',
+            'pagination': '//link[@rel="next"]/@href|//link[@rel="prev"]/@href',
+            'images': '//img/@src',
+            'stylesheets': '//link[@rel="stylesheet"]/@href',
+            'javascript': '//script/@src'
+        }
+
         self.xpath_link_extraction = self.get_link_extraction_xpath()
 
     def timing(f):
@@ -66,23 +75,22 @@ class GFlareResponse:
     def get_link_extraction_xpath(self):
 
         xpaths = []
-        xpaths.append("//a/@href")
+        xpaths.append('//a/@href')
 
         crawl_items = self.settings['CRAWL_ITEMS']
 
-        if "canonical_tag" in crawl_items:
-            xpaths.append('link[rel="canonical"]/@href')
-        if "hreflang" in crawl_items:
-            xpaths.append('//link[@rel="alternate"]/@href')
-        if "pagination" in crawl_items:
-            xpaths.append(
-                '//link[@rel="next"]/@href|//link[@rel="prev"]/@href')
-        if "images" in crawl_items:
-            xpaths.append('//img/@src')
-        if "stylesheets" in crawl_items:
-            xpaths.append('//link[@rel="stylesheet"]/@href')
-        if "javascript" in crawl_items:
-            xpaths.append('//script/@src')
+        if 'canonical_tag' in crawl_items:
+            xpaths.append(self.xpath_mapping['canonical_tag'])
+        if 'hreflang' in crawl_items:
+            xpaths.append(self.xpath_mapping['hreflang'])
+        if 'pagination' in crawl_items:
+            xpaths.append(self.xpath_mapping['pagination'])
+        if 'images' in crawl_items:
+            xpaths.append(self.xpath_mapping['images'])
+        if 'stylesheets' in crawl_items:
+            xpaths.append(self.xpath_mapping['stylesheets'])
+        if 'javascript' in crawl_items:
+            xpaths.append(self.xpath_mapping['javascript'])
 
         return '|'.join(xpaths)
 
@@ -228,14 +236,11 @@ class GFlareResponse:
 
     # @timing
     def extract_links(self):
-        links = []
-        try:
-            parsed_links = [self.parse_url(l) for l in self.tree.xpath(self.xpath_link_extraction)]
-        except:
-            return []
-
-        links = list(set(links))
-        return [self.url_components_to_str(l) for l in parsed_links if self.valid_url(l)]
+        parsed_links = [self.parse_url(l) for l in self.extract_xpath(
+            self.xpath_link_extraction)]
+        links = list(set([self.url_components_to_str(l)
+                          for l in parsed_links if self.valid_url(l)]))
+        return links
 
     def get_txt_by_selector(self, selector, method="css", get="txt"):
         try:
@@ -259,7 +264,7 @@ class GFlareResponse:
             if txt == None:
                 return ""
 
-            return  ' '.join(txt.split())
+            return ' '.join(txt.split())
 
         except:
             print(f"{selector} failed")
@@ -290,7 +295,8 @@ class GFlareResponse:
 
         if "meta_robots" in self.all_items:
             all_fields = self.get_meta_name_fields()
-            matching_ua = [f for f in all_fields if f.lower() in self.robots_txt_ua.lower()]
+            matching_ua = [f for f in all_fields if f.lower()
+                           in self.robots_txt_ua.lower()]
             rules = []
 
             if len(matching_ua) > 0:
@@ -341,8 +347,11 @@ class GFlareResponse:
         status = []
 
         # Evaluate status code
-        code_description = status_codes._codes[
-            seo_items['status_code']][0].replace('_', ' ')
+        try:
+            code_description = status_codes._codes[
+                seo_items['status_code']][0].replace('_', ' ')
+        except KeyError:
+            code_description = 'non-standard response'
         status.append(code_description)
 
         # Check against X-Robots
@@ -374,7 +383,8 @@ class GFlareResponse:
         if self.is_canonicalised(url, seo_items.get('canonical_http_header', '')):
             status.append('header canonicalised')
 
-        # Avoid ok, blocked by robots.txt and show blocked by robots.txt instead
+        # Avoid ok, blocked by robots.txt and show blocked by robots.txt
+        # instead
         if len(status) != 1 and status[0] == 'ok':
             status.pop(0)
 
@@ -414,13 +424,15 @@ class GFlareResponse:
                     continue
 
                 if i + 1 < len(hist):
-                    redirect_to_url = str(hist[i + 1].url).strip()
+                    redirect_to_url = self.url_components_to_str(
+                        self.parse_url(str(hist[i + 1].url).strip()))
                 else:
                     redirect_to_url = self.get_final_url()
 
                 hob_data = {"url": hob_url, "content_type": hist[i].headers.get('Content-Type', ""), "status_code": hist[i].status_code, "x_robots_tag": hist[
                     i].headers.get('X-Robots-Tag', ""), "redirect_url": redirect_to_url, "robots_txt": robots_status}
-                hob_data['crawl_status'] = self.get_full_status(hob_url, hob_data)
+                hob_data['crawl_status'] = self.get_full_status(
+                    hob_url, hob_data)
                 hob_row = self.dict_to_row(hob_data)
 
                 data.append(hob_row)
@@ -441,11 +453,17 @@ class GFlareResponse:
         except:
             return []
 
+    def extract_xpath(self, path):
+        try:
+            return self.tree.xpath(path)
+        except:
+            return []
+
     def get_hreflang_links(self):
-        return self.attrib_to_list("//link[@rel='alternate']", "href")
+        return self.extract_xpath(self.xpath_mapping['hreflang'])
 
     def get_canonical_links(self):
-        return self.attrib_to_list("//link[@rel='canonical']", "href")
+        return self.extract_xpath(self.xpath_mapping['canonical_tag'])
 
     def get_pagination_links(self):
-        return self.attrib_to_list("//link[@rel='next']|//link[@rel='prev']", "href")
+        return self.extract_xpath(self.xpath_mapping['pagination'])
