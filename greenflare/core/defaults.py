@@ -1,5 +1,6 @@
 import sys
 from os import path
+from pathlib import Path
 
 
 class Defaults:
