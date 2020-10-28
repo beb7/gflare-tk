@@ -5,7 +5,7 @@ from pathlib import Path
 
 class Defaults:
 
-    version = '0.92.2'
+    version = '0.92.2-2'
 
     crawl_items = [
         'url',
