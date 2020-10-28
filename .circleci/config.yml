@@ -34,7 +34,7 @@ jobs:
       #       - ~/.venv
       - run:
           command: |
-              /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 setup-py2app.py --packages=PIL py2app
+              /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 setup-py2app.py py2app --packages=PIL
               chmod +x macos/launch-mac
               cp macos/launch-mac dist/Greenflare.app/Contents/MacOS/
               plutil -replace CFBundleExecutable -string launch-mac dist/Greenflare.app/Contents/Info.plist
