@@ -68,34 +68,26 @@ class ExclusionsTab(ttk.Frame):
     def save_inexes(self, event):
 
         if len(self.widgets) == 1 and self.widgets[0].winfo_children()[3] == "":
-            self.crawler.settings["EXCLUSIONS"] = ""
+            self.crawler.settings['EXCLUSIONS'] = []
 
-        rules = []
+        exclusions = []
 
         for w in self.widgets:
             children = w.winfo_children()
 
+            inex = children[0].get()
+            column = children[1].get()
             operator = children[2].get()
             value = children[3].get()
 
-            if operator == self.operators[0]:
-                value = escape(value)
-                rules.append(f"^{value}$")
-            elif operator == self.operators[1]:
-                value = escape(value)
-                rules.append(f".*{value}.*")
-            elif operator == self.operators[2]:
-                value = escape(value)
-                rules.append(f"^{value}.*")
-            elif operator == self.operators[3]:
-                value = escape(value)
-                rules.append(f".*{value}$")
-            elif operator == self.operators[4]:
-                rules.append(value)
+            exclusions.append((inex, column, operator, value))
 
-        self.crawler.settings["EXCLUSIONS"] = "|".join(rules)
+        self.crawler.settings["EXCLUSIONS"] = exclusions
+
+        print(exclusions)
 
     def update(self):
+
         children = self.widgets[-1].winfo_children()
         children[-2].current(4)
         children[3].insert(0, self.crawler.settings.get('EXCLUSIONS', ''))
