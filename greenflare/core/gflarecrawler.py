@@ -364,7 +364,7 @@ class GFlareCrawler:
             try:
                 # print(f"Queue size: {self.data_queue.qsize()}")
                 wait_before = time()
-                response = self.data_queue.get(timeout=30)
+                response = self.data_queue.get()
                 wait_after = time() - wait_before
             except queue.Empty:
                 print("Consumer thread timed out")
