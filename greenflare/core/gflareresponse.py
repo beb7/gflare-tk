@@ -37,6 +37,8 @@ class GFlareResponse:
 
         self.xpath_link_extraction = self.get_link_extraction_xpath()
 
+        self.exclusions_regex = self.exclusions_to_regex(self.settings.get('EXCLUSIONS', []))
+
     def timing(f):
         @wraps(f)
         def wrap(*args, **kw):
@@ -184,6 +186,31 @@ class GFlareResponse:
         if not pattern:
             return False
         return bool(re.match(pattern, url))
+    
+    def exclusions_to_regex(self, exclusions):
+
+        rules = []
+        
+        for exclusion in exclusions:
+            _, _, operator, value = exclusion
+            
+            if operator == self.operators[0]:
+                value = escape(value)
+                rules.append(f"^{value}$")
+            elif operator == self.operators[1]:
+                value = escape(value)
+                rules.append(f".*{value}.*")
+            elif operator == self.operators[2]:
+                value = escape(value)
+                rules.append(f"^{value}.*")
+            elif operator == self.operators[3]:
+                value = escape(value)
+                rules.append(f".*{value}$")
+            elif operator == self.operators[4]:
+                rules.append(value)
+
+        return '|'.join(rules)
+
 
     def is_robots_txt(self, url=None):
         if not url:
