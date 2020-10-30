@@ -17,6 +17,8 @@ class SettingsTab(ttk.Frame):
         self.group_x = (10, 10)
         self.group_y = (10, 0)
 
+        self.frames_y = (15, 0)
+
         self.group_args = {'side': 'left', 'anchor': 'w',
                            'fill': 'both', 'padx': self.group_x, 'pady': self.group_y}
         self.item_left_args = {'side': 'left',
@@ -26,7 +28,7 @@ class SettingsTab(ttk.Frame):
 
         # First row
         self.frame_first = ttk.Frame(self)
-        self.frame_first.pack(anchor='w', fill='x')
+        self.frame_first.pack(anchor='w', fill='x', pady=self.frames_y)
 
         # Crawler Group
         self.group_crawler = ttk.LabelFrame(self.frame_first, text='Crawler')
@@ -113,7 +115,7 @@ class SettingsTab(ttk.Frame):
 
         # Second row
         self.frame_second = ttk.Frame(self, width=25, height=50)
-        self.frame_second.pack(anchor='w')
+        self.frame_second.pack(anchor='w', pady=self.frames_y)
 
         # On-Page Group
         self.checkboxgroup_onpage = CheckboxGroup(self.frame_second, 'On-Page', [
@@ -122,7 +124,7 @@ class SettingsTab(ttk.Frame):
 
         # Links Group
         self.checkboxgroup_links = CheckboxGroup(self.frame_second, 'Links', [
-            'External Links', 'Canonicals', 'Pagination', 'Hreflang'], self.crawler.settings, 'CRAWL_ITEMS')
+            'Canonicals', 'Pagination', 'Hreflang', 'External Links'], self.crawler.settings, 'CRAWL_ITEMS')
         self.checkboxgroup_links.pack(**self.group_args)
 
         # # Directives Group
@@ -136,7 +138,7 @@ class SettingsTab(ttk.Frame):
 
         # robots.txt Group
         self.checkboxgroup_robots_txt = CheckboxGroup(self.frame_third, 'robots.txt', [
-                                                      'Respect robots.txt', 'Report on status', 'Check blocked URLs', 'Follow blocked redirects'], self.crawler.settings, 'CRAWL_ITEMS')
+                                                      'Respect robots.txt', 'Report on status', 'Follow blocked redirects', 'Check blocked URLs'], self.crawler.settings, 'CRAWL_ITEMS')
         self.checkboxgroup_robots_txt.pack(**self.group_args)
 
         # Resources Group
