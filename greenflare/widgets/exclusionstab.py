@@ -64,22 +64,20 @@ class ExclusionsTab(ttk.Frame):
             self.button_add['state'] = 'enabled'
 
     def save_inexes(self, event):
-
-        if len(self.widgets) == 1 and self.widgets[0].winfo_children()[1] == '':
-            self.crawler.settings['EXCLUSIONS'] = []
-
         exclusions = []
 
         for w in self.widgets:
             children = w.winfo_children()
             operator = children[0].get()
-            value = children[1].get()
+            value = children[1].get().strip()
+            if not value:
+                continue
 
             exclusions.append((operator, value))
 
-        self.crawler.settings['EXCLUSIONS'] = exclusions
-
-        print(exclusions)
+        if exclusions:
+            self.crawler.settings['EXCLUSIONS'] = exclusions
+            print(exclusions)
 
     def update(self):
 
