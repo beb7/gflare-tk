@@ -10,10 +10,11 @@ class CheckboxGroup(ttk.LabelFrame):
         self.settings = settings
         self.column = column
 
-        ttk.LabelFrame.__init__(self, self.parent, text=self.text)
+        ttk.LabelFrame.__init__(self, self.parent, text=self.text, width=25, height=50)
 
         self.widgets = []
         self.vars = []
+
         self.populate_checkboxes()
 
     def checkbox_clicked(self):
@@ -37,5 +38,6 @@ class CheckboxGroup(ttk.LabelFrame):
             else:
                 self.vars.append(IntVar())
             self.widgets.append(ttk.Checkbutton(
-                self, text=e, onvalue=1, offvalue=0, variable=self.vars[-1], command=self.checkbox_clicked))
-            self.widgets[-1].grid(row=i, column=0, sticky=W)
+                self, text=e, onvalue=1, offvalue=0, variable=self.vars[-1], command=self.checkbox_clicked, width=21))
+            # self.widgets[-1].grid(row=i, column=0, sticky=W)
+            self.widgets[-1].pack(side='top', anchor='w', padx=5, pady=2)
