@@ -20,11 +20,11 @@ class EnhancedEntry(ttk.Frame):
 
     def handle_focus_in(self, _):
         if self.entry.get() == self.default_text:
-	        self.entry.delete(0, 'end')
-	        self.entry.config(style='Black.TEntry')
+            self.entry.delete(0, 'end')
+            self.entry.config(style='Black.TEntry')
 
     def handle_focus_out(self, _):
         if not self.entry.get().strip():
-	        self.entry.delete(0, 'end')
-	        self.entry.config(style='Grey.TEntry')
-	        self.entry.insert(0, self.default_text)
+            self.entry.delete(0, 'end')
+            self.entry.config(style='Grey.TEntry')
+            self.entry.insert(0, self.default_text)
