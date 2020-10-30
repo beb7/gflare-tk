@@ -8,143 +8,175 @@ class SettingsTab(ttk.Frame):
     def __init__(self, crawler=None):
         ttk.Frame.__init__(self)
 
+        s = ttk.Style()
+        s.configure('Green.TFrame', background='green')
+        s.configure('Blue.TFrame', background='blue')
+
         self.crawler = crawler
 
-        """
-		First row
-		"""
+        self.group_x = (10, 10)
+        self.group_y = (10, 0)
+
+        self.group_args = {'side': 'left', 'anchor': 'w',
+                           'fill': 'both', 'padx': self.group_x, 'pady': self.group_y}
+        self.item_left_args = {'side': 'left',
+                               'anchor': 'w', 'padx': (5, 0), 'pady': 3}
+        self.item_right_args = {'side': 'right',
+                                'anchor': 'e', 'padx': (5, 0), 'pady': 3}
+
+        # First row
         self.frame_first = ttk.Frame(self)
-        self.frame_first.grid(row=0, column=0, sticky=W, padx=10, pady=10)
+        self.frame_first.pack(anchor='w', fill='x')
 
-        """
-		Crawler Group
-		"""
-        self.group_crawler = ttk.LabelFrame(self.frame_first, text="Crawler")
-        self.group_crawler.grid(row=0, column=0, sticky=W, padx=10, pady=10)
+        # Crawler Group
+        self.group_crawler = ttk.LabelFrame(self.frame_first, text='Crawler')
+        self.group_crawler.pack(**self.group_args)
 
-        self.label_threads = ttk.Label(self.group_crawler, text="Threads")
-        self.label_threads.grid(row=0, column=0, sticky=W)
+        self.group_crawler_one = ttk.Frame(self.group_crawler)
+        self.group_crawler_one.pack(expand=True, fill='x')
+
+        self.label_threads = ttk.Label(self.group_crawler_one, text='Threads')
+        self.label_threads.pack(self.item_left_args)
 
         self.spinbox_threads = ttk.Spinbox(
-            self.group_crawler, from_=1, to=100, state="readonly", width=5, command=self.save_threads)
-        self.spinbox_threads.set("5")
-        self.spinbox_threads.grid(row=0, column=1, padx=15, pady=5, sticky=E)
+            self.group_crawler_one, from_=1, to=100, state='readonly', width=5, command=self.save_threads)
+        self.spinbox_threads.set('5')
+        self.spinbox_threads.pack(**self.item_right_args)
+
+        self.group_crawler_two = ttk.Frame(self.group_crawler)
+        self.group_crawler_two.pack(expand=True, fill='x')
 
         self.on_off_var = IntVar()
         self.cbtn_limit_urls = ttk.Checkbutton(
-            self.group_crawler, text="Limit URL/s", onvalue=1, offvalue=0, variable=self.on_off_var, command=self.url_limit_clicked)
-        self.cbtn_limit_urls.grid(row=1, column=0, sticky=W)
+            self.group_crawler_two, text='Limit URL/s', onvalue=1, offvalue=0, variable=self.on_off_var, command=self.url_limit_clicked)
+        self.cbtn_limit_urls.pack(**self.item_left_args)
 
         self.spinbox_urls = ttk.Spinbox(
-            self.group_crawler, from_=0, to=100, state="readonly", width=5, command=self.save_urls)
-        self.spinbox_urls["state"] = "disabled"
-        self.spinbox_urls.set("0")
-        self.spinbox_urls.grid(row=1, column=1, padx=15, pady=5, sticky=E)
+            self.group_crawler_two, from_=0, to=100, state='readonly', width=5, command=self.save_urls)
+        self.spinbox_urls['state'] = 'disabled'
+        self.spinbox_urls.set('0')
+        self.spinbox_urls.pack(**self.item_right_args)
 
-        self.label_ua = ttk.Label(self.group_crawler, text="User-Agent")
-        self.label_ua.grid(row=3, column=0, sticky=W)
+        self.group_crawler_three = ttk.Frame(self.group_crawler)
+        self.group_crawler_three.pack(expand=True, fill='x')
+
+        self.label_ua = ttk.Label(self.group_crawler_three, text='User-Agent')
+        self.label_ua.pack(**self.item_left_args)
 
         self.user_agents = Defaults.user_agents
-
         self.ua_names = [k for k in self.user_agents.keys()]
         self.combobox_ua = ttk.Combobox(
-            self.group_crawler, values=self.ua_names, state="readonly")
-        self.combobox_ua.bind("<<ComboboxSelected>>", self.save_ua)
+            self.group_crawler_three, values=self.ua_names, state='readonly')
+        self.combobox_ua.bind('<<ComboboxSelected>>', self.save_ua)
         self.combobox_ua.current(0)
-        self.combobox_ua.grid(row=3, column=1, padx=15, pady=5, sticky=E)
+        self.combobox_ua.pack(**self.item_right_args)
 
-        self.group_network = ttk.LabelFrame(self.frame_first, text="Proxy")
-        self.group_network.grid(row=0, column=1, sticky=W, padx=10, pady=10)
+        self.group_network = ttk.LabelFrame(self.frame_first, text='Proxy')
+        self.group_network.pack(**self.group_args)
 
-        self.label_host = ttk.Label(self.group_network, text="Host")
-        self.label_host.grid(row=0, column=0, sticky=W)
+        self.group_network_one = ttk.Frame(self.group_network)
+        self.group_network_one.pack(expand=True, fill='x')
+
+        self.label_host = ttk.Label(self.group_network_one, text='Host')
+        self.label_host.pack(**self.item_left_args)
 
         self.var_host = StringVar()
-        self.entry_host = ttk.Entry(self.group_network, textvariable=self.var_host,
-                                    validatecommand=self.save_proxy, validate="focusout")
-        self.entry_host.insert(0, "hostname/ip:port")
-        self.entry_host.grid(row=0, column=1, sticky=E, padx=15, pady=5)
+        self.entry_host = ttk.Entry(self.group_network_one, textvariable=self.var_host,
+                                    validatecommand=self.save_proxy, validate='focusout')
+        self.entry_host.insert(0, 'hostname/ip:port')
+        self.entry_host.pack(**self.item_right_args)
 
-        self.label_user = ttk.Label(self.group_network, text="User")
-        self.label_user.grid(row=1, column=0, sticky=W)
+        self.group_network_two = ttk.Frame(self.group_network)
+        self.group_network_two.pack(expand=True, fill='x')
+
+        self.label_user = ttk.Label(self.group_network_two, text='User')
+        self.label_user.pack(**self.item_left_args)
 
         self.var_user = StringVar()
-        self.entry_user = ttk.Entry(self.group_network, textvariable=self.var_user,
-                                    validatecommand=self.save_proxy, validate="focusout")
-        self.entry_user.insert(0, "")
-        self.entry_user.grid(row=1, column=1, sticky=E, padx=15, pady=5)
+        self.entry_user = ttk.Entry(self.group_network_two, textvariable=self.var_user,
+                                    validatecommand=self.save_proxy, validate='focusout')
+        self.entry_user.insert(0, '')
+        self.entry_user.pack(**self.item_right_args)
 
-        self.label_password = ttk.Label(self.group_network, text="Password")
-        self.label_password.grid(row=2, column=0, sticky=W)
+        self.group_network_three = ttk.Frame(self.group_network)
+        self.group_network_three.pack(expand=True, fill='x')
+
+        self.label_password = ttk.Label(
+            self.group_network_three, text='Password')
+        self.label_password.pack(**self.item_left_args)
 
         self.var_password = StringVar()
         self.entry_password = ttk.Entry(
-            self.group_network, show="*", textvariable=self.var_password, validatecommand=self.save_proxy, validate="focusout")
-        self.entry_password.insert(0, "")
-        self.entry_password.grid(row=2, column=1, sticky=E, padx=15, pady=5)
+            self.group_network_three, show='*', textvariable=self.var_password, validatecommand=self.save_proxy, validate='focusout')
+        self.entry_password.insert(0, '')
+        self.entry_password.pack(**self.item_right_args)
 
         # Second row
-        self.frame_second = ttk.Frame(self)
-        self.frame_second.grid(row=1, column=0, sticky=W, padx=10, pady=10)
+        self.frame_second = ttk.Frame(self, width=25, height=50)
+        self.frame_second.pack(anchor='w')
 
         # On-Page Group
-        self.checkboxgroup_onpage = CheckboxGroup(self.frame_second, "On-Page", [
-                                                  "Page Title", "Meta Description", "H1", "H2"], self.crawler.settings, "CRAWL_ITEMS")
-        self.checkboxgroup_onpage.grid(
-            row=0, column=0, sticky=NW, padx=10, pady=10)
+        self.checkboxgroup_onpage = CheckboxGroup(self.frame_second, 'On-Page', [
+                                                  'Page Title', 'Meta Description', 'H1', 'H2'], self.crawler.settings, 'CRAWL_ITEMS')
+        self.checkboxgroup_onpage.pack(**self.group_args)
 
         # Links Group
-        self.checkboxgroup_links = CheckboxGroup(self.frame_second, "Links", [
-                                                 "Unique Inlinks", "External Links", "Canonicals", "Pagination", "Hreflang"], self.crawler.settings, "CRAWL_ITEMS")
-        self.checkboxgroup_links.grid(
-            row=0, column=1, sticky=NW, padx=10, pady=10)
+        self.checkboxgroup_links = CheckboxGroup(self.frame_second, 'Links', [
+            'External Links', 'Canonicals', 'Pagination', 'Hreflang'], self.crawler.settings, 'CRAWL_ITEMS')
+        self.checkboxgroup_links.pack(**self.group_args)
 
-        # Directives Group
-        self.checkboxgroup_directives = CheckboxGroup(self.frame_second, "Directives", [
-                                                      "Canonical Tag", "Canonical HTTP Header", "Meta Robots", "X-Robots-Tag"], self.crawler.settings, "CRAWL_ITEMS")
-        self.checkboxgroup_directives.grid(
-            row=0, column=2, sticky=NW, padx=10, pady=10)
+        # # Directives Group
+        self.checkboxgroup_directives = CheckboxGroup(self.frame_second, 'Directives', [
+            'Canonical Tag', 'Canonical HTTP Header', 'Meta Robots', 'X-Robots-Tag'], self.crawler.settings, 'CRAWL_ITEMS')
+        self.checkboxgroup_directives.pack(**self.group_args)
+
+        # Third row
+        self.frame_third = ttk.Frame(self, width=25, height=50)
+        self.frame_third.pack(anchor='w')
 
         # robots.txt Group
-        self.checkboxgroup_robots_txt = CheckboxGroup(self.frame_second, "robots.txt", [
-                                                      "Respect robots.txt", "Report on status", "Check blocked URLs", "Follow blocked redirects"], self.crawler.settings, "CRAWL_ITEMS")
-        self.checkboxgroup_robots_txt.grid(
-            row=0, column=3, sticky=NW, padx=10, pady=10)
+        self.checkboxgroup_robots_txt = CheckboxGroup(self.frame_third, 'robots.txt', [
+                                                      'Respect robots.txt', 'Report on status', 'Check blocked URLs', 'Follow blocked redirects'], self.crawler.settings, 'CRAWL_ITEMS')
+        self.checkboxgroup_robots_txt.pack(**self.group_args)
 
         # Resources Group
-        self.checkboxgroup_resources = CheckboxGroup(self.frame_second, "Resources", [
+        self.checkboxgroup_resources = CheckboxGroup(self.frame_third, 'Resources', [
                                                      'Images', 'JavaScript', 'Stylesheets'], self.crawler.settings, 'CRAWL_ITEMS')
-        self.checkboxgroup_resources.grid(
-            row=0, column=4, sticky=NW, padx=10, pady=10)
+        self.checkboxgroup_resources.pack(**self.group_args)
+
+        # Analysis Group
+        self.checkboxgroup_analysis = CheckboxGroup(self.frame_third, 'Analysis', [
+            'Unique Inlinks'], self.crawler.settings, 'CRAWL_ITEMS')
+        self.checkboxgroup_analysis.pack(**self.group_args)
 
     def update(self):
-        self.spinbox_threads.set(int(self.crawler.settings["THREADS"]))
-        urls_per_second = int(self.crawler.settings["URLS_PER_SECOND"])
+        self.spinbox_threads.set(int(self.crawler.settings['THREADS']))
+        urls_per_second = int(self.crawler.settings['URLS_PER_SECOND'])
         if urls_per_second > 0:
             self.spinbox_urls.set(urls_per_second)
-            self.spinbox_urls["state"] = "enabled"
+            self.spinbox_urls['state'] = 'enabled'
         self.combobox_ua.current()
 
     def save_threads(self):
-        self.crawler.settings["THREADS"] = int(self.spinbox_threads.get())
+        self.crawler.settings['THREADS'] = int(self.spinbox_threads.get())
 
     def save_urls(self):
-        self.crawler.settings["URLS_PER_SECOND"] = int(self.spinbox_urls.get())
+        self.crawler.settings['URLS_PER_SECOND'] = int(self.spinbox_urls.get())
 
     def save_ua(self, e):
         value = self.combobox_ua.get()
-        self.crawler.settings["USER_AGENT"] = self.user_agents[value]
-        self.crawler.settings["UA_SHORT"] = value
+        self.crawler.settings['USER_AGENT'] = self.user_agents[value]
+        self.crawler.settings['UA_SHORT'] = value
 
     def save_proxy(self):
-        self.crawler.settings["PROXY_HOST"] = self.var_host.get()
-        self.crawler.settings["PROXY_USER"] = self.var_user.get()
-        self.crawler.settings["PROXY_PASSWORD"] = self.var_password.get()
+        self.crawler.settings['PROXY_HOST'] = self.var_host.get()
+        self.crawler.settings['PROXY_USER'] = self.var_user.get()
+        self.crawler.settings['PROXY_PASSWORD'] = self.var_password.get()
 
     def url_limit_clicked(self):
         if self.on_off_var.get() == 1:
-            self.spinbox_urls["state"] = "enabled"
-            print("enabled", self.on_off_var.get())
+            self.spinbox_urls['state'] = 'enabled'
+            print('enabled', self.on_off_var.get())
         else:
-            self.spinbox_urls["state"] = "disabled"
-            print("disabled", self.on_off_var.get())
+            self.spinbox_urls['state'] = 'disabled'
+            print('disabled', self.on_off_var.get())
