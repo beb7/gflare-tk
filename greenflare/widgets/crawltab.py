@@ -29,8 +29,6 @@ class CrawlTab(ttk.Frame):
         self.entry_url_input = EnhancedEntry(
             self.topframe, 'Enter URL to crawl')
         self.entry_url_input.entry.bind('<Return>', self.enter_hit)
-        self.entry_url_input.pack(
-            side=LEFT, padx=(0, 20), expand=True, fill="x")
 
         self.button_crawl = ttk.Button(
             self.topframe, text="Start", command=self.btn_crawl_pushed)
