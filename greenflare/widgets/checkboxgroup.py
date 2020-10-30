@@ -4,13 +4,18 @@ from tkinter import W, ttk, IntVar
 class CheckboxGroup(ttk.LabelFrame):
 
     def __init__(self, parent, text, boxes, settings, column):
+        s = ttk.Style()
+        s.configure('Green.TFrame', background='green')
+        s.configure('Blue.TFrame', background='blue')
+
         self.parent = parent
         self.boxes = boxes
         self.text = text
         self.settings = settings
         self.column = column
 
-        ttk.LabelFrame.__init__(self, self.parent, text=self.text, width=25, height=50)
+        ttk.LabelFrame.__init__(
+            self, self.parent, text=self.text, width=25, height=50)
 
         self.widgets = []
         self.vars = []
@@ -38,6 +43,5 @@ class CheckboxGroup(ttk.LabelFrame):
             else:
                 self.vars.append(IntVar())
             self.widgets.append(ttk.Checkbutton(
-                self, text=e, onvalue=1, offvalue=0, variable=self.vars[-1], command=self.checkbox_clicked, width=21))
-            # self.widgets[-1].grid(row=i, column=0, sticky=W)
+                self, text=e, onvalue=1, offvalue=0, variable=self.vars[-1], command=self.checkbox_clicked, width=22))
             self.widgets[-1].pack(side='top', anchor='w', padx=5, pady=2)
