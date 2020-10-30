@@ -1,6 +1,7 @@
 from tkinter import LEFT, RIGHT, ttk, W, NO, filedialog as fd, messagebox, StringVar, Menu
 from widgets.progresswindow import ProgressWindow
 from widgets.filterwindow import FilterWindow
+from widgets.enhancedentry import EnhancedEntry
 from core.defaults import Defaults
 from concurrent import futures
 import functools
@@ -25,9 +26,9 @@ class CrawlTab(ttk.Frame):
         self.topframe = ttk.Frame(self)
         self.topframe.pack(anchor='center', padx=20, pady=20, fill="x")
 
-        self.entry_url_input = ttk.Entry(self.topframe)
-        self.entry_url_input.insert(0, "Enter URL to crawl")
-        self.entry_url_input.bind('<Return>', self.enter_hit)
+        self.entry_url_input = EnhancedEntry(
+            self.topframe, 'Enter URL to crawl')
+        self.entry_url_input.entry.bind('<Return>', self.enter_hit)
         self.entry_url_input.pack(
             side=LEFT, padx=(0, 20), expand=True, fill="x")
 
@@ -173,7 +174,7 @@ class CrawlTab(ttk.Frame):
             self.run_first_time = False
             self.crawler.db_file = db_file
             self.crawler.settings["STARTING_URL"] = url
-            self.entry_url_input["state"] = "disabled"
+            self.entry_url_input.entry["state"] = "disabled"
             self.crawler.start_crawl()
             self.clear_output_table()
             self.populate_columns()
@@ -188,7 +189,7 @@ class CrawlTab(ttk.Frame):
         self.after(10, self.change_btn_text)
 
     def btn_crawl_pushed(self):
-        url = self.entry_url_input.get().strip()
+        url = self.entry_url_input.entry.get().strip()
         if self.button_crawl["text"] == "Start":
             # Validate input url
             url_components = self.crawler.gf.parse_url(url)
@@ -207,8 +208,8 @@ class CrawlTab(ttk.Frame):
 
             url = self.crawler.gf.url_components_to_str(url_components)
 
-            self.entry_url_input.delete(0, 'end')
-            self.entry_url_input.insert(0, url)
+            self.entry_url_input.entry.delete(0, 'end')
+            self.entry_url_input.entry.insert(0, url)
 
             self.start_new_crawl(url)
 
@@ -307,16 +308,17 @@ class CrawlTab(ttk.Frame):
 
     def update(self):
         self.button_crawl["text"] = "Resume"
-        self.entry_url_input.delete(0, 'end')
-        self.entry_url_input.insert(0, self.crawler.settings["STARTING_URL"])
+        self.entry_url_input.entry.delete(0, 'end')
+        self.entry_url_input.entry.insert(
+            0, self.crawler.settings["STARTING_URL"])
         self.row_counter = self.crawler.urls_crawled
         self.populate_columns()
         self.update_progressbar()
 
     def reset(self):
-        self.entry_url_input["state"] = "enabled"
-        self.entry_url_input.delete(0, 'end')
-        self.entry_url_input.insert(0, "Enter URL to crawl")
+        self.entry_url_input.entry["state"] = "enabled"
+        self.entry_url_input.entry.delete(0, 'end')
+        self.entry_url_input.entry.insert(0, "Enter URL to crawl")
         self.progressbar["value"] = 0
         self.clear_output_table()
         self.populate_columns()
@@ -325,12 +327,12 @@ class CrawlTab(ttk.Frame):
     def show_list_mode(self):
         self.reset()
         self.master.title(f'List Mode - {Defaults.window_title}')
-        self.entry_url_input.delete(0, 'end')
-        self.entry_url_input.insert(0, "List Mode ...")
+        self.entry_url_input.entry.delete(0, 'end')
+        self.entry_url_input.entry.insert(0, "List Mode ...")
         self.freeze_input()
 
     def freeze_input(self):
-        self.entry_url_input["state"] = "disabled"
+        self.entry_url_input.entry["state"] = "disabled"
 
     def generate_menu(self, menu, labels, func):
         for label in labels:
@@ -387,5 +389,6 @@ class CrawlTab(ttk.Frame):
         elif label == 'Open URL in Browser' and url:
             open_in_browser(url, new=2)
         elif label == 'Inspect' and url:
-        	print(self.row_values)
-        	self.root.add_url_tab(dict(zip(self.crawler.columns, self.row_values)))
+            print(self.row_values)
+            self.root.add_url_tab(
+                dict(zip(self.crawler.columns, self.row_values)))
