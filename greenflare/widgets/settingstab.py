@@ -1,4 +1,4 @@
-from tkinter import ttk, W, E, NW, StringVar, IntVar
+from tkinter import ttk, StringVar, IntVar
 from widgets.checkboxgroup import CheckboxGroup
 from core.defaults import Defaults
 
