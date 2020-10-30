@@ -52,7 +52,7 @@ class CrawlTab(ttk.Frame):
         self.progressbar.pack(side=LEFT, fill="x")
 
         self.middle_frame = ttk.Frame(self)
-        self.middle_frame.pack(anchor='center', fill='y', expand=1)
+        self.middle_frame.pack(anchor='center', fill='both', expand=True)
 
         self.treeview_table = ttk.Treeview(
             self.middle_frame, selectmode="browse")
