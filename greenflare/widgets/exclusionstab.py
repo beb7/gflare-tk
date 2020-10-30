@@ -1,4 +1,4 @@
-from tkinter import ttk, LEFT, RIGHT
+from tkinter import ttk
 from re import escape
 
 
@@ -8,19 +8,26 @@ class ExclusionsTab(ttk.Frame):
         ttk.Frame.__init__(self)
         self.crawler = crawler
         self.widgets = []
-        self.bind("<FocusOut>", self.save_inexes)
-        self.pack()
+        self.bind('<FocusOut>', self.save_inexes)
 
-        self.topframe = ttk.Frame(self)
-        self.topframe.pack(anchor='center', padx=20, pady=20, fill="x")
+        self.center_frame = ttk.Frame(self, width=700)
+        self.center_frame.pack(side='top', anchor='center',
+                               fill='both', padx=20, pady=20)
+
+        self.topframe = ttk.Frame(self.center_frame)
+        self.topframe.pack(anchor='center', fill='x')
+
+        self.lbl_description = ttk.Label(
+            self.topframe, text='Exclude URLs that:')
+        self.lbl_description.pack(side='left', padx=20)
 
         self.button_add = ttk.Button(
-            self.topframe, text="+", command=self.add_inex_widget)
-        self.button_add.pack(side=RIGHT, padx=(0, 20))
+            self.topframe, text='+', command=self.add_inex_widget)
+        self.button_add.pack(side='right', padx=20)
         self.button_remove = ttk.Button(
-            self.topframe, text="-", command=self.remove_inex_widget)
-        self.button_remove["state"] = "disabled"
-        self.button_remove.pack(side=RIGHT, padx=(0, 20))
+            self.topframe, text='-', command=self.remove_inex_widget)
+        self.button_remove['state'] = 'disabled'
+        self.button_remove.pack(side='right')
 
         self.add_inex_widget()
 
@@ -28,32 +35,23 @@ class ExclusionsTab(ttk.Frame):
 
         pad_x = (0, 10)
 
-        self.widgets.append(ttk.Frame(self))
-        self.widgets[-1].pack(anchor='center', padx=20, pady=20, fill="x")
-        self.combobox_inexclude = ttk.Combobox(
-            self.widgets[-1], values=['Exclude'], state="readonly")
-        self.combobox_inexclude.current(0)
-        self.combobox_inexclude.pack(side=LEFT, padx=pad_x)
-
-        self.combobox_item = ttk.Combobox(
-            self.widgets[-1], values=['URL'], state="readonly")
-        self.combobox_item.current(0)
-        self.combobox_item.pack(side=LEFT, padx=pad_x)
+        self.widgets.append(ttk.Frame(self.center_frame))
+        self.widgets[-1].pack(anchor='center', padx=20, pady=20, fill='x')
 
         self.operators = [
-            'Equal to (=)', 'Contain', 'Start with', 'End with', 'Regex match']
+            'Contain', 'Equal to (=)', 'Start with', 'End with', 'Regex match']
         self.combobox_op = ttk.Combobox(
-            self.widgets[-1], values=self.operators, state="readonly")
+            self.widgets[-1], values=self.operators, state='readonly')
         self.combobox_op.current(0)
-        self.combobox_op.pack(side=LEFT, padx=pad_x)
+        self.combobox_op.pack(side='left', padx=pad_x)
 
-        self.entry_inex_input = ttk.Entry(self.widgets[-1], width=75)
-        self.entry_inex_input.pack(side=LEFT, padx=pad_x)
+        self.entry_inex_input = ttk.Entry(self.widgets[-1])
+        self.entry_inex_input.pack(side='left', expand=True, fill='x')
 
-        if len(self.widgets) > 10:
-            self.button_add["state"] = "disabled"
+        if len(self.widgets) == 10:
+            self.button_add['state'] = 'disabled'
         if len(self.widgets) > 1:
-            self.button_remove["state"] = "enabled"
+            self.button_remove['state'] = 'enabled'
 
     def remove_inex_widget(self):
         self.widgets[-1].pack_forget()
@@ -61,28 +59,25 @@ class ExclusionsTab(ttk.Frame):
         self.widgets.pop()
 
         if len(self.widgets) < 2:
-            self.button_remove["state"] = "disabled"
+            self.button_remove['state'] = 'disabled'
         if len(self.widgets) < 10:
-            self.button_add["state"] = "enabled"
+            self.button_add['state'] = 'enabled'
 
     def save_inexes(self, event):
 
-        if len(self.widgets) == 1 and self.widgets[0].winfo_children()[3] == "":
+        if len(self.widgets) == 1 and self.widgets[0].winfo_children()[1] == '':
             self.crawler.settings['EXCLUSIONS'] = []
 
         exclusions = []
 
         for w in self.widgets:
             children = w.winfo_children()
+            operator = children[0].get()
+            value = children[1].get()
 
-            inex = children[0].get()
-            column = children[1].get()
-            operator = children[2].get()
-            value = children[3].get()
+            exclusions.append((operator, value))
 
-            exclusions.append((inex, column, operator, value))
-
-        self.crawler.settings["EXCLUSIONS"] = exclusions
+        self.crawler.settings['EXCLUSIONS'] = exclusions
 
         print(exclusions)
 
