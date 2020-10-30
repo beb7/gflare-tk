@@ -36,6 +36,7 @@ class AboutWindow(Toplevel):
         self.info_text.insert(END, heading_1, 'h1')
         self.info_text.insert(END, heading_2, 'h2')
         self.info_text.insert(END, text)
+        self.info_text.configure(state='disabled')
 
         # The window needs to be placed after its elements have been assigned
         # get window width and height
