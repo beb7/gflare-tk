@@ -52,7 +52,7 @@ class FilterWindow(Toplevel):
         self.widgets[-1].pack(anchor='center', padx=20, pady=(0, 20), fill="x")
 
         cmb_column = ttk.Combobox(
-            self.widgets[-1], values=self.columns, state="readonly", width=20)
+            self.widgets[-1], values=self.columns, state="readonly", width=12)
         cmb_column.pack(side=LEFT, padx=10)
 
         cmb_operators = ttk.Combobox(
@@ -64,7 +64,7 @@ class FilterWindow(Toplevel):
                 self.column.lower().replace(' ', '_')))
             cmb_operators.current(self.operators.index(self.label))
 
-        entry = ttk.Entry(self.widgets[-1], width=50)
+        entry = ttk.Entry(self.widgets[-1], width=40)
         entry.pack(side=LEFT, padx=10)
         entry.bind('<Return>', self.enter_hit)
 
