@@ -2,7 +2,7 @@ from lxml.html import fromstring
 from .gflarerobots import GFlareRobots
 from requests import status_codes
 import urllib.parse
-import re
+from re import match, escape
 from functools import wraps
 from time import time
 
@@ -182,31 +182,31 @@ class GFlareResponse:
         return self.get_domain(url) != self.settings.get("ROOT_DOMAIN", "")
 
     def is_excluded(self, url):
-        pattern = self.settings.get("EXCLUSIONS", "")
-        if not pattern:
-            return False
-        return bool(re.match(pattern, url))
+        if self.exclusions_regex:
+            return bool(match(self.exclusions_regex, url))
+        return False
+        
     
     def exclusions_to_regex(self, exclusions):
 
         rules = []
         
         for exclusion in exclusions:
-            _, _, operator, value = exclusion
+            operator, value = exclusion
             
-            if operator == self.operators[0]:
+            if operator == 'Equal to (=)':
                 value = escape(value)
                 rules.append(f"^{value}$")
-            elif operator == self.operators[1]:
+            elif operator == 'Contain':
                 value = escape(value)
                 rules.append(f".*{value}.*")
-            elif operator == self.operators[2]:
+            elif operator == 'Start with':
                 value = escape(value)
                 rules.append(f"^{value}.*")
-            elif operator == self.operators[3]:
+            elif operator == 'End with':
                 value = escape(value)
                 rules.append(f".*{value}$")
-            elif operator == self.operators[4]:
+            elif operator == 'Regex match':
                 rules.append(value)
 
         return '|'.join(rules)
