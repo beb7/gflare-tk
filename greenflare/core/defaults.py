@@ -56,7 +56,8 @@ class Defaults:
         'USER_AGENT': user_agents['Greenflare'],
         'UA_SHORT': 'Greenflare',
         'MAX_RETRIES': 3,
-        'CRAWL_ITEMS': crawl_items
+        'CRAWL_ITEMS': crawl_items,
+        'EXTRACTION_SEPARATOR': ' | '
     }
 
     display_columns = [
