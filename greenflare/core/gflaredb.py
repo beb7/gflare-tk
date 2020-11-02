@@ -12,7 +12,7 @@ class GFlareDB:
         self.columns_map = {
             "url": "TEXT type UNIQUE",
             "crawl_status": "TEXT",
-	        "status_code": "INT",
+            "status_code": "INT",
             "content_type": "TEXT",
             "h1": "TEXT",
             "h2": "TEXT",
@@ -100,6 +100,7 @@ class GFlareDB:
         self.create_data_table()
         self.create_config_table()
         self.create_inlinks_table()
+        self.create_exclusions_table()
         self.create_extractions_table()
 
     @exception_handler
@@ -118,8 +119,7 @@ class GFlareDB:
 
     @exception_handler
     def create_data_table(self):
-        query = f"CREATE TABLE IF NOT EXISTS crawl(id INTEGER PRIMARY KEY, {self.items_to_sql(self.get_sql_columns())})"
-        self.cur.execute(query)
+        self.cur.execute(f"CREATE TABLE IF NOT EXISTS crawl(id INTEGER PRIMARY KEY, {self.items_to_sql(self.get_sql_columns())})")
         self.cur.execute(
             "CREATE INDEX IF NOT EXISTS url_index ON crawl (url);")
 
@@ -139,25 +139,36 @@ class GFlareDB:
             "CREATE TABLE IF NOT EXISTS extractions(name TEXT, type TEXT, value TEXT)")
 
     @exception_handler
-    def insert_config(self, inp):
-        settings = inp.copy()
+    def create_exclusions_table(self):
+        self.cur.execute(
+            'CREATE TABLE IF NOT EXISTS exclusions(operator TEXT, value TEXT)')
 
-        to_list = {key: ",".join(value) for (
-            key, value) in settings.items() if isinstance(value, list)}
-        settings = {**settings, **to_list}
+    @exception_handler
+    def insert_config(self, settings):
 
-        if "EXTRACTIONS" in settings:
-            rows = [(k, v["selector"], v["value"])
-                    for k, v in settings["EXTRACTIONS"].items()]
-            self.cur.execute("DROP TABLE IF EXISTS extractions")
+        special_settings = ['EXTRACTIONS', 'EXCLUSIONS', 'CRAWL_ITEMS']
+        rows = [(key, value)
+                for key, value in settings.items() if key not in special_settings]
+
+        if 'CRAWL_ITEMS' in settings:
+            rows += [('CRAWL_ITEMS', ', '.join(settings['CRAWL_ITEMS']))]
+
+        if 'EXTRACTIONS' in settings:
+            rows = [(k, v['selector'], v['value'])
+                    for k, v in settings['EXTRACTIONS'].items()]
+            self.cur.execute('DROP TABLE IF EXISTS extractions')
             self.create_extractions_table()
             self.cur.executemany(
-                "REPLACE INTO extractions (name, type, value) VALUES (?, ?, ?)", rows)
+                'REPLACE INTO extractions (name, type, value) VALUES (?, ?, ?)', rows)
 
-        rows = [(k, v) for k, v in settings.items()
-                if isinstance(v, str) or isinstance(v, int)]
+        if 'EXCLUSIONS' in settings:
+            self.cur.execute('DROP TABLE IF EXISTS exclusions')
+            self.create_exclusions_table()
+            self.cur.executemany(
+                'REPLACE INTO exclusions (operator, value) VALUES (?, ?)', settings['EXCLUSIONS'])
+
         self.cur.executemany(
-            "REPLACE INTO config (setting, value) VALUES (?, ?)", rows)
+            'REPLACE INTO config (setting, value) VALUES (?, ?)', rows)
 
     @exception_handler
     def get_settings(self):
@@ -171,7 +182,10 @@ class GFlareDB:
         exc = self.cur.fetchall()
         exc = {row[0]: {"selector": row[1], "value": row[2]} for row in exc}
         out = {"EXTRACTIONS": exc}
-        return {**result, **out}
+
+        self.cur.execute('SELECT * FROM exclusions')
+        exclusions = self.cur.fetchall()
+        return {**result, **out, 'EXCLUSIONS': exclusions}
 
     @exception_handler
     def print_version(self):
