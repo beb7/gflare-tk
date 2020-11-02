@@ -77,7 +77,6 @@ class ExclusionsTab(ttk.Frame):
 
         if exclusions:
             self.crawler.settings['EXCLUSIONS'] = exclusions
-            print(exclusions)
 
     def get_operator_value(self, operator):
         return self.operators.index(operator)
