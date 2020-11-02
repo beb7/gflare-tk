@@ -1,5 +1,6 @@
 from tkinter import ttk, Toplevel, LEFT, RIGHT
 from core.defaults import Defaults
+from widgets.windowhelper import center_on_parent
 
 
 class FilterWindow(Toplevel):
@@ -43,23 +44,7 @@ class FilterWindow(Toplevel):
 
         self.filters = []
 
-        # The window needs to be placed after its elements have been assigned
-        # get window width and height
-
-        height = self.master.winfo_height()
-        width = self.master.winfo_width()
-
-        pop_up_height = self.winfo_height()
-        pop_up_width = self.winfo_width()
-
-        x = self.master.winfo_rootx()
-        y = self.master.winfo_rooty()
-
-        x_offset = width // 2 - pop_up_width
-        y_offset = height // 2 - pop_up_height
-
-        # and where it is placed
-        self.geometry('+%d+%d' % (x + x_offset, y // 2 + y_offset))
+        center_on_parent(self.master, self)
 
     def add_filter_row(self, preselect=True):
 
