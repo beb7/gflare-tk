@@ -23,16 +23,19 @@ class GFlareResponse:
         if self.robots_txt_status == "BLOCKED":
             self.spider_links = False
 
-        self.CHECK_REDIRECTS_BLOCKED_BY_ROBOTS = False
-        self.CHECK_NOFOLLOW = False
+        self.extraction_separator = self.settings.get('EXTRACTION_SEPARATOR', '; ')
 
         self.xpath_mapping = {
-            'canonical_tag': 'link[rel="canonical"]/@href',
-            'hreflang': '//link[@rel="alternate"]/@href',
-            'pagination': '//link[@rel="next"]/@href|//link[@rel="prev"]/@href',
+            'canonical_tag': '/html/head/link[@rel="canonical"]/@href',
+            'hreflang': '/html/head/link[@rel="alternate"]/@href',
+            'pagination': '/html/head/link[@rel="next"]/@href|//link[@rel="prev"]/@href',
             'images': '//img/@src',
             'stylesheets': '//link[@rel="stylesheet"]/@href',
-            'javascript': '//script/@src'
+            'javascript': '//script/@src',
+            'h1': '//h1/text()',
+            'h2': '//h2/text()',
+            'page_title': '/html/head/title/text()',
+            'meta_description': '/html/head/meta[@name="description"]/@content'
         }
 
         self.xpath_link_extraction = self.get_link_extraction_xpath()
@@ -296,30 +299,35 @@ class GFlareResponse:
             print(f"{selector} failed")
             return ""
 
-    # @timing
     def extract_onpage_elements(self):
         d = {}
-        if "h1" in self.all_items:
-            d["h1"] = self.get_txt_by_selector('h1')
-        if "h2" in self.all_items:
-            d["h2"] = self.get_txt_by_selector('h2')
-        if "page_title" in self.all_items:
-            d["page_title"] = self.get_txt_by_selector('title')
-        if "meta_description" in self.all_items:
-            d["meta_description"] = self.get_txt_by_selector(
-                '[name="description"]', get="content")
+        if 'h1' in self.all_items:
+            d['h1'] = self.extraction_separator.join(self.clean_list(self.extract_xpath(self.xpath_mapping['h1'])))
+        
+        if 'h2' in self.all_items:
+            d['h2'] = self.extraction_separator.join(self.clean_list(self.extract_xpath(self.xpath_mapping['h2'])))
+        
+        if 'page_title' in self.all_items:
+            d['page_title'] = self.extraction_separator.join(self.clean_list(self.extract_xpath(self.xpath_mapping['page_title'])))
+        
+        if 'meta_description' in self.all_items:
+            d['meta_description'] = self.extraction_separator.join(self.clean_list(self.extract_xpath(self.xpath_mapping['meta_description'])))
+        
         return d
 
-    # @timing
     def extract_directives(self):
         d = {}
-        if "canonical_tag" in self.all_items:
-            d["canonical_tag"] = self.get_txt_by_selector(
-                'link[rel="canonical"]', get="href")
-        if "canonical_http_header" in self.all_items:
-            d["canonical_http_header"] = self.get_canonical_http_header()
+        if 'canonical_tag' in self.all_items:
+            canonicals = self.extract_xpath(self.xpath_mapping['canonical_tag'])
+            if len(canonicals) > 0:
+                d['canonical_tag'] = canonicals[0]
+            else:
+                d['canonical_tag'] = ''
+        
+        if 'canonical_http_header' in self.all_items:
+            d['canonical_http_header'] = self.get_canonical_http_header()
 
-        if "meta_robots" in self.all_items:
+        if 'meta_robots' in self.all_items:
             all_fields = self.get_meta_name_fields()
             matching_ua = [f for f in all_fields if f.lower()
                            in self.robots_txt_ua.lower()]
@@ -327,36 +335,26 @@ class GFlareResponse:
 
             if len(matching_ua) > 0:
                 ua = matching_ua[0]
+                rules = self.extract_xpath(f'//meta[@name="{ua}"]/@content')
 
-                try:
-                    rules = self.tree.xpath(f'//meta[@name="{ua}"]/@content')
-                except:
-                    pass
+            rules += self.extract_xpath('//meta[@name="robots"]/@content')
 
-            try:
-                rules += self.tree.xpath('//meta[@name="robots"]/@content')
-            except:
-                pass
-
-            d["meta_robots"] = ', '.join(rules)
+            d['meta_robots'] = ', '.join(rules)
 
         return d
 
     def custom_extractions(self):
-        d = {}
 
         for extraction_name, selector, value in self.settings.get('EXTRACTIONS', []):
             if selector == 'CSS Selector':
-                method = "css"
+                return {extraction_name: self.get_txt_by_selector(value, method='css', get='txt')}
             elif selector == 'XPath':
-                method = 'xpath'
+                return {extraction_name: self.extraction_separator.join(self.clean_list(self.extract_xpath(value)))}
             else:
-                method = 'regex'
+                print('WARNING: regex extraction is not implemented yet')
+                return {extraction_name: ''}
 
-            d[extraction_name] = self.get_txt_by_selector(
-                value, method=method, get='txt')
-
-        return d
+        return {}
 
     def get_crawl_data(self):
         return {**self.extract_onpage_elements(), **self.extract_directives(), **self.custom_extractions()}
@@ -483,6 +481,13 @@ class GFlareResponse:
             return self.tree.xpath(path)
         except:
             return []
+
+    def clean_list(self, inp):
+        try:
+            return [' '.join(i.split()) for i in inp if i.strip()]
+        except Exception as e:
+            print(f'ERROR: cleaning list {inp} failed!')
+            return inp
 
     def get_hreflang_links(self):
         return self.extract_xpath(self.xpath_mapping['hreflang'])
