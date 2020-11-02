@@ -90,7 +90,7 @@ class Defaults:
 
     file_extension = '.gflaredb'
 
-    linux_theme = 'arc'
+    linux_theme = 'breeze'
 
     @classmethod
     def set_working_dir(cls, directory):
