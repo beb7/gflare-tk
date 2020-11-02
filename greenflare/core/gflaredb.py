@@ -6,7 +6,7 @@ import re
 
 class GFlareDB:
 
-    def __init__(self, db_name, crawl_items=None, extractions=None):
+    def __init__(self, db_name, crawl_items=None, extractions=None, exclusions=None):
         self.db_name = db_name
 
         self.columns_map = {
@@ -28,6 +28,7 @@ class GFlareDB:
 
         self.crawl_items = crawl_items
         self.extractions = extractions
+
         self.con, self.cur = self.db_connect()
         self.con.create_function("REGEXP", 2, self.regexp)
         self.columns = self.get_columns()
@@ -61,7 +62,7 @@ class GFlareDB:
         if not self.crawl_items:
             self.crawl_items = []
         if not self.extractions:
-            self.extractions = {}
+            self.extractions = []
         return [k for k in self.columns_map.keys() if k in self.crawl_items] + [e[0] for e in self.extractions]
 
     @exception_handler
@@ -77,11 +78,9 @@ class GFlareDB:
     def get_columns(self):
         if self.check_if_table_exists("crawl") == 0:
             out = self.get_soft_columns()
-            print("get_columns:", out)
             return out
 
         out = self.get_table_columns()
-        print("loaded columns", out)
         return out
 
     @exception_handler
@@ -90,7 +89,8 @@ class GFlareDB:
             self.crawl_items = []
         if not self.extractions:
             self.extractions = []
-        out = [(k, v) for k, v in self.columns_map.items() if k in self.crawl_items] +  [(e[0], 'TEXT')  for  e in self.extractions]
+        out = [(k, v) for k, v in self.columns_map.items(
+        ) if k in self.crawl_items] + [(e[0], 'TEXT') for e in self.extractions]
         print("get_sql_columns:", out)
         return out
 
@@ -166,7 +166,6 @@ class GFlareDB:
         self.cur.executemany(
             'REPLACE INTO config (setting, value) VALUES (?, ?)', rows)
 
-    @exception_handler
     def get_settings(self):
         self.cur.execute("SELECT * FROM config")
         result = dict(self.cur.fetchall())

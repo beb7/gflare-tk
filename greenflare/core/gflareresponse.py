@@ -23,7 +23,8 @@ class GFlareResponse:
         if self.robots_txt_status == "BLOCKED":
             self.spider_links = False
 
-        self.extraction_separator = self.settings.get('EXTRACTION_SEPARATOR', '; ')
+        self.extraction_separator = self.settings.get(
+            'EXTRACTION_SEPARATOR', '; ')
 
         self.xpath_mapping = {
             'canonical_tag': '/html/head/link[@rel="canonical"]/@href',
@@ -302,28 +303,33 @@ class GFlareResponse:
     def extract_onpage_elements(self):
         d = {}
         if 'h1' in self.all_items:
-            d['h1'] = self.extraction_separator.join(self.clean_list(self.extract_xpath(self.xpath_mapping['h1'])))
-        
+            d['h1'] = self.extraction_separator.join(
+                self.clean_list(self.extract_xpath(self.xpath_mapping['h1'])))
+
         if 'h2' in self.all_items:
-            d['h2'] = self.extraction_separator.join(self.clean_list(self.extract_xpath(self.xpath_mapping['h2'])))
-        
+            d['h2'] = self.extraction_separator.join(
+                self.clean_list(self.extract_xpath(self.xpath_mapping['h2'])))
+
         if 'page_title' in self.all_items:
-            d['page_title'] = self.extraction_separator.join(self.clean_list(self.extract_xpath(self.xpath_mapping['page_title'])))
-        
+            d['page_title'] = self.extraction_separator.join(
+                self.clean_list(self.extract_xpath(self.xpath_mapping['page_title'])))
+
         if 'meta_description' in self.all_items:
-            d['meta_description'] = self.extraction_separator.join(self.clean_list(self.extract_xpath(self.xpath_mapping['meta_description'])))
-        
+            d['meta_description'] = self.extraction_separator.join(
+                self.clean_list(self.extract_xpath(self.xpath_mapping['meta_description'])))
+
         return d
 
     def extract_directives(self):
         d = {}
         if 'canonical_tag' in self.all_items:
-            canonicals = self.extract_xpath(self.xpath_mapping['canonical_tag'])
+            canonicals = self.extract_xpath(
+                self.xpath_mapping['canonical_tag'])
             if len(canonicals) > 0:
                 d['canonical_tag'] = canonicals[0]
             else:
                 d['canonical_tag'] = ''
-        
+
         if 'canonical_http_header' in self.all_items:
             d['canonical_http_header'] = self.get_canonical_http_header()
 

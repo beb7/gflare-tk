@@ -60,6 +60,8 @@ class mainWindow(ttk.Frame):
         self.aboutmenu.add_command(label="About", command=self.show_about)
         self.menubar.add_cascade(label="Help", menu=self.aboutmenu)
 
+        self.about_window = None
+
         root.config(menu=self.menubar)
 
     def daemonize(title=None, msg=None, callbacks=None):
@@ -111,17 +113,22 @@ class mainWindow(ttk.Frame):
         if not db_file:
             return
 
-        self.crawler.load_crawl(db_file)
+        try:
+            self.crawler.load_crawl(db_file)
 
-        if self.crawler.settings["MODE"] == "Spider":
-            self.master.title(f"{self.crawler.settings['ROOT_DOMAIN']} - {Defaults.window_title}")
-        elif self.crawler.settings["MODE"] == "List":
-            self.tab_crawl.show_list_mode()
+            if self.crawler.settings["MODE"] == "Spider":
+                self.master.title(f"{self.crawler.settings['ROOT_DOMAIN']} - {Defaults.window_title}")
+            elif self.crawler.settings["MODE"] == "List":
+                self.tab_crawl.show_list_mode()
 
-        self.update_gui()
-        self.tab_crawl.freeze_input()
-        self.tab_crawl.load_crawl_to_outputtable()
-        self.tab_crawl.update_bottom_stats()
+            self.update_gui()
+            self.tab_crawl.freeze_input()
+            self.tab_crawl.load_crawl_to_outputtable()
+            self.tab_crawl.update_bottom_stats()
+        except Exception as e:
+            messagebox.showerror(title='Error - Invalid database',
+                                 message=f'Could not load {db_file} as it is invalid!')
+            print(e)
 
     def full_export(self):
         files = [('CSV files', '*.csv')]
@@ -166,7 +173,12 @@ class mainWindow(ttk.Frame):
                                 crawl_tab=self.tab_crawl, root=self.master)
 
     def show_about(self):
-        AboutWindow()
+        if not self.about_window:
+            self.about_window = AboutWindow()
+        elif self.about_window.winfo_exists() == 0:
+            self.about_window = AboutWindow()
+        else:
+            pass
 
     def update_gui(self):
         self.tab_crawl.update()

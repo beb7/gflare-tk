@@ -43,7 +43,10 @@ class GFlareCrawler:
         self.header_only = False
 
     def connect_to_db(self):
-        return GFlareDB(self.db_file, crawl_items=self.settings.get("CRAWL_ITEMS"), extractions=self.settings.get('EXTRACTIONS', []))
+        try:
+            return GFlareDB(self.db_file, crawl_items=self.settings.get("CRAWL_ITEMS"), extractions=self.settings.get('EXTRACTIONS', []))
+        except Exception as e:
+            raise
 
     def init_crawl_headers(self):
         if not self.settings.get('USER_AGENT', ''):
@@ -79,7 +82,7 @@ class GFlareCrawler:
             self.settings["ROOT_DOMAIN"] = self.gf.get_domain(
                 self.settings['STARTING_URL'])
             response = self.crawl_url(self.settings['STARTING_URL'])
-            
+
             # Check if we are dealing with a reachable host
             if response == 'SKIP_ME':
                 self.crawl_timed_out.set()
@@ -107,15 +110,18 @@ class GFlareCrawler:
 
     def load_crawl(self, db_file):
         self.db_file = db_file
-        db = self.connect_to_db()
 
-        self.urls_crawled = db.get_urls_crawled()
-        self.urls_total = db.get_total_urls()
-        self.settings = db.get_settings()
-        print(self.settings)
-        db.extractions = self.settings.get("EXTRACTIONS", "")
-        self.columns = db.columns.copy()
-        db.close()
+        try:
+            db = self.connect_to_db()
+            self.urls_crawled = db.get_urls_crawled()
+            self.urls_total = db.get_total_urls()
+            self.settings = db.get_settings()
+            print('Loaded:', self.settings)
+            db.extractions = self.settings.get("EXTRACTIONS", "")
+            self.columns = db.columns.copy()
+            db.close()
+        except Exception as e:
+            raise
 
     def reset_crawl(self):
         # Reset queue
@@ -475,4 +481,8 @@ class GFlareCrawler:
         print("Ending all worker threads gracefully ...")
         self.crawl_running.set()
         self.wait_for_threads()
-        self.save_config(self.settings)
+        try:
+            self.save_config(self.settings)
+        except Exception as e:
+            print('ERROR: Saving config failed!')
+            print(e)

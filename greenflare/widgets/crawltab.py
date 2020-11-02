@@ -100,6 +100,7 @@ class CrawlTab(ttk.Frame):
         self.generate_menu(self.popup_menu, labels, self.show_filter_window)
         self.selected_column = ''
 
+        self.filter_window = None
         self.filters = None
 
         # action menu for treeview row items
@@ -306,6 +307,7 @@ class CrawlTab(ttk.Frame):
 
     def update(self):
         self.button_crawl["text"] = "Resume"
+        self.entry_url_input.entry['state'] = 'enabled'
         self.entry_url_input.entry.delete(0, 'end')
         self.entry_url_input.entry.insert(
             0, self.crawler.settings["STARTING_URL"])
@@ -372,8 +374,16 @@ class CrawlTab(ttk.Frame):
         columns = Defaults.display_columns.copy()
         if self.crawler and self.crawler.columns:
             columns = self.crawler.columns.copy()
-        window = FilterWindow(self, label, self.selected_column, columns, title=f'Filter By {self.selected_column}')
-        self.filters = window.filters.copy()
+        
+        if not self.filter_window:
+            self.filter_window = FilterWindow(self, label, self.selected_column, columns, title=f'Filter By {self.selected_column}')
+            self.filters = self.filter_window.filters.copy()
+        elif self.filter_window.winfo_exists() == 0:
+            self.filter_window = FilterWindow(self, label, self.selected_column, columns, title=f'Filter By {self.selected_column}')
+            self.filters = self.filter_window.filters.copy()
+        else:
+            self.filter_window.update()
+            self.filter_window.deiconify()
 
     def show_action_window(self, label):
         url = ''
