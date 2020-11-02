@@ -15,7 +15,6 @@ class Defaults:
         'page_title',
         'meta_description',
         'h1',
-        'h2',
         'unique_inlinks',
         'canonicals',
         'canonical_tag',
