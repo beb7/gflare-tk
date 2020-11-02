@@ -88,10 +88,9 @@ class ExtractionsTab(ttk.Frame):
         # Only save extractions if there are any
         if extractions:
             self.crawler.settings['EXTRACTIONS'] = extractions
-            print(extractions)
-    
-    def get_selector_value(self, operator):
-        return self.selectors.index(operator)    
+
+    def get_selector_value(self, selector):
+        return self.selectors.index(selector)
 
     def update(self):
         try:
