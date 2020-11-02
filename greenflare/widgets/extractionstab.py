@@ -9,7 +9,6 @@ class ExtractionsTab(ttk.Frame):
         self.widgets = []
         self.bind('<FocusOut>', self.save_extractions)
 
-        
         self.center_frame = ttk.Frame(self, width=700)
         self.center_frame.pack(side='top', anchor='center',
                                fill='both', padx=20, pady=20)
@@ -25,6 +24,8 @@ class ExtractionsTab(ttk.Frame):
         self.button_remove['state'] = 'disabled'
         self.button_remove.pack(side='right')
 
+        self.selectors = ['CSS Selector', 'XPath']
+
         self.add_extraction()
 
     def add_extraction(self):
@@ -39,12 +40,13 @@ class ExtractionsTab(ttk.Frame):
         self.entry_input_name.pack(side='left', padx=pad_x)
 
         self.combobox_selector_type = ttk.Combobox(
-            self.widgets[-1], values=['CSS Selector', 'XPath'], state='readonly')
+            self.widgets[-1], values=self.selectors, state='readonly')
         self.combobox_selector_type.current(0)
         self.combobox_selector_type.pack(side='left', padx=pad_x)
 
         self.entry_input_selector_value = ttk.Entry(self.widgets[-1], width=75)
-        self.entry_input_selector_value.pack(side='left', expand=True, fill='x')
+        self.entry_input_selector_value.pack(
+            side='left', expand=True, fill='x')
 
         if len(self.widgets) == 10:
             self.button_add['state'] = 'disabled'
@@ -62,53 +64,59 @@ class ExtractionsTab(ttk.Frame):
             self.button_add['state'] = 'enabled'
 
     def save_extractions(self, event):
-        # Resetting the extractions and overriding self.settings['EXTRACTIONS']
-        # ensures removed items disappear, too
-
-        extractions = {}
+        extractions = []
 
         for w in self.widgets:
             children = w.winfo_children()
 
-            name = children[0].get()
+            # Make name SQL friendly
+            name = children[0].get().lower().replace(' ', '_')
             selector = children[1].get()
             value = children[2].get()
 
-            # Ignore empty extractions (such as the default) and do not attempt
-            # to save them
             if not value:
                 continue
 
-            col_name = name.lower().replace(' ', '_')
+            # Do not allow to name a custom extraction
+            # like an existing crawl item
 
-            # Do not allow to name a custom extraction like an existing crawl
-            # item
-            if col_name in self.crawler.settings.get('CRAWL_ITEMS', ''):
-                col_name += '_custom'
-            extractions[col_name] = {'selector': selector, 'value': value}
+            if name in self.crawler.settings.get('CRAWL_ITEMS', ''):
+                name += '_custom'
+
+            extractions.append((name, selector, value))
 
         # Only save extractions if there are any
         if extractions:
             self.crawler.settings['EXTRACTIONS'] = extractions
             print(extractions)
+    
+    def get_selector_value(self, operator):
+        return self.selectors.index(operator)    
 
     def update(self):
+        try:
+            if self.crawler.settings.get('EXTRACTIONS', []):
+                counter = 1
+                for name, selector, value in self.crawler.settings['EXTRACTIONS']:
+                    if counter > 1:
+                        self.add_extraction()
 
-        counter = 1
-        for name, v in self.crawler.settings.get('EXTRACTIONS', {}).items():
-            # First item does not need a new widget
-            if counter > 1:
-                self.add_extraction()
-            children = self.widgets[-1].winfo_children()
-            children[0].delete(0, 'end')
-            children[0].insert(0, name)
-            if 'CSS Selector' in v['selector']:
-                children[1].current(0)
-            elif 'XPath' in v['selector']:
-                children[1].current(1)
-            else:
-                children[1].current(2)
+                    children = self.widgets[-1].winfo_children()
 
-            children[2].delete(0, 'end')
-            children[2].insert(0, v['value'])
-            counter += 1
+                    name = name.replace('_', ' ')
+                    name_inp = children[0]
+                    name_inp.delete(0, 'end')
+                    name_inp.insert(0, name)
+
+                    combo_selector = children[1]
+                    combo_selector.current(self.get_selector_value(selector))
+
+                    entry_input = children[2]
+                    entry_input.delete(0, 'end')
+                    entry_input.insert(0, value)
+
+                    counter += 1
+
+        except Exception as e:
+            print('ERROR: Updating extractions tab failed!')
+            print(e)

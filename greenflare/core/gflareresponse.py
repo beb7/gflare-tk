@@ -37,7 +37,8 @@ class GFlareResponse:
 
         self.xpath_link_extraction = self.get_link_extraction_xpath()
 
-        self.exclusions_regex = self.exclusions_to_regex(self.settings.get('EXCLUSIONS', []))
+        self.exclusions_regex = self.exclusions_to_regex(
+            self.settings.get('EXCLUSIONS', []))
 
     def timing(f):
         @wraps(f)
@@ -185,15 +186,14 @@ class GFlareResponse:
         if self.exclusions_regex:
             return bool(match(self.exclusions_regex, url))
         return False
-        
-    
+
     def exclusions_to_regex(self, exclusions):
 
         rules = []
-        
+
         for exclusion in exclusions:
             operator, value = exclusion
-            
+
             if operator == 'Equal to (=)':
                 value = escape(value)
                 rules.append(f"^{value}$")
@@ -210,7 +210,6 @@ class GFlareResponse:
                 rules.append(value)
 
         return '|'.join(rules)
-
 
     def is_robots_txt(self, url=None):
         if not url:
@@ -346,17 +345,16 @@ class GFlareResponse:
     def custom_extractions(self):
         d = {}
 
-        for extraction_name, settings in self.settings.get("EXTRACTIONS", {}).items():
-            method = settings.get("selector", "")
-            if method == "CSS Selector":
+        for extraction_name, selector, value in self.settings.get('EXTRACTIONS', []):
+            if selector == 'CSS Selector':
                 method = "css"
-            elif method == "XPath":
-                method = "xpath"
+            elif selector == 'XPath':
+                method = 'xpath'
             else:
-                method = "regex"
+                method = 'regex'
 
             d[extraction_name] = self.get_txt_by_selector(
-                settings['value'], method=method, get="txt")
+                value, method=method, get='txt')
 
         return d
 

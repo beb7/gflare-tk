@@ -62,7 +62,7 @@ class GFlareDB:
             self.crawl_items = []
         if not self.extractions:
             self.extractions = {}
-        return [k for k in self.columns_map.keys() if k in self.crawl_items] + [k.lower().replace(' ', '_') for k in self.extractions.keys()]
+        return [k for k in self.columns_map.keys() if k in self.crawl_items] + [e[0] for e in self.extractions]
 
     @exception_handler
     def get_table_columns(self):
@@ -89,10 +89,8 @@ class GFlareDB:
         if not self.crawl_items:
             self.crawl_items = []
         if not self.extractions:
-            self.extractions = {}
-        out = [(k, v) for k, v in self.columns_map.items() if k in self.crawl_items] + \
-            [(k.lower().replace(' ', '_'), 'TEXT')
-             for k in self.extractions.keys()]
+            self.extractions = []
+        out = [(k, v) for k, v in self.columns_map.items() if k in self.crawl_items] +  [(e[0], 'TEXT')  for  e in self.extractions]
         print("get_sql_columns:", out)
         return out
 
@@ -154,12 +152,10 @@ class GFlareDB:
             rows += [('CRAWL_ITEMS', ', '.join(settings['CRAWL_ITEMS']))]
 
         if 'EXTRACTIONS' in settings:
-            rows = [(k, v['selector'], v['value'])
-                    for k, v in settings['EXTRACTIONS'].items()]
             self.cur.execute('DROP TABLE IF EXISTS extractions')
             self.create_extractions_table()
             self.cur.executemany(
-                'REPLACE INTO extractions (name, type, value) VALUES (?, ?, ?)', rows)
+                'REPLACE INTO extractions (name, type, value) VALUES (?, ?, ?)', settings['EXTRACTIONS'])
 
         if 'EXCLUSIONS' in settings:
             self.cur.execute('DROP TABLE IF EXISTS exclusions')
@@ -175,17 +171,15 @@ class GFlareDB:
         self.cur.execute("SELECT * FROM config")
         result = dict(self.cur.fetchall())
         for k, v in result.items():
-            if "CRAWL" in k or "ROBOTS_SETTINGS" in k or "CUSTOM_ITEMS" in k or "EXCLUSIONS" in k:
+            if "CRAWL" in k or "ROBOTS_SETTINGS" in k or "CUSTOM_ITEMS" in k:
                 result[k] = result[k].split(",")
 
         self.cur.execute("SELECT * FROM extractions")
-        exc = self.cur.fetchall()
-        exc = {row[0]: {"selector": row[1], "value": row[2]} for row in exc}
-        out = {"EXTRACTIONS": exc}
+        extractions = self.cur.fetchall()
 
         self.cur.execute('SELECT * FROM exclusions')
         exclusions = self.cur.fetchall()
-        return {**result, **out, 'EXCLUSIONS': exclusions}
+        return {**result, 'EXCLUSIONS': exclusions, 'EXTRACTIONS': extractions}
 
     @exception_handler
     def print_version(self):

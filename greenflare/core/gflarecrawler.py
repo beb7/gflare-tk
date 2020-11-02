@@ -43,7 +43,7 @@ class GFlareCrawler:
         self.header_only = False
 
     def connect_to_db(self):
-        return GFlareDB(self.db_file, crawl_items=self.settings.get("CRAWL_ITEMS"), extractions=self.settings.get("EXTRACTIONS", None))
+        return GFlareDB(self.db_file, crawl_items=self.settings.get("CRAWL_ITEMS"), extractions=self.settings.get('EXTRACTIONS', []))
 
     def init_crawl_headers(self):
         if not self.settings.get('USER_AGENT', ''):
