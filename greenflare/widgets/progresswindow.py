@@ -1,5 +1,5 @@
 from tkinter import ttk, Toplevel, TOP
-center_on_parent(self.master, self)
+from widgets.windowhelper import center_on_parent
 
 
 class ProgressWindow(Toplevel):
