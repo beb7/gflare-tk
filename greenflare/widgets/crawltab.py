@@ -327,6 +327,7 @@ class CrawlTab(ttk.Frame):
         self.clear_output_table()
         self.populate_columns()
         self.button_crawl["text"] = "Start"
+        self.suspend_auto_scroll = False
 
     def show_list_mode(self):
         self.reset()
