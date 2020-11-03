@@ -1,5 +1,4 @@
 import sqlite3 as sqlite
-from csv import writer as csvwriter
 import functools
 import re
 
@@ -239,23 +238,6 @@ class GFlareDB:
         self.cur.row_factory = None
         return rows
 
-    @exception_handler
-    def to_csv(self, file_name, filters=None, columns=None):
-        print("Exporting crawl to", file_name, "...")
-
-        if not filters:
-            data = self.get_crawl_data()
-        else:
-            data = self.query(filters, columns=columns)
-
-        if not columns:
-            columns = self.columns
-
-        with open(file_name, "w", newline='', encoding='utf-8-sig') as csv_file:
-            csv_writer = csvwriter(csv_file, delimiter=",", dialect='excel')
-            csv_writer.writerow([i for i in self.columns])
-            csv_writer.writerows(data)
-
     def regexp(self, expr, item):
         reg = re.compile(expr)
         return reg.search(item) is not None
@@ -298,14 +280,13 @@ class GFlareDB:
             elif operator == 'Sort Z-A' or operator == 'Sort Largest To Smallest':
                 order_cols.append(f'{column} DESC')
                 continue
-                
-
 
             operator = operator_mapping[operator]
             queries.append(f"WHERE {column} {operator} '{value}'")
 
         if queries:
-            query = query_head + ' AND '.join(queries) + " AND status_code != ''"
+            query = query_head + \
+                ' AND '.join(queries) + " AND status_code != ''"
         else:
             query = query_head + "WHERE status_code != ''"
 
