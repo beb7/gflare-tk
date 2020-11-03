@@ -260,19 +260,28 @@ class GFlareDB:
         reg = re.compile(expr)
         return reg.search(item) is not None
 
-    @exception_handler
     def query(self, filters, columns=None):
 
-        operator_mapping = {'Equals': '==', 'Does Not Equal': '!=', 'Begins With': 'LIKE', 'Ends With': 'LIKE', 'Contains': 'LIKE',
-                            'Does Not Contain': 'NOT LIKE', 'Greater Than': '>', 'Greater Than Or Equal To': '>=', 'Less Than': '<', 'Less Than Or Equal To': '<='}
+        operator_mapping = {
+            'Equals': '==', 'Does Not Equal': '!=',
+            'Begins With': 'LIKE',
+            'Ends With': 'LIKE',
+            'Contains': 'LIKE',
+            'Does Not Contain': 'NOT LIKE',
+            'Greater Than': '>',
+            'Greater Than Or Equal To': '>=',
+            'Less Than': '<',
+            'Less Than Or Equal To': '<='
+        }
 
         if columns:
             columns = f"{', '.join(columns)}"
         else:
             columns = f"{', '.join(self.columns)}"
 
-        query_head = f'SELECT {columns} FROM crawl WHERE '
+        query_head = f'SELECT {columns} FROM crawl '
         queries = []
+        order_cols = []
 
         for f in filters:
             column, operator, value = f
@@ -283,11 +292,25 @@ class GFlareDB:
                 value = f'%{value}'
             elif 'Contain' in operator:
                 value = f'%{value}%'
+            elif operator == 'Sort A-Z' or operator == 'Sort Smallest To Largest':
+                order_cols.append(f'{column} ASC')
+                continue
+            elif operator == 'Sort Z-A' or operator == 'Sort Largest To Smallest':
+                order_cols.append(f'{column} DESC')
+                continue
+                
+
 
             operator = operator_mapping[operator]
-            queries.append(f"{column} {operator} '{value}'")
+            queries.append(f"WHERE {column} {operator} '{value}'")
 
-        query = query_head + ' AND '.join(queries) + " AND status_code != ''"
+        if queries:
+            query = query_head + ' AND '.join(queries) + " AND status_code != ''"
+        else:
+            query = query_head + "WHERE status_code != ''"
+
+        if order_cols:
+            query += ' ORDER BY ' + ', '.join(order_cols)
 
         print(query)
         self.cur.execute(query)
