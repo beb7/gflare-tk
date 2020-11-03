@@ -72,6 +72,11 @@ class Defaults:
     ]
 
     popup_menu_labels = [
+        'Sort A-Z',
+        'Sort Z-A',
+        'Sort Smallest To Largest',
+        'Sort Largest To Smallest',
+        '_',
         'Equals',
         'Does Not Equal',
         '_',
