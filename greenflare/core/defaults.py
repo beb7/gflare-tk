@@ -11,7 +11,7 @@ class Defaults:
         'url',
         'crawl_status',
         'status_code',
-        'content_type',                
+        'content_type',
         'page_title',
         'meta_description',
         'h1',
@@ -109,5 +109,5 @@ class Defaults:
     def about_icon(cls):
         # Check if we are run as part of an macOS APP bundle
         if getattr(sys, 'frozen', False) and sys.platform == 'darwin':
-            return str(Path(cls.working_dir).parent) + path.sep + 'Resources' + path.sep + 'images' + path.sep + 'greenflare-icon-192x192.png' 
+            return str(Path(cls.working_dir).parent) + path.sep + 'Resources' + path.sep + 'images' + path.sep + 'greenflare-icon-192x192.png'
         return cls.working_dir + path.sep + 'resources' + path.sep + 'greenflare-icon-192x192.png'
