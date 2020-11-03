@@ -64,7 +64,7 @@ class CrawlTab(ttk.Frame):
         self.treeview_table.bind(right_click, self.assign_treeview_click)
 
         self.scrollbar_vertical = ttk.Scrollbar(
-            self.middle_frame, orient="vertical", command=self.treeview_table.yview)
+            self.middle_frame, orient="vertical", command=self.vertical_scrollbar_clicked)
         self.scrollbar_vertical.pack(side="right", fill="y")
         self.scrollbar_horizontal = ttk.Scrollbar(
             self.middle_frame, orient="horizontal", command=self.treeview_table.xview)
@@ -101,7 +101,6 @@ class CrawlTab(ttk.Frame):
         self.selected_column = ''
 
         self.filter_window = None
-        self.filters = None
 
         # action menu for treeview row items
         self.action_menu = Menu(self, tearoff=0)
@@ -109,6 +108,7 @@ class CrawlTab(ttk.Frame):
         labels = ['Copy URL', 'Open URL in Browser']
         self.generate_menu(self.action_menu, labels, self.show_action_window)
         self.row_values = []
+        self.suspend_auto_scroll = False
 
     def daemonize(title=None, msg=None):
         def decorator(target):
@@ -243,6 +243,11 @@ class CrawlTab(ttk.Frame):
         with self.lock:
             self.row_counter += 1
 
+        # Allow user to scroll up and only continue autoscroll if the
+        # scroll bar is near the bottom edge
+        if not self.suspend_auto_scroll:
+            self.treeview_table.yview_moveto(1)
+
     def add_to_outputtable(self):
         items = []
 
@@ -255,7 +260,6 @@ class CrawlTab(ttk.Frame):
             for item in items:
                 self.add_item_to_outputtable(item)
 
-            self.treeview_table.yview_moveto(1)
             self.update_progressbar()
             self.update_bottom_stats()
 
@@ -381,10 +385,8 @@ class CrawlTab(ttk.Frame):
             return
         if not self.filter_window:
             self.filter_window = FilterWindow(self, label, self.selected_column, columns, title=f'Filter By {self.selected_column}')
-            self.filters = self.filter_window.filters.copy()
         elif self.filter_window.winfo_exists() == 0:
             self.filter_window = FilterWindow(self, label, self.selected_column, columns, title=f'Filter By {self.selected_column}')
-            self.filters = self.filter_window.filters.copy()
         else:
             self.filter_window.update()
             self.filter_window.deiconify()
@@ -404,3 +406,10 @@ class CrawlTab(ttk.Frame):
             print(self.row_values)
             self.root.add_url_tab(
                 dict(zip(self.crawler.columns, self.row_values)))
+
+    def vertical_scrollbar_clicked(self, *args, **kwargs):
+        self.treeview_table.yview(*args, **kwargs)
+        if float(args[1]) < 0.95:
+            self.suspend_auto_scroll = True
+        else:
+            self.suspend_auto_scroll = False
