@@ -374,7 +374,11 @@ class CrawlTab(ttk.Frame):
         columns = Defaults.display_columns.copy()
         if self.crawler and self.crawler.columns:
             columns = self.crawler.columns.copy()
-        
+        if 'Sort' in label:
+            print('>>>', label)
+            self.load_crawl_to_outputtable(
+                filters=([(self.selected_column.lower().replace(' ', '_'), label, '')]))
+            return
         if not self.filter_window:
             self.filter_window = FilterWindow(self, label, self.selected_column, columns, title=f'Filter By {self.selected_column}')
             self.filters = self.filter_window.filters.copy()
