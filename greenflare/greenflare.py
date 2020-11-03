@@ -11,6 +11,7 @@ from widgets.progresswindow import ProgressWindow
 from widgets.aboutwindow import AboutWindow
 from widgets.urltab import URLTab
 from concurrent import futures
+from csv import writer as csvwriter
 import functools
 from threading import Lock
 from os import path, remove
@@ -45,8 +46,6 @@ class mainWindow(ttk.Frame):
         self.filemenu.add_command(label="New", command=self.reset_ui)
         self.filemenu.add_command(label="Load Crawl", command=self.load_crawl)
         self.filemenu.add_separator()
-        self.filemenu.add_command(
-            label="Full Export", command=self.full_export)
         self.filemenu.add_command(
             label="Export View", command=self.export_view)
         self.menubar.add_cascade(label="File", menu=self.filemenu)
@@ -130,39 +129,34 @@ class mainWindow(ttk.Frame):
                                  message=f'Could not load {db_file} as it is invalid!')
             print(e)
 
-    def full_export(self):
-        files = [('CSV files', '*.csv')]
-        export_file = fd.asksaveasfilename(filetypes=files)
-
-        # Don't do anything if no file is being selected
-        if not export_file:
-            return
-
-        self.export_to_csv(export_file)
-
     def export_view(self):
         files = [('CSV files', '*.csv')]
         export_file = fd.asksaveasfilename(filetypes=files)
 
-        # Don't do anything if no file is being selected
         if not export_file:
             return
 
-        self.export_to_csv(export_file, filters=self.tab_crawl.filters)
+        if not export_file.endswith(".csv"):
+            export_file += ".csv"
+        if path.isfile(export_file):
+            remove(export_file)
+
+        data = [self.tab_crawl.treeview_table.item(
+            child)['values'] for child in self.tab_crawl.treeview_table.get_children()]
+
+        self.export_to_csv(
+            export_file, self.tab_crawl.treeview_table['columns'], data)
 
     def show_export_completed_msg(self):
         messagebox.showinfo(title='Export completed', message=f'All data has been successfully exported!')
 
-    @daemonize(title="Exporting crawl ...", msg="Exporting to CSV, that might take a while ...", callbacks=[show_export_completed_msg])
-    def export_to_csv(self, filename, filters=None):
-        if not filename.endswith(".csv"):
-            filename += ".csv"
-        if path.isfile(filename):
-            remove(filename)
+    @daemonize(title="Exporting view ...", msg="Exporting to CSV, that might take a while ...", callbacks=[show_export_completed_msg])
+    def export_to_csv(self, csv_file, columns, data):
 
-        db = self.crawler.connect_to_db()
-        db.to_csv(filename, columns=self.crawler.columns, filters=filters)
-        db.close()
+        with open(csv_file, "w", newline='', encoding='utf-8-sig') as csv_file:
+            csv_writer = csvwriter(csv_file, delimiter=",", dialect='excel')
+            csv_writer.writerow([i for i in columns])
+            csv_writer.writerows(data)
 
     def spider_mode(self):
         self.crawler.settings['MODE'] = 'Spider'
