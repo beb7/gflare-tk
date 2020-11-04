@@ -168,9 +168,10 @@ class GFlareDB:
     def get_settings(self):
         self.cur.execute("SELECT * FROM config")
         result = dict(self.cur.fetchall())
+
         for k, v in result.items():
-            if "CRAWL" in k or "ROBOTS_SETTINGS" in k or "CUSTOM_ITEMS" in k:
-                result[k] = result[k].split(",")
+            if 'CRAWL_ITEMS' in k:
+                result[k] = ' '.join(result[k].split()).split(',')
 
         self.cur.execute("SELECT * FROM extractions")
         extractions = self.cur.fetchall()
