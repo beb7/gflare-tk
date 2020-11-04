@@ -410,7 +410,7 @@ class GFlareDB:
     
     def get_broken_inlinks(self, status_code='4'):
 
-        query = f"SELECT crawl.url as 'URL From', url_to as 'URL To', sc as 'Status Code' FROM (SELECT url_from_id, url as url_to, status_code as sc FROM crawl INNER JOIN inlinks ON inlinks.url_to_id = crawl.id WHERE status_code LIKE '%{status_code}') INNER JOIN crawl ON crawl.id = url_from_id"
+        query = f"SELECT crawl.url as 'URL From', url_to as 'URL To', sc as 'Status Code' FROM (SELECT url_from_id, url as url_to, status_code as sc FROM crawl INNER JOIN inlinks ON inlinks.url_to_id = crawl.id WHERE status_code LIKE '{status_code}%') INNER JOIN crawl ON crawl.id = url_from_id"
 
         self.cur.execute(query)
         rows = self.cur.fetchall()
