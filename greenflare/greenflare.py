@@ -10,6 +10,7 @@ from widgets.listcrawl import ListModeWindow
 from widgets.progresswindow import ProgressWindow
 from widgets.aboutwindow import AboutWindow
 from widgets.urltab import URLTab
+from widgets.menuhelper import generate_menu
 from concurrent import futures
 from csv import writer as csvwriter
 import functools
@@ -54,10 +55,20 @@ class mainWindow(ttk.Frame):
         self.modemenu.add_command(label="Spider", command=self.spider_mode)
         self.modemenu.add_command(label="List", command=self.list_mode)
         self.menubar.add_cascade(label="Mode", menu=self.modemenu)
+        
+        self.viewmenu = Menu(self.menubar, tearoff=0)
+        
+        self.inlinks_menu = Menu(self.viewmenu, tearoff=0)
+
+        self.viewmenu.add_cascade(label='Inlinks', menu=self.inlinks_menu)
+        self.menubar.add_cascade(label='View', menu=self.viewmenu)
 
         self.aboutmenu = Menu(self.menubar, tearoff=0)
         self.aboutmenu.add_command(label="About", command=self.show_about)
         self.menubar.add_cascade(label="Help", menu=self.aboutmenu)
+
+        inlinks_labels = ['Redirects (3xx)', 'Client Error (4xx)', 'Server Error (5xx)']
+        generate_menu(self.inlinks_menu, inlinks_labels, self.view_broken_inlinks)
 
         self.about_window = None
 
@@ -173,6 +184,25 @@ class mainWindow(ttk.Frame):
             self.about_window = AboutWindow()
         else:
             pass
+
+    def view_broken_inlinks(self, label):
+        if '3xx' in label:
+            status_code = '3'
+        elif '4xx' in label:
+            status_code = '4'
+        elif '5xx' in label:
+            status_code = '5'
+
+        try:
+            db = self.crawler.connect_to_db()
+            columns, data = db.get_broken_inlinks(status_code=status_code)
+            self.tab_crawl.clear_output_table()
+            self.tab_crawl.populate_columns(columns=columns)
+            for item in data:
+                self.tab_crawl.add_item_to_outputtable(item)
+            db.close()
+        except Exception as e:
+            print(e)
 
     def update_gui(self):
         self.tab_crawl.update()
