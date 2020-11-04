@@ -2,10 +2,10 @@ from tkinter import LEFT, RIGHT, ttk, W, NO, filedialog as fd, messagebox, Strin
 from widgets.progresswindow import ProgressWindow
 from widgets.filterwindow import FilterWindow
 from widgets.enhancedentry import EnhancedEntry
+from widgets.menuhelper import generate_menu
 from core.defaults import Defaults
 from concurrent import futures
 import functools
-from functools import partial
 from os import path, remove
 from webbrowser import open as open_in_browser
 import queue
@@ -97,7 +97,7 @@ class CrawlTab(ttk.Frame):
             label='Reset Filters', command=self.load_crawl_to_outputtable)
         self.popup_menu.add_separator()
         labels = Defaults.popup_menu_labels
-        self.generate_menu(self.popup_menu, labels, self.show_filter_window)
+        generate_menu(self.popup_menu, labels, self.show_filter_window)
         self.selected_column = ''
 
         self.filter_window = None
@@ -106,7 +106,7 @@ class CrawlTab(ttk.Frame):
         self.action_menu = Menu(self, tearoff=0)
         #labels = ['Copy URL', 'Open URL in Browser', '_', 'Inspect']
         labels = ['Copy URL', 'Open URL in Browser']
-        self.generate_menu(self.action_menu, labels, self.show_action_window)
+        generate_menu(self.action_menu, labels, self.show_action_window)
         self.row_values = []
         self.suspend_auto_scroll = False
 
@@ -137,26 +137,31 @@ class CrawlTab(ttk.Frame):
         self.treeview_table.delete(*self.treeview_table.get_children())
         self.row_counter = 1
 
-    def populate_columns(self):
-        columns = Defaults.display_columns.copy()
-        if self.crawler.columns:
-            columns = self.crawler.columns.copy()
-            # if 'unique_inlinks' in columns: columns.remove('unique_inlinks')
+    def populate_columns(self, columns=None):
+        if not columns:
+            columns = Defaults.display_columns.copy()
+            if self.crawler.columns:
+                columns = self.crawler.columns.copy()
 
-        items = [i.title().replace("_", " ") for i in columns]
-        items[items.index("Url")] = "URL"
-        items[items.index("Redirect Url")] = "Redirect URL"
+            items = [i.title().replace("_", " ") for i in columns]
+            items[items.index("Url")] = "URL"
+            items[items.index("Redirect Url")] = "Redirect URL"
 
-        self.treeview_table["columns"] = tuple(items)
-        self.treeview_table.heading("#0", text="id", anchor=W)
-        self.treeview_table.column("#0", width=50, stretch=False)
-        self.treeview_table.heading("URL", text="URL", anchor=W)
-        self.treeview_table.column("URL", width=750, stretch=False)
+            self.treeview_table["columns"] = tuple(items)
+            self.treeview_table.heading("#0", text="id", anchor=W)
+            self.treeview_table.column("#0", width=50, stretch=False)
+            self.treeview_table.heading("URL", text="URL", anchor=W)
+            self.treeview_table.column("URL", width=750, stretch=False)
 
-        # Set width and stretch for all other columns
-        for e in self.treeview_table["columns"][1:]:
-            self.treeview_table.heading(e, text=e, anchor=W)
-            self.treeview_table.column(e, width=85, stretch=False)
+            # Set width and stretch for all other columns
+            for e in self.treeview_table["columns"][1:]:
+                self.treeview_table.heading(e, text=e, anchor=W)
+                self.treeview_table.column(e, width=85, stretch=False)
+        else:
+            self.treeview_table["columns"] = tuple(columns)
+            for e in self.treeview_table["columns"]:
+                self.treeview_table.heading(e, text=e, anchor=W)
+                self.treeview_table.column(e, stretch=False)
 
     def enter_hit(self, event=None):
         self.btn_crawl_pushed()
@@ -338,14 +343,6 @@ class CrawlTab(ttk.Frame):
 
     def freeze_input(self):
         self.entry_url_input.entry["state"] = "disabled"
-
-    def generate_menu(self, menu, labels, func):
-        for label in labels:
-            if label != '_':
-                action_with_arg = partial(func, label)
-                menu.add_command(label=label, command=action_with_arg)
-            else:
-                menu.add_separator()
 
     def assign_treeview_click(self, event):
 
