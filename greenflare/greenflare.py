@@ -55,23 +55,39 @@ class mainWindow(ttk.Frame):
         self.modemenu.add_command(label="Spider", command=self.spider_mode)
         self.modemenu.add_command(label="List", command=self.list_mode)
         self.menubar.add_cascade(label="Mode", menu=self.modemenu)
-        
+
         self.viewmenu = Menu(self.menubar, tearoff=0)
-        
+        self.viewmenu.add_command(
+            label='Crawl Output', command=self.show_crawl_output)
+
         self.inlinks_menu = Menu(self.viewmenu, tearoff=0)
+        self.status_codes_menu = Menu(self.viewmenu, tearoff=0)
+        self.content_types_menu = Menu(self.viewmenu, tearoff=0)
 
         self.viewmenu.add_cascade(label='Inlinks', menu=self.inlinks_menu)
+        self.viewmenu.add_cascade(
+            label='Status Codes', menu=self.status_codes_menu)
+        self.viewmenu.add_cascade(label='Content Types', menu=self.content_types_menu)
         self.menubar.add_cascade(label='View', menu=self.viewmenu)
 
         self.aboutmenu = Menu(self.menubar, tearoff=0)
         self.aboutmenu.add_command(label="About", command=self.show_about)
         self.menubar.add_cascade(label="Help", menu=self.aboutmenu)
 
-        inlinks_labels = ['Redirects (3xx)', 'Client Error (4xx)', 'Server Error (5xx)']
-        generate_menu(self.inlinks_menu, inlinks_labels, self.view_broken_inlinks)
+        inlinks_labels = [
+            'Redirects (3xx)', 'Client Error (4xx)', 'Server Error (5xx)']
+        generate_menu(self.inlinks_menu, inlinks_labels,
+                      self.view_broken_inlinks)
+
+        status_codes_labels = [
+            'OK (200)', 'Redirects (3xx)', 'Client Error (4xx)', 'Server Error (5xx)']
+        generate_menu(self.status_codes_menu,
+                      status_codes_labels, self.view_status_codes)
+
+        content_types_labels = ['HTML', 'Image', 'CSS', 'Font', 'JSON', 'XML', 'JavaScript']
+        generate_menu(self.content_types_menu, content_types_labels, self.view_content_types)
 
         self.about_window = None
-
         root.config(menu=self.menubar)
 
     def daemonize(title=None, msg=None, callbacks=None):
@@ -114,6 +130,10 @@ class mainWindow(ttk.Frame):
         self.crawler.settings = Defaults.settings.copy()
         self.master.title(Defaults.window_title)
 
+    def show_crawl_output(self):
+        self.tab_crawl.load_crawl_to_outputtable(None, 'crawl')
+        self.tab_crawl.viewed_table = 'crawl'
+
     def load_crawl(self, db_file=None):
         files = [('Greenflare DB', f'*{Defaults.file_extension}'), ('All files', '.*')]
 
@@ -133,7 +153,7 @@ class mainWindow(ttk.Frame):
 
             self.update_gui()
             self.tab_crawl.freeze_input()
-            self.tab_crawl.load_crawl_to_outputtable()
+            self.show_crawl_output()
             self.tab_crawl.update_bottom_stats()
         except Exception as e:
             messagebox.showerror(title='Error - Invalid database',
@@ -187,21 +207,45 @@ class mainWindow(ttk.Frame):
 
     def view_broken_inlinks(self, label):
         if '3xx' in label:
-            status_code = '3'
+            table = 'broken_inlinks_3xx'
         elif '4xx' in label:
-            status_code = '4'
+            table = 'broken_inlinks_4xx'
         elif '5xx' in label:
-            status_code = '5'
+            table = 'broken_inlinks_5xx'
 
         try:
-            db = self.crawler.connect_to_db()
-            columns, data = db.get_broken_inlinks(status_code=status_code)
-            self.tab_crawl.clear_output_table()
-            self.tab_crawl.populate_columns(columns=columns)
-            for item in data:
-                self.tab_crawl.add_item_to_outputtable(item)
-            db.close()
+            self.tab_crawl.viewed_table = table
+            self.tab_crawl.load_crawl_to_outputtable(None, table)
         except Exception as e:
+            print('ERROR: view_broken_inlinks failed!')
+            print(e)
+
+    def view_status_codes(self, label):
+        if '200' in label:
+            table = 'status_codes_200'
+        elif '3xx' in label:
+            table = 'status_codes_3xx'
+        elif '4xx' in label:
+            table = 'status_codes_4xx'
+        elif '5xx' in label:
+            table = 'status_codes_5xx'
+
+        try:
+            self.tab_crawl.viewed_table = table
+            self.tab_crawl.load_crawl_to_outputtable(None, table)
+        except Exception as e:
+            print('ERROR: view_status_codes failed!')
+            print(e)
+
+    def view_content_types(self, label):
+        content_type = label.lower()
+        table = 'content_type_' + content_type
+
+        try:
+            self.tab_crawl.viewed_table = table
+            self.tab_crawl.load_crawl_to_outputtable(None, table)
+        except Exception as e:
+            print('ERROR: view_content_types failed!')
             print(e)
 
     def update_gui(self):

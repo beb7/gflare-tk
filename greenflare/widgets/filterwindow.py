@@ -5,13 +5,14 @@ from widgets.windowhelper import center_on_parent
 
 class FilterWindow(Toplevel):
 
-    def __init__(self, crawl_tab, label, column, columns, title=None):
+    def __init__(self, crawl_tab, label, column, columns, table=None, title=None):
         Toplevel.__init__(self)
 
         self.crawl_tab = crawl_tab
         self.label = label
         self.column = column
         self.columns = columns
+        self.table = table
         self.widgets = []
         self.operators = [l for l in Defaults.popup_menu_labels if l != '_']
 
@@ -43,6 +44,8 @@ class FilterWindow(Toplevel):
         self.button_cancel.pack(side='right')
 
         self.filters = []
+
+        self.viewed_table = 'crawl'
 
         center_on_parent(self.master, self)
 
@@ -87,7 +90,7 @@ class FilterWindow(Toplevel):
             filters.append((column, operation, values))
 
         self.crawl_tab.filters = filters
-        self.crawl_tab.load_crawl_to_outputtable(filters=filters)
+        self.crawl_tab.load_crawl_to_outputtable(filters, self.table, columns="*")
 
         if not '(Filtered View)' in self.master.title():
             self.master.title(self.master.title() + ' (Filtered View)')

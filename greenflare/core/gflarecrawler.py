@@ -121,6 +121,8 @@ class GFlareCrawler:
             self.columns = db.columns.copy()
             db.close()
         except Exception as e:
+            print('load_crawl failed!')
+            print(e)
             raise
 
     def reset_crawl(self):
@@ -459,15 +461,14 @@ class GFlareCrawler:
         self.session.close()
         print("Consumer thread finished")
 
-    def get_crawl_data(self, filters=None):
+    def get_crawl_data(self, filters, table, columns=None):
         if self.db_file:
             db = self.connect_to_db()
-            if not filters:
-                data = db.get_crawl_data()
-            else:
-                data = db.query(filters)
+            data = db.query(filters, table, columns=columns)
+            if columns == '*' or not columns:
+                columns = db.get_table_columns(table=table)
             db.close()
-            return data
+            return columns, data
         return []
 
     def save_config(self, settings):

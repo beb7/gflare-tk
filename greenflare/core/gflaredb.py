@@ -65,12 +65,14 @@ class GFlareDB:
         return [k for k in self.columns_map.keys() if k in self.crawl_items] + [e[0] for e in self.extractions]
 
     @exception_handler
-    def get_table_columns(self):
-        self.cur.execute("""SELECT * FROM crawl""")
+    def get_table_columns(self, table='crawl'):
+        self.cur.execute(f"SELECT * FROM {table}")
         out = [description[0] for description in self.cur.description]
 
         # remove id from our output
-        out.pop(0)
+        if 'id' in out:
+            out.remove('id')
+            # out.pop(0)
         return out
 
     @exception_handler
@@ -99,6 +101,7 @@ class GFlareDB:
         self.create_inlinks_table()
         self.create_exclusions_table()
         self.create_extractions_table()
+        self.create_views()
 
     @exception_handler
     def db_connect(self):
@@ -243,7 +246,7 @@ class GFlareDB:
         reg = re.compile(expr)
         return reg.search(item) is not None
 
-    def query(self, filters, columns=None):
+    def query(self, filters, table, columns=None):
 
         operator_mapping = {
             'Equals': '==', 'Does Not Equal': '!=',
@@ -257,44 +260,53 @@ class GFlareDB:
             'Less Than Or Equal To': '<='
         }
 
+        if not table:
+            table = 'crawl'
+
         if columns:
             columns = f"{', '.join(columns)}"
-        else:
+        elif table == 'crawl':
             columns = f"{', '.join(self.columns)}"
-
-        query_head = f'SELECT {columns} FROM crawl '
-        queries = []
-        order_cols = []
-
-        for f in filters:
-            column, operator, value = f
-
-            if operator == 'Begins With':
-                value = f'{value}%'
-            elif operator == 'Ends With':
-                value = f'%{value}'
-            elif 'Contain' in operator:
-                value = f'%{value}%'
-            elif operator == 'Sort A-Z' or operator == 'Sort Smallest To Largest':
-                order_cols.append(f'{column} ASC')
-                continue
-            elif operator == 'Sort Z-A' or operator == 'Sort Largest To Smallest':
-                order_cols.append(f'{column} DESC')
-                continue
-
-            operator = operator_mapping[operator]
-            queries.append(f"WHERE {column} {operator} '{value}'")
-
-        if queries:
-            query = query_head + \
-                ' AND '.join(queries) + " AND status_code != ''"
         else:
-            query = query_head + "WHERE status_code != ''"
+            columns = '*'
 
-        if order_cols:
-            query += ' ORDER BY ' + ', '.join(order_cols)
+        query = f'SELECT {columns} FROM {table} '
+
+        if filters:
+
+            queries = []
+            order_cols = []
+
+            for f in filters:
+                column, operator, value = f
+
+                if operator == 'Begins With':
+                    value = f'{value}%'
+                elif operator == 'Ends With':
+                    value = f'%{value}'
+                elif 'Contain' in operator:
+                    value = f'%{value}%'
+                elif operator == 'Sort A-Z' or operator == 'Sort Smallest To Largest':
+                    order_cols.append(f'{column} ASC')
+                    continue
+                elif operator == 'Sort Z-A' or operator == 'Sort Largest To Smallest':
+                    order_cols.append(f'{column} DESC')
+                    continue
+
+                operator = operator_mapping[operator]
+                queries.append(f"{column} {operator} '{value}'")
+
+            if queries:
+                query += 'WHERE ' + \
+                    ' AND '.join(queries) + " AND status_code != ''"
+            else:
+                query += "WHERE status_code != ''"
+
+            if order_cols:
+                query += ' ORDER BY ' + ', '.join(order_cols)
 
         print(query)
+
         self.cur.execute(query)
         rows = self.cur.fetchall()
         if rows != None:
@@ -408,13 +420,34 @@ class GFlareDB:
 
         return (new_data, updated_data)
 
-    
-    def get_broken_inlinks(self, status_code='4'):
-
-        query = f"SELECT crawl.url as 'URL From', url_to as 'URL To', sc as 'Status Code' FROM (SELECT url_from_id, url as url_to, status_code as sc FROM crawl INNER JOIN inlinks ON inlinks.url_to_id = crawl.id WHERE status_code LIKE '{status_code}%') INNER JOIN crawl ON crawl.id = url_from_id"
-
+    def create_view_broken_inlinks(self, table_name, from_status_code, to_status_code):
+        query = f"CREATE VIEW IF NOT EXISTS {table_name} AS SELECT crawl.url as url_from, url_to, sc as status_code FROM (SELECT url_from_id, url as url_to, status_code as sc FROM crawl INNER JOIN inlinks ON inlinks.url_to_id = crawl.id WHERE status_code BETWEEN {from_status_code} AND {to_status_code}) INNER JOIN crawl ON crawl.id = url_from_id"
         self.cur.execute(query)
-        rows = self.cur.fetchall()
-        columns = [description[0] for description in self.cur.description]
 
-        return (columns, rows)
+    def create_view_status_codes(self, table_name, from_status_code, to_status_code):
+        columns = f"{', '.join(self.columns)}"
+        query = f"CREATE VIEW IF NOT EXISTS {table_name} AS SELECT {columns} FROM crawl WHERE status_code BETWEEN {from_status_code} AND {to_status_code}"
+        self.cur.execute(query)
+
+    def create_view_content_type(self, table_name, content_type):
+        columns = f"{', '.join(self.columns)}"
+        query = f"CREATE VIEW IF NOT EXISTS {table_name} AS SELECT {columns} FROM crawl WHERE content_type LIKE '%{content_type}%' AND status_code != ''"
+        self.cur.execute(query)
+
+    def create_views(self):
+        self.create_view_broken_inlinks('broken_inlinks_3xx', 300, 399)
+        self.create_view_broken_inlinks('broken_inlinks_4xx', 400, 499)
+        self.create_view_broken_inlinks('broken_inlinks_5xx', 500, 599)
+
+        self.create_view_status_codes('status_codes_200', 200, 200)
+        self.create_view_status_codes('status_codes_3xx', 300, 399)
+        self.create_view_status_codes('status_codes_4xx', 400, 499)
+        self.create_view_status_codes('status_codes_5xx', 500, 599)
+
+        self.create_view_content_type('content_type_html', 'html')
+        self.create_view_content_type('content_type_image', 'image')
+        self.create_view_content_type('content_type_css', 'css')
+        self.create_view_content_type('content_type_font', 'font')
+        self.create_view_content_type('content_type_json', 'json')
+        self.create_view_content_type('content_type_xml', 'xml')
+        self.create_view_content_type('content_type_javascript', 'javascript')

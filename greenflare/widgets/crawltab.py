@@ -94,7 +94,7 @@ class CrawlTab(ttk.Frame):
         # pop up menu for treeview header items
         self.popup_menu = Menu(self, tearoff=0)
         self.popup_menu.add_command(
-            label='Reset Filters', command=self.load_crawl_to_outputtable)
+            label='Reset Filters', command=self.reset_filters)
         self.popup_menu.add_separator()
         labels = Defaults.popup_menu_labels
         generate_menu(self.popup_menu, labels, self.show_filter_window)
@@ -109,6 +109,9 @@ class CrawlTab(ttk.Frame):
         generate_menu(self.action_menu, labels, self.show_action_window)
         self.row_values = []
         self.suspend_auto_scroll = False
+
+        self.viewed_table = 'crawl'
+        self.columns = None
 
     def daemonize(title=None, msg=None):
         def decorator(target):
@@ -138,6 +141,7 @@ class CrawlTab(ttk.Frame):
         self.row_counter = 1
 
     def populate_columns(self, columns=None):
+        print('populate_columns', columns)
         if not columns:
             columns = Defaults.display_columns.copy()
             if self.crawler.columns:
@@ -290,13 +294,20 @@ class CrawlTab(ttk.Frame):
         self.after(250, self.add_to_outputtable)
 
     # @daemonize(title="Loading crawl ...", msg="Please wait while the crawl is loading ...")
-    def load_crawl_to_outputtable(self, filters=None):
+    def load_crawl_to_outputtable(self, filters, table, columns=None):
+        print('load_crawl_to_outputtable', filters, table, columns)
+
         if not filters:
             self.master.title(
                 self.master.title().replace(' (Filtered View)', ''))
+        if not table:
+            table = self.viewed_table
 
-        items = self.crawler.get_crawl_data(filters=filters)
         self.clear_output_table()
+        self.columns, items = self.crawler.get_crawl_data(
+            filters, table, columns)
+        self.populate_columns(columns=self.columns)
+
         for item in items:
             self.add_item_to_outputtable(item)
 
@@ -373,21 +384,22 @@ class CrawlTab(ttk.Frame):
                 self.popup_menu.grab_release()
 
     def show_filter_window(self, label):
-        columns = Defaults.display_columns.copy()
-        if self.crawler and self.crawler.columns:
-            columns = self.crawler.columns.copy()
+        columns = None
+        if self.viewed_table != 'crawl':
+            columns = "*"
         if 'Sort' in label:
-            print('>>>', label)
-            self.load_crawl_to_outputtable(
-                filters=([(self.selected_column.lower().replace(' ', '_'), label, '')]))
+            self.load_crawl_to_outputtable(([(self.selected_column.lower().replace(
+                ' ', '_'), label, '')]), self.viewed_table, columns=columns)
             return
-        if not self.filter_window:
-            self.filter_window = FilterWindow(self, label, self.selected_column, columns, title=f'Filter By {self.selected_column}')
-        elif self.filter_window.winfo_exists() == 0:
-            self.filter_window = FilterWindow(self, label, self.selected_column, columns, title=f'Filter By {self.selected_column}')
-        else:
-            self.filter_window.update()
-            self.filter_window.deiconify()
+        # if not self.filter_window:
+        #     self.filter_window = FilterWindow(self, label, self.selected_column, self.columns, table=self.viewed_table, title=f'Filter By {self.selected_column}')
+        # elif self.filter_window.winfo_exists() == 0:
+        #     self.filter_window = FilterWindow(self, label, self.selected_column, self.columns, table=self.viewed_table, title=f'Filter By {self.selected_column}')
+        # else:
+        #     self.filter_window.update()
+        #     self.filter_window.deiconify()
+
+        self.filter_window = FilterWindow(self, label, self.selected_column, self.columns, table=self.viewed_table, title=f'Filter By {self.selected_column}')
 
     def show_action_window(self, label):
         url = ''
@@ -411,3 +423,6 @@ class CrawlTab(ttk.Frame):
             self.suspend_auto_scroll = True
         else:
             self.suspend_auto_scroll = False
+
+    def reset_filters(self):
+        self.load_crawl_to_outputtable(None, self.viewed_table)
