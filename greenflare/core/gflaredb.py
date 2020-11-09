@@ -434,6 +434,17 @@ class GFlareDB:
         query = f"CREATE VIEW IF NOT EXISTS {table_name} AS SELECT {columns} FROM crawl WHERE content_type LIKE '%{content_type}%' AND status_code != ''"
         self.cur.execute(query)
 
+    def create_view_crawl_status(self, table_name, crawl_status):
+        columns = f"{', '.join(self.columns)}"
+
+        query = f"CREATE VIEW IF NOT EXISTS {table_name} AS SELECT {columns} FROM crawl WHERE crawl_status LIKE '%{crawl_status}%' AND status_code !=''"
+
+        if crawl_status == 'not ok':
+            query = f"CREATE VIEW IF NOT EXISTS {table_name} AS SELECT {columns} FROM crawl WHERE crawl_status NOT LIKE '%ok%' AND status_code !=''"
+        elif crawl_status == 'ok':
+            query = f"CREATE VIEW IF NOT EXISTS {table_name} AS SELECT {columns} FROM crawl WHERE crawl_status = 'ok' AND status_code !=''"
+        self.cur.execute(query)
+
     def create_views(self):
         self.create_view_broken_inlinks('broken_inlinks_3xx', 300, 399)
         self.create_view_broken_inlinks('broken_inlinks_4xx', 400, 499)
@@ -451,3 +462,11 @@ class GFlareDB:
         self.create_view_content_type('content_type_json', 'json')
         self.create_view_content_type('content_type_xml', 'xml')
         self.create_view_content_type('content_type_javascript', 'javascript')
+
+        self.create_view_crawl_status('crawl_status_ok', 'ok')
+        self.create_view_crawl_status('crawl_status_not_ok', 'not ok')
+        self.create_view_crawl_status(
+            'crawl_status_canonicalised', 'canonicalised')
+        self.create_view_crawl_status(
+            'crawl_status_blocked_by_robots', 'blocked')
+        self.create_view_crawl_status('crawl_status_noindex', 'noindex')

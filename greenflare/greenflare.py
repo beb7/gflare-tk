@@ -58,16 +58,21 @@ class mainWindow(ttk.Frame):
 
         self.viewmenu = Menu(self.menubar, tearoff=0)
         self.viewmenu.add_command(
-            label='Crawl Output', command=self.show_crawl_output)
+            label='All Crawl Data', command=self.show_crawl_output)
 
         self.inlinks_menu = Menu(self.viewmenu, tearoff=0)
         self.status_codes_menu = Menu(self.viewmenu, tearoff=0)
         self.content_types_menu = Menu(self.viewmenu, tearoff=0)
+        self.crawl_status_menu = Menu(self.viewmenu, tearoff=0)
 
-        self.viewmenu.add_cascade(label='Inlinks', menu=self.inlinks_menu)
+        self.viewmenu.add_cascade(
+            label='Internal Links', menu=self.inlinks_menu)
         self.viewmenu.add_cascade(
             label='Status Codes', menu=self.status_codes_menu)
-        self.viewmenu.add_cascade(label='Content Types', menu=self.content_types_menu)
+        self.viewmenu.add_cascade(
+            label='Content Types', menu=self.content_types_menu)
+        self.viewmenu.add_cascade(
+            label='Crawl Status', menu=self.crawl_status_menu)
         self.menubar.add_cascade(label='View', menu=self.viewmenu)
 
         self.aboutmenu = Menu(self.menubar, tearoff=0)
@@ -84,8 +89,15 @@ class mainWindow(ttk.Frame):
         generate_menu(self.status_codes_menu,
                       status_codes_labels, self.view_status_codes)
 
-        content_types_labels = ['HTML', 'Image', 'CSS', 'Font', 'JSON', 'XML', 'JavaScript']
-        generate_menu(self.content_types_menu, content_types_labels, self.view_content_types)
+        content_types_labels = ['HTML', 'Image',
+                                'CSS', 'Font', 'JSON', 'XML', 'JavaScript']
+        generate_menu(self.content_types_menu,
+                      content_types_labels, self.view_content_types)
+
+        crawl_status_labels = ['OK', 'Not OK',
+                               'Canonicalised', 'Blocked By Robots', 'Noindex']
+        generate_menu(self.crawl_status_menu,
+                      crawl_status_labels, self.view_crawl_status)
 
         self.about_window = None
         root.config(menu=self.menubar)
@@ -246,6 +258,24 @@ class mainWindow(ttk.Frame):
             self.tab_crawl.load_crawl_to_outputtable(None, table)
         except Exception as e:
             print('ERROR: view_content_types failed!')
+            print(e)
+
+    def view_crawl_status(self, label):
+        table_mapping = {
+            'OK': 'crawl_status_ok',
+            'Not OK': 'crawl_status_not_ok',
+            'Canonicalised': 'crawl_status_canonicalised',
+            'Blocked By Robots': 'crawl_status_blocked_by_robots',
+            'Noindex': 'crawl_status_noindex'
+        }
+
+        table = table_mapping[label]
+
+        try:
+            self.tab_crawl.viewed_table = table
+            self.tab_crawl.load_crawl_to_outputtable(None, table)
+        except Exception as e:
+            print('ERROR: view_crawl_status failed!')
             print(e)
 
     def update_gui(self):
