@@ -42,7 +42,7 @@ class GFlareCrawler:
         self.session = None
         self.header_only = False
 
-    def connect_to_db(self):
+    def _connect_to_db(self):
         try:
             return GFlareDB(self.db_file, crawl_items=self.settings.get("CRAWL_ITEMS"), extractions=self.settings.get('EXTRACTIONS', []))
         except Exception as e:
@@ -68,7 +68,7 @@ class GFlareCrawler:
             self.parallel_requests_limit = (
                 1 / int(self.settings["URLS_PER_SECOND"])) * int(self.settings["THREADS"])
 
-        db = self.connect_to_db()
+        db = self._connect_to_db()
         db.create()
 
         # # Reset response object
@@ -112,7 +112,7 @@ class GFlareCrawler:
         self.db_file = db_file
 
         try:
-            db = self.connect_to_db()
+            db = self._connect_to_db()
             self.urls_crawled = db.get_urls_crawled()
             self.urls_total = db.get_total_urls()
             self.settings = db.get_settings()
@@ -149,7 +149,7 @@ class GFlareCrawler:
 
         self.reset_crawl()
 
-        db = self.connect_to_db()
+        db = self._connect_to_db()
 
         self.urls_crawled = db.get_urls_crawled()
         self.urls_total = db.get_total_urls()
@@ -356,7 +356,7 @@ class GFlareCrawler:
             busy.clear()
 
     def consumer_worker(self):
-        db = self.connect_to_db()
+        db = self._connect_to_db()
         do_commit = False
         with self.lock:
             urls_last = self.urls_crawled
@@ -463,7 +463,7 @@ class GFlareCrawler:
 
     def get_crawl_data(self, filters, table, columns=None):
         if self.db_file:
-            db = self.connect_to_db()
+            db = self._connect_to_db()
             data = db.query(filters, table, columns=columns)
             if columns == '*' or not columns:
                 columns = db.get_table_columns(table=table)
@@ -473,7 +473,7 @@ class GFlareCrawler:
 
     def save_config(self, settings):
         if self.db_file:
-            db = self.connect_to_db()
+            db = self._connect_to_db()
             db.insert_config(settings)
             db.commit()
             db.close()
