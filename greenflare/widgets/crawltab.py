@@ -151,7 +151,9 @@ class CrawlTab(ttk.Frame):
             'canonical_tag': ('Canonical Tag', column_url_width),
             'content_type': ('Content Type', 100),
             'h1': ('H1', column_titles_width),
-            'page_title': ('Page Title', column_titles_width)
+            'page_title': ('Page Title', column_titles_width),
+            'url_from': ('URL From', column_url_width),
+            'url_to': ('URL To', column_url_width)
         }
 
         if not columns:
