@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 
-#define VERSION "0.94.1"
+#define VERSION "0.94.2"
 #define MyAppName "Greenflare SEO Web Crawler"
 #define MyAppShortName "Greenflare"
 #define MyAppProjectFileDesc "Greenflare Database File"
@@ -23,15 +23,15 @@ AppCopyright=Copyright (c) 2020 {#MyAppPublisher}
 DefaultDirName={pf}\{#MyAppName}
 DisableProgramGroupPage=yes
 ; LicenseFile=..\COPYING
-OutputBaseFilename=Greenflare
+OutputBaseFilename=GreenflareSEOCrawler-{#VERSION}
 ArchitecturesInstallIn64BitMode="x64"
 ArchitecturesAllowed="x64"
 ChangesAssociations=yes
 ChangesEnvironment=yes
 Compression=lzma
 SolidCompression=yes
-; WizardSmallImageFile=installer-logo.bmp
-SetupIconFile= greenflare\resources\greenflare-icon-32x32.ico
+; WizardSmallImageFile=greenflare\resources\greenflare-icon-32x32.bmp
+SetupIconFile=greenflare\resources\greenflare-icon-32x32.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 ; SignedUninstaller=yes
 ; SignedUninstallerDir=..\build\
@@ -47,12 +47,10 @@ Type: filesandordirs; Name: "{app}\*"
 Type: dirifempty; Name: "{app}\*"
 
 [Registry]
-; Filename extension .gflaredb
-Root: HKLM; Subkey: "Software\Classes\.gflaredb"; ValueType: string; ValueName: ""; ValueData: "Greenflare"; Flags: uninsdeletevalue; Tasks: fileassoc
-; .gflaredb file description, "Greenflare Database File" (OpenShotProject, internally)
-Root: HKLM; Subkey: "Software\Classes\Greenflare"; ValueType: string; ValueName: ""; ValueData: "{#MyAppProjectFileDesc}"; Flags: uninsdeletekey; Tasks: fileassoc
-; Launcher association for data files of type Greenflare
-Root: HKLM; Subkey: "Software\Classes\Greenflare\shell\open\command"; ValueType: string;  ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Tasks: fileassoc
+Root: HKCR; Subkey: ".gflaredb";                             ValueData: "{#MyAppName}";          Flags: uninsdeletevalue; ValueType: string;  ValueName: ""
+Root: HKCR; Subkey: "{#MyAppName}";                     ValueData: "Program {#MyAppName}";  Flags: uninsdeletekey;   ValueType: string;  ValueName: ""
+Root: HKCR; Subkey: "{#MyAppName}\DefaultIcon";             ValueData: "{app}\{#MyAppExeName},0";               ValueType: string;  ValueName: ""
+Root: HKCR; Subkey: "{#MyAppName}\shell\open\command";  ValueData: """{app}\{#MyAppExeName}"" ""%1""";  ValueType: string;  ValueName: ""
 
 [Files]
 ; Add all frozen files from cx_Freeze build
@@ -61,3 +59,6 @@ Source: "build\exe.win-amd64-3.8\*"; DestDir: "{app}"; Flags: ignoreversion recu
 [Icons]
 Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+
+[Run]
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
