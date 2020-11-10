@@ -245,6 +245,7 @@ class mainWindow(ttk.Frame):
         try:
             self.tab_crawl.viewed_table = table
             self.tab_crawl.load_crawl_to_outputtable(None, table)
+            self.tab_crawl.reset_filter_window()
         except Exception as e:
             print('ERROR: view_status_codes failed!')
             print(e)

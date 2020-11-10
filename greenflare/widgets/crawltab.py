@@ -141,7 +141,6 @@ class CrawlTab(ttk.Frame):
         self.row_counter = 1
 
     def populate_columns(self, columns=None):
-        print('populate_columns', columns)
         if not columns:
             columns = Defaults.display_columns.copy()
             if self.crawler.columns:
@@ -300,6 +299,7 @@ class CrawlTab(ttk.Frame):
         if not filters:
             self.master.title(
                 self.master.title().replace(' (Filtered View)', ''))
+
         if not table:
             table = self.viewed_table
 
@@ -391,15 +391,18 @@ class CrawlTab(ttk.Frame):
             self.load_crawl_to_outputtable(([(self.selected_column.lower().replace(
                 ' ', '_'), label, '')]), self.viewed_table, columns=columns)
             return
-        # if not self.filter_window:
-        #     self.filter_window = FilterWindow(self, label, self.selected_column, self.columns, table=self.viewed_table, title=f'Filter By {self.selected_column}')
-        # elif self.filter_window.winfo_exists() == 0:
-        #     self.filter_window = FilterWindow(self, label, self.selected_column, self.columns, table=self.viewed_table, title=f'Filter By {self.selected_column}')
-        # else:
-        #     self.filter_window.update()
-        #     self.filter_window.deiconify()
 
-        self.filter_window = FilterWindow(self, label, self.selected_column, self.columns, table=self.viewed_table, title=f'Filter By {self.selected_column}')
+        # Window has never been initialised
+        if not self.filter_window:
+            self.filter_window = FilterWindow(self, label, self.selected_column, self.columns, table=self.viewed_table, title=f'Filter By {self.selected_column}')
+        # window has been initialised but has been closed
+        elif self.filter_window.winfo_exists() == 0:
+            self.filter_window = FilterWindow(self, label, self.selected_column, self.columns, table=self.viewed_table, title=f'Filter By {self.selected_column}')
+        else:
+            self.filter_window.update()
+            self.filter_window.deiconify()
+
+        # self.filter_window = FilterWindow(self, label, self.selected_column, self.columns, table=self.viewed_table, title=f'Filter By {self.selected_column}')
 
     def show_action_window(self, label):
         url = ''
@@ -426,3 +429,9 @@ class CrawlTab(ttk.Frame):
 
     def reset_filters(self):
         self.load_crawl_to_outputtable(None, self.viewed_table)
+
+    def reset_filter_window(self):
+        if not self.filter_window:
+            return
+
+        self.filter_window = None

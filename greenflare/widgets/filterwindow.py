@@ -90,11 +90,16 @@ class FilterWindow(Toplevel):
             filters.append((column, operation, values))
 
         self.crawl_tab.filters = filters
-        self.crawl_tab.load_crawl_to_outputtable(filters, self.table, columns="*")
+
+        if self.table == 'crawl':
+            self.crawl_tab.load_crawl_to_outputtable(filters, self.table)
+        else:
+            self.crawl_tab.load_crawl_to_outputtable(filters, self.table, columns="*")
 
         if not '(Filtered View)' in self.master.title():
             self.master.title(self.master.title() + ' (Filtered View)')
         self.withdraw()
+        self.destroy()
 
     def enter_hit(self, event=None):
         self.btn_ok_pushed()

@@ -444,12 +444,12 @@ class GFlareResponse:
                 hob_url = self.url_components_to_str(
                     self.parse_url(hist[i].url))
 
-                if "external_links" not in self.settings.get("CRAWL_LINKS", ""):
+                if 'external_links' not in self.settings.get('CRAWL_ITEMS', ''):
                     if self.is_external(hob_url):
                         break
 
                 robots_status = self.get_robots_txt_status(hob_url)
-                if "respect_robots_txt" in self.settings.get("ROBOTS_SETTINGS", "") and "follow_blocked_redirects" not in self.settings.get("ROBOTS_SETTINGS", "") and robots_status == "blocked":
+                if 'respect_robots_txt' in self.settings.get('CRAWL_ITEMS', '') and 'follow_blocked_redirects' not in self.settings.get('CRAWL_ITEMS', '') and robots_status == 'blocked':
                     continue
 
                 if i + 1 < len(hist):
@@ -458,8 +458,9 @@ class GFlareResponse:
                 else:
                     redirect_to_url = self.get_final_url()
 
-                hob_data = {"url": hob_url, "content_type": hist[i].headers.get('Content-Type', ""), "status_code": hist[i].status_code, "x_robots_tag": hist[
-                    i].headers.get('X-Robots-Tag', ""), "redirect_url": redirect_to_url, "robots_txt": robots_status}
+                hob_data = {"url": hob_url, "content_type": hist[i].headers.get('Content-Type', ""), 'status_code': hist[i].status_code, 'x_robots_tag': hist[
+                    i].headers.get('X-Robots-Tag', ''), 'redirect_url': redirect_to_url, 'robots_txt': robots_status}
+                
                 hob_data['crawl_status'] = self.get_full_status(
                     hob_url, hob_data)
                 hob_row = self.dict_to_row(hob_data)

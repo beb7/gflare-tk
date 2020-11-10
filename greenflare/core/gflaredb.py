@@ -32,7 +32,6 @@ class GFlareDB:
         self.con.create_function("REGEXP", 2, self.regexp)
         self.columns = self.get_columns()
         self.columns_total = len(self.columns)
-        self.table_created = False
 
     def exception_handler(func):
         @functools.wraps(func)
