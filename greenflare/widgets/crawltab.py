@@ -141,30 +141,37 @@ class CrawlTab(ttk.Frame):
         self.row_counter = 1
 
     def populate_columns(self, columns=None):
+        column_default_width = 80
+        column_url_width = 700
+        column_titles_width = 250
+
+        display_column_mapping = {
+            'url': ('URL', column_url_width),
+            'redirect_url': ('Redirect URL', column_url_width),
+            'canonical_tag': ('Canonical Tag', column_url_width),
+            'content_type': ('Content Type', 100),
+            'h1': ('H1', column_titles_width),
+            'page_title': ('Page Title', column_titles_width)
+        }
+
         if not columns:
             columns = Defaults.display_columns.copy()
             if self.crawler.columns:
                 columns = self.crawler.columns.copy()
 
-            items = [i.title().replace("_", " ") for i in columns]
-            items[items.index("Url")] = "URL"
-            items[items.index("Redirect Url")] = "Redirect URL"
+        self.treeview_table["columns"] = tuple(columns)
 
-            self.treeview_table["columns"] = tuple(items)
-            self.treeview_table.heading("#0", text="id", anchor=W)
-            self.treeview_table.column("#0", width=50, stretch=False)
-            self.treeview_table.heading("URL", text="URL", anchor=W)
-            self.treeview_table.column("URL", width=750, stretch=False)
+        self.treeview_table.heading("#0", text="id", anchor=W)
+        self.treeview_table.column("#0", width=55, stretch=False)
 
-            # Set width and stretch for all other columns
-            for e in self.treeview_table["columns"][1:]:
-                self.treeview_table.heading(e, text=e, anchor=W)
-                self.treeview_table.column(e, width=85, stretch=False)
-        else:
-            self.treeview_table["columns"] = tuple(columns)
-            for e in self.treeview_table["columns"]:
-                self.treeview_table.heading(e, text=e, anchor=W)
-                self.treeview_table.column(e, stretch=False)
+        for e in self.treeview_table["columns"]:
+            name, width = display_column_mapping.get(e, (None, None))
+            if not name:
+                name = e.replace('_', ' ').title()
+                width = column_default_width
+
+            self.treeview_table.heading(e, text=name, anchor=W)
+            self.treeview_table.column(e, width=width, stretch=False)
 
     def enter_hit(self, event=None):
         self.btn_crawl_pushed()
@@ -402,7 +409,9 @@ class CrawlTab(ttk.Frame):
             self.filter_window.update()
             self.filter_window.deiconify()
 
-        # self.filter_window = FilterWindow(self, label, self.selected_column, self.columns, table=self.viewed_table, title=f'Filter By {self.selected_column}')
+        # self.filter_window = FilterWindow(self, label, self.selected_column,
+        # self.columns, table=self.viewed_table, title=f'Filter By
+        # {self.selected_column}')
 
     def show_action_window(self, label):
         url = ''
