@@ -85,6 +85,11 @@ jobs:
           name: "Install Python"
       - run:
           command: |
+              choco install innosetup
+              refreshenv
+          name: "Install innosetup" 
+      - run:
+          command: |
               pip install --user pip --upgrade
               pip install --user -r requirements.txt
               pip install cx-freeze==6.1
@@ -100,8 +105,12 @@ jobs:
               move greenflare-*.zip results/
           name: "Freeze Windows Programme"
           shell: powershell.exe
+      - run:
+          command: |
+            iscc.exe installer.iss
+          name: "Build Windows Installer Setup"
       - store_artifacts:
-          path: results/
+          path: Output/
 orbs:
   python: circleci/python@0.3.0
   win: circleci/windows@2.4.0
