@@ -1,3 +1,6 @@
+# Greenflare SEO Web Crawler
+<img alt="Greenflare SEO Web Crawler Logo" src="greenflare/resources/greenflare-logo.svg" width="120" />
+
 Greenflare is a lightweight free and open-source SEO web cralwer for Linux, Mac, and Windows, and is dedicated to delivering high quality 
 SEO insights and analysis solutions to the world.
 
