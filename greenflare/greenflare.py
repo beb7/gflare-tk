@@ -1,8 +1,12 @@
 """
 @author Benjamin Görler <ben@greenflare.io>
 
+@section LICENSE
+
 Greenflare SEO Web Crawler (https://greenflare.io)
-Copyright (C) 2020  Benjamin Görler
+Copyright (C) 2020  Benjamin Görler. This file is part of
+Greenflare (https://greenflare.io), an open-source project
+dedicated to delivering high quality SEO insights and analysis solutions to the world.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
