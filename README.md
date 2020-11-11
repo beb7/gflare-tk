@@ -37,4 +37,4 @@ Greenflare? Please email beb7 if you want to help to build new amazing features 
 
 Please report bugs by creating a new issue directly on GitHub:
 
-https://github.com/greenflare/issues
+https://github.com/beb7/gflare-tk/issues
