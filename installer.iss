@@ -22,7 +22,7 @@ AppSupportURL={#MySupportURL}
 AppCopyright=Copyright (c) 2020 {#MyAppPublisher}
 DefaultDirName={pf}\{#MyAppName}
 DisableProgramGroupPage=yes
-; LicenseFile=..\COPYING
+LicenseFile=LICENSE
 OutputBaseFilename=GreenflareSEOCrawler-{#VERSION}
 ArchitecturesInstallIn64BitMode="x64"
 ArchitecturesAllowed="x64"
@@ -30,11 +30,8 @@ ChangesAssociations=yes
 ChangesEnvironment=yes
 Compression=lzma
 SolidCompression=yes
-; WizardSmallImageFile=greenflare\resources\greenflare-icon-32x32.bmp
 SetupIconFile=greenflare\resources\greenflare-icon-32x32.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
-; SignedUninstaller=yes
-; SignedUninstallerDir=..\build\
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
