@@ -17,6 +17,7 @@ SEO insights and analysis solutions to the world.
 * Custom exclusion of URLs through various patterns
 * Quick filtering and sorting of crawl data
 * View broken internal links (3xx, 4xx, 5xx)
+* Greenflare databases (.gflaredb) are sqlite tables 
 * Export any view to CSV
 
 
