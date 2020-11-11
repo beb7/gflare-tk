@@ -32,3 +32,9 @@ https://greenflare.io/download
 
 Are you interested in becoming more involved in the development of 
 Greenflare? Please email beb7 if you want to help to build new amazing features or to fix nasty bugs!
+
+## Report a bug
+
+Please report bugs by creating a new issue directly on GitHub:
+
+https://github.com/greenflare/issues
