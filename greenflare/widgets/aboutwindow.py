@@ -24,8 +24,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from tkinter import ttk, Toplevel, TOP, LEFT, Text, END
 from PIL import ImageTk, Image
-from core.defaults import Defaults
-from widgets.windowhelper import center_on_parent
+from greenflare.core.defaults import Defaults
+from greenflare.widgets.windowhelper import center_on_parent
 
 
 class AboutWindow(Toplevel):
