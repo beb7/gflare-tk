@@ -3,6 +3,7 @@ __pycache__
 *.db
 *.db-journal
 *.gflaredb
+*.egg-info
 build/
 dist/
 Output/
