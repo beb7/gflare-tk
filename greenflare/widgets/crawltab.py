@@ -23,11 +23,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from tkinter import LEFT, RIGHT, ttk, W, NO, filedialog as fd, messagebox, StringVar, Menu
-from widgets.progresswindow import ProgressWindow
-from widgets.filterwindow import FilterWindow
-from widgets.enhancedentry import EnhancedEntry
-from widgets.menuhelper import generate_menu
-from core.defaults import Defaults
+from greenflare.widgets.progresswindow import ProgressWindow
+from greenflare.widgets.filterwindow import FilterWindow
+from greenflare.widgets.enhancedentry import EnhancedEntry
+from greenflare.widgets.menuhelper import generate_menu
+from greenflare.core.defaults import Defaults
 from concurrent import futures
 import functools
 from os import path, remove
