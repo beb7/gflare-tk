@@ -23,9 +23,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from threading import Thread, Event, enumerate as tenum
-from core.gflaredb import GFlareDB
-from core.gflareresponse import GFlareResponse as gf
-from core.defaults import Defaults
+from greenflare.core.gflaredb import GFlareDB
+from greenflare.core.gflareresponse import GFlareResponse as gf
+from greenflare.core.defaults import Defaults
 from requests import Session, exceptions
 from time import sleep, time
 import queue
