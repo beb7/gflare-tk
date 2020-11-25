@@ -24,17 +24,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import tkinter as tk
 from tkinter import ttk, Menu, filedialog as fd, messagebox, TclError
-from core.gflarecrawler import GFlareCrawler
-from core.defaults import Defaults
-from widgets.crawltab import CrawlTab
-from widgets.settingstab import SettingsTab
-from widgets.exclusionstab import ExclusionsTab
-from widgets.extractionstab import ExtractionsTab
-from widgets.listcrawl import ListModeWindow
-from widgets.progresswindow import ProgressWindow
-from widgets.aboutwindow import AboutWindow
-from widgets.urltab import URLTab
-from widgets.menuhelper import generate_menu
+from greenflare.core.gflarecrawler import GFlareCrawler
+from greenflare.core.defaults import Defaults
+from greenflare.widgets.crawltab import CrawlTab
+from greenflare.widgets.settingstab import SettingsTab
+from greenflare.widgets.exclusionstab import ExclusionsTab
+from greenflare.widgets.extractionstab import ExtractionsTab
+from greenflare.widgets.listcrawl import ListModeWindow
+from greenflare.widgets.progresswindow import ProgressWindow
+from greenflare.widgets.aboutwindow import AboutWindow
+from greenflare.widgets.urltab import URLTab
+from greenflare.widgets.menuhelper import generate_menu
 from concurrent import futures
 from csv import writer as csvwriter
 import functools
@@ -47,7 +47,7 @@ import argparse
 
 class mainWindow(ttk.Frame):
 
-    def __init__(self, crawler=None):
+    def __init__(self, root, crawler=None):
         ttk.Frame.__init__(self)
 
         self.crawler = crawler
@@ -319,8 +319,7 @@ class mainWindow(ttk.Frame):
                 self.load_crawl(db_file=f)
             break
 
-if __name__ == "__main__":
-
+def main():
     # Check if Greenflare has been launched as part of a binary bundle as this
     # impacts the working_dir
     if getattr(sys, 'frozen', False):
@@ -367,7 +366,7 @@ if __name__ == "__main__":
     Settings = Defaults.settings.copy()
     Crawler = GFlareCrawler(settings=Settings, gui_mode=True, lock=globalLock)
 
-    app = mainWindow(crawler=Crawler)
+    app = mainWindow(root, crawler=Crawler)
 
     # running on macOS
     if sys.platform == "darwin":
@@ -385,3 +384,6 @@ if __name__ == "__main__":
 
     root.protocol("WM_DELETE_WINDOW", app.on_closing)
     root.mainloop()
+
+if __name__ == "__main__":
+    main()
