@@ -23,7 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from tkinter import ttk, Toplevel, TOP
-from widgets.windowhelper import center_on_parent
+from greenflare.widgets.windowhelper import center_on_parent
 
 
 class ProgressWindow(Toplevel):
