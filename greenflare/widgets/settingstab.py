@@ -23,8 +23,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from tkinter import ttk, StringVar, IntVar
-from widgets.checkboxgroup import CheckboxGroup
-from core.defaults import Defaults
+from greenflare.widgets.checkboxgroup import CheckboxGroup
+from greenflare.core.defaults import Defaults
 
 
 class SettingsTab(ttk.Frame):
