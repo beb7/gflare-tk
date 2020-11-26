@@ -180,7 +180,7 @@ class GFlareResponse:
             elif scheme == 'http' and ':80' in netloc:
                 netloc = netloc.replace(':80', '')
 
-        return {"scheme": scheme, "netloc": netloc, "path": path, "query": query, "frag": frag}
+        return {"scheme": scheme, "netloc": netloc, "path": path.strip(), "query": query, "frag": frag}
 
     def url_components_to_str(self, comp):
         url = str(urllib.parse.urlunsplit(
@@ -275,6 +275,9 @@ class GFlareResponse:
             return False
 
         url = self.url_components_to_str(components)
+
+        if ' ' in url:
+            return False
 
         # Filter out external links if needed
         if "external_links" not in self.settings.get("CRAWL_ITEMS", "") and self.is_external(url):
