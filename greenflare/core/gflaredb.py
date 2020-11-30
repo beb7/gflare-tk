@@ -322,11 +322,11 @@ class GFlareDB:
             if queries:
                 query += 'WHERE ' + \
                     ' AND '.join(queries) + " AND status_code != ''"
-            else:
-                query += "WHERE status_code != ''"
 
             if order_cols:
                 query += ' ORDER BY ' + ', '.join(order_cols)
+        else:
+            query += "WHERE status_code != ''"
 
         print(query)
 
