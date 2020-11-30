@@ -50,6 +50,7 @@ class mainWindow(ttk.Frame):
     def __init__(self, root, crawler=None):
         ttk.Frame.__init__(self)
 
+        self.root = root
         self.crawler = crawler
         self.executor = futures.ThreadPoolExecutor(max_workers=1)
         self.tab_parent = ttk.Notebook()
@@ -124,7 +125,7 @@ class mainWindow(ttk.Frame):
                       crawl_status_labels, self.view_crawl_status)
 
         self.about_window = None
-        root.config(menu=self.menubar)
+        self.root.config(menu=self.menubar)
 
     def daemonize(title=None, msg=None, callbacks=None):
         def decorator(target):
@@ -231,7 +232,7 @@ class mainWindow(ttk.Frame):
 
     def list_mode(self):
         lm_wnd = ListModeWindow(crawler=self.crawler,
-                                crawl_tab=self.tab_crawl, root=self.master)
+                                crawl_tab=self.tab_crawl, root=self.root)
 
     def show_about(self):
         if not self.about_window:
