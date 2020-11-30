@@ -135,7 +135,6 @@ class CrawlTab(ttk.Frame):
         self.suspend_auto_scroll = False
 
         self.viewed_table = 'crawl'
-        self.columns = None
 
     def daemonize(title=None, msg=None):
         def decorator(target):
@@ -164,6 +163,11 @@ class CrawlTab(ttk.Frame):
         self.treeview_table.delete(*self.treeview_table.get_children())
         self.row_counter = 1
 
+    def get_display_columns(self):
+        if self.crawler.columns:
+            return self.crawler.columns.copy()
+        return Defaults.display_columns.copy()
+
     def populate_columns(self, columns=None):
         column_default_width = 80
         column_url_width = 700
@@ -181,9 +185,7 @@ class CrawlTab(ttk.Frame):
         }
 
         if not columns:
-            columns = Defaults.display_columns.copy()
-            if self.crawler.columns:
-                columns = self.crawler.columns.copy()
+            columns = self.get_display_columns()
 
         self.treeview_table["columns"] = tuple(columns)
 
@@ -337,9 +339,9 @@ class CrawlTab(ttk.Frame):
             table = self.viewed_table
 
         self.clear_output_table()
-        self.columns, items = self.crawler.get_crawl_data(
+        columns, items = self.crawler.get_crawl_data(
             filters, table, columns)
-        self.populate_columns(columns=self.columns)
+        self.populate_columns(columns=columns)
 
         for item in items:
             self.add_item_to_outputtable(item)
@@ -417,7 +419,7 @@ class CrawlTab(ttk.Frame):
                 self.popup_menu.grab_release()
 
     def show_filter_window(self, label):
-        columns = None
+        columns = self.get_display_columns()
         if self.viewed_table != 'crawl':
             columns = "*"
         if 'Sort' in label:
@@ -427,17 +429,14 @@ class CrawlTab(ttk.Frame):
 
         # Window has never been initialised
         if not self.filter_window:
-            self.filter_window = FilterWindow(self, label, self.selected_column, self.columns, table=self.viewed_table, title=f'Filter By {self.selected_column}')
+            self.filter_window = FilterWindow(self, label, self.selected_column, columns, table=self.viewed_table, title=f'Filter By {self.selected_column}')
         # window has been initialised but has been closed
         elif self.filter_window.winfo_exists() == 0:
-            self.filter_window = FilterWindow(self, label, self.selected_column, self.columns, table=self.viewed_table, title=f'Filter By {self.selected_column}')
+            self.filter_window = FilterWindow(self, label, self.selected_column, columns, table=self.viewed_table, title=f'Filter By {self.selected_column}')
         else:
             self.filter_window.update()
             self.filter_window.deiconify()
 
-        # self.filter_window = FilterWindow(self, label, self.selected_column,
-        # self.columns, table=self.viewed_table, title=f'Filter By
-        # {self.selected_column}')
 
     def show_action_window(self, label):
         url = ''
