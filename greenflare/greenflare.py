@@ -170,6 +170,7 @@ class mainWindow(ttk.Frame):
     def show_crawl_output(self):
         self.tab_crawl.load_crawl_to_outputtable(None, 'crawl')
         self.tab_crawl.viewed_table = 'crawl'
+        self.tab_crawl.filters = []
 
     def load_crawl(self, db_file=None):
         files = [('Greenflare DB', f'*{Defaults.file_extension}'), ('All files', '.*')]
@@ -252,6 +253,7 @@ class mainWindow(ttk.Frame):
 
         try:
             self.tab_crawl.viewed_table = table
+            self.tab_crawl.filters = []
             self.tab_crawl.load_crawl_to_outputtable(None, table)
         except Exception as e:
             print('ERROR: view_broken_inlinks failed!')
@@ -269,6 +271,7 @@ class mainWindow(ttk.Frame):
 
         try:
             self.tab_crawl.viewed_table = table
+            self.tab_crawl.filters = []
             self.tab_crawl.load_crawl_to_outputtable(None, table)
             self.tab_crawl.reset_filter_window()
         except Exception as e:
@@ -281,6 +284,7 @@ class mainWindow(ttk.Frame):
 
         try:
             self.tab_crawl.viewed_table = table
+            self.tab_crawl.filters = []
             self.tab_crawl.load_crawl_to_outputtable(None, table)
         except Exception as e:
             print('ERROR: view_content_types failed!')
@@ -299,6 +303,7 @@ class mainWindow(ttk.Frame):
 
         try:
             self.tab_crawl.viewed_table = table
+            self.tab_crawl.filters = []
             self.tab_crawl.load_crawl_to_outputtable(None, table)
         except Exception as e:
             print('ERROR: view_crawl_status failed!')
