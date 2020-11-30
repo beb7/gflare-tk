@@ -502,6 +502,12 @@ class GFlareCrawler:
             db.commit()
             db.close()
 
+    def get_columns(self, table='crawl'):
+        if self.db_file:
+            db = self._connect_to_db()
+            return db.get_table_columns(table=table)
+        return []
+
     def end_crawl_gracefully(self):
         print("Ending all worker threads gracefully ...")
         self.crawl_running.set()
