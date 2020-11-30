@@ -135,6 +135,7 @@ class CrawlTab(ttk.Frame):
         self.suspend_auto_scroll = False
 
         self.viewed_table = 'crawl'
+        self.filters = []
 
     def daemonize(title=None, msg=None):
         def decorator(target):
@@ -163,10 +164,12 @@ class CrawlTab(ttk.Frame):
         self.treeview_table.delete(*self.treeview_table.get_children())
         self.row_counter = 1
 
-    def get_display_columns(self):
-        if self.crawler.columns:
-            return self.crawler.columns.copy()
-        return Defaults.display_columns.copy()
+    def get_display_columns(self, table=None):
+        if not table:
+            if self.crawler.columns:
+                return self.crawler.columns.copy()
+            return Defaults.display_columns.copy()
+        return self.crawler.get_columns(table)
 
     def populate_columns(self, columns=None):
         column_default_width = 80
@@ -420,11 +423,17 @@ class CrawlTab(ttk.Frame):
 
     def show_filter_window(self, label):
         columns = self.get_display_columns()
+
         if self.viewed_table != 'crawl':
-            columns = "*"
+            columns = self.get_display_columns(self.viewed_table)
         if 'Sort' in label:
-            self.load_crawl_to_outputtable(([(self.selected_column.lower().replace(
-                ' ', '_'), label, '')]), self.viewed_table, columns=columns)
+            column = self.selected_column.lower().replace(' ', '_')
+            print('Sorting column', column)
+            
+            # Remove previous sorting filters
+            self.filters = [t for t in self.filters if 'Sort' not in t[1]]
+            self.filters.append((column, label, ''))
+            self.load_crawl_to_outputtable(self.filters, self.viewed_table, columns=columns)
             return
 
         # Window has never been initialised
