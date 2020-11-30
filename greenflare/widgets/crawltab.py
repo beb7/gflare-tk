@@ -332,6 +332,7 @@ class CrawlTab(ttk.Frame):
 
     # @daemonize(title="Loading crawl ...", msg="Please wait while the crawl is loading ...")
     def load_crawl_to_outputtable(self, filters, table, columns=None):
+        self.suspend_auto_scroll = True
         print('load_crawl_to_outputtable', filters, table, columns)
 
         if not filters:
@@ -348,6 +349,9 @@ class CrawlTab(ttk.Frame):
 
         for item in items:
             self.add_item_to_outputtable(item)
+
+        self.suspend_auto_scroll = False
+        self.treeview_table.yview_moveto(1)
 
     def update_progressbar(self):
         with self.lock:
