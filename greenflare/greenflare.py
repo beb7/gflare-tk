@@ -54,7 +54,7 @@ class mainWindow(ttk.Frame):
         self.crawler = crawler
         self.executor = futures.ThreadPoolExecutor(max_workers=1)
         self.tab_parent = ttk.Notebook()
-        self.tab_crawl = CrawlTab(self, crawler)
+        self.tab_crawl = CrawlTab(self, crawler, freeze_tabs=self.freeze_tabs, unfreeze_tabs=self.unfreeze_tabs)
         self.tab_settings = SettingsTab(crawler)
         self.tab_exclusions = ExclusionsTab(crawler)
         self.tab_extractions = ExtractionsTab(crawler)
@@ -313,6 +313,16 @@ class mainWindow(ttk.Frame):
         self.tab_settings.update()
         self.tab_exclusions.update()
         self.tab_extractions.update()
+
+    def freeze_tabs(self):
+        self.tab_parent.tab(self.tab_settings, state='disabled')
+        self.tab_parent.tab(self.tab_exclusions, state='disabled')
+        self.tab_parent.tab(self.tab_extractions, state='disabled')
+
+    def unfreeze_tabs(self):
+        self.tab_parent.tab(self.tab_settings, state='normal')
+        self.tab_parent.tab(self.tab_exclusions, state='normal')
+        self.tab_parent.tab(self.tab_extractions, state='normal')
 
     def on_closing(self):
         self.crawler.end_crawl_gracefully()
