@@ -58,6 +58,10 @@ class CrawlTab(ttk.Frame):
             self.topframe, text="Start", command=self.btn_crawl_pushed)
         self.button_crawl.pack(side=LEFT, padx=(0, 20))
 
+        self.button_clear = ttk.Button(self.topframe, text="Clear", command=self.btn_clear_pushed)
+        self.button_clear.pack(side=LEFT, padx=(0, 20))
+        self.button_clear['state'] = 'disabled'
+
         # macOS and linux have issues with the below style so only use it on
         # windows for now
         if sys.platform != "win32":
@@ -226,12 +230,12 @@ class CrawlTab(ttk.Frame):
             self.master.title(f"{self.crawler.gf.get_domain(self.crawler.settings['STARTING_URL'])} - {Defaults.window_title}")
 
             self.after(10, self.add_to_outputtable)
-            self.after(10, self.change_btn_text)
+            self.after(10, self.update_buttons)
 
     @daemonize(title="Stopping crawl ...", msg="Waiting for crawl to finish ...")
     def stop_crawl(self):
         self.crawler.end_crawl_gracefully()
-        self.after(10, self.change_btn_text)
+        self.after(10, self.update_buttons)
 
     def btn_crawl_pushed(self):
         url = self.entry_url_input.entry.get().strip()
@@ -265,23 +269,42 @@ class CrawlTab(ttk.Frame):
             self.populate_columns()
             self.crawler.resume_crawl()
             self.after(10, self.add_to_outputtable)
-            self.after(10, self.change_btn_text)
+            self.after(10, self.update_buttons)
 
         elif self.button_crawl["text"] == "Restart":
             self.start_new_crawl(url)
 
         print(self.crawler.settings)
 
-    def change_btn_text(self):
+    def update_buttons(self):
         btn_txt = self.button_crawl["text"]
         if btn_txt == "Start":
             self.button_crawl["text"] = "Pause"
+            self.button_clear['state'] = 'disabled'
         elif btn_txt == "Pause":
             self.button_crawl["text"] = "Resume"
+            self.button_clear['state'] = 'enabled'
         elif btn_txt == "Resume":
             self.button_crawl["text"] = "Pause"
+            self.button_clear['state'] = 'enabled'
         elif btn_txt == "Restart":
             self.button_crawl["text"] = "Pause"
+            self.button_clear['state'] = 'enabled'
+
+    def btn_clear_pushed(self):
+        msg = messagebox.askquestion ('Clear View','Are you sure you want clear the view?', icon = 'warning')
+        
+        if msg == 'yes':
+            self.progressbar["value"] = 0
+            self.clear_output_table()
+            self.populate_columns()
+            self.button_crawl["text"] = "Start"
+            self.suspend_auto_scroll = False
+            self.filters = None
+            self.reset_filter_window()
+            self.entry_url_input.entry['state'] = 'enabled'
+        else:
+            pass
 
     def add_item_to_outputtable(self, item):
         self.treeview_table.insert(
@@ -386,6 +409,9 @@ class CrawlTab(ttk.Frame):
         self.populate_columns()
         self.button_crawl["text"] = "Start"
         self.suspend_auto_scroll = False
+        self.filters = None
+        self.reset_filter_window()
+        self.master.title(Defaults.window_title)
 
     def show_list_mode(self):
         self.reset()
