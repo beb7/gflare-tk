@@ -22,39 +22,63 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from tkinter import ttk, LEFT, RIGHT
+from tkinter import ttk, Toplevel
+import sys
 
 
-class URLTab(ttk.Frame):
+class ViewInlinks(Toplevel):
 
-    def __init__(self, data):
-        ttk.Frame.__init__(self)
-        self.data = data
+    def __init__(self, url, query_func):
+        Toplevel.__init__(self)
+        self.url = url
+        self.query_func = query_func
 
-        self.lblframe_onpage = ttk.LabelFrame(self, text='On-Page Elements')
-        self.lblframe_onpage.pack(side='left', padx=20, pady=20)
+        self.title(f'View Inlinks - {self.url}')
 
-        self.onpage_elements = [
-            ('URL:', self.data.get('url', '')),
-            ('Page Title:', self.data.get('page_title', '')),
-            ('Meta Description:', self.data.get('meta_description', ''))
-        ]
+        self.top_frame = ttk.Frame(self)
 
-        for name, text in self.onpage_elements:
-            self.generate_label_group(self.lblframe_onpage, name, text)
+        self.middle_frame = ttk.Frame(self)
+        self.middle_frame.pack(anchor='center', fill='both', expand=True)
 
-        self.frame_bottom = ttk.Frame(self)
-        self.frame_bottom.pack(anchor='w')
+        self.treeview_table = ttk.Treeview(
+            self.middle_frame, selectmode="browse")
 
-        self.btn_close = ttk.Button(
-            self.frame_bottom, text='Close', command=self.destroy)
-        self.btn_close.pack(anchor='e', padx=20, pady=20)
+        # Capture right clicks on table
+        right_click = '<Button-3>'
 
-        print(data)
+        if sys.platform == 'darwin':
+            right_click = '<Button-2>'
 
-    def generate_label_group(self, lblframe, label_name, label_text):
-        lbl_name = ttk.Label(lblframe, text=label_name, width=75)
-        lbl_name.pack(anchor='w')
+        # self.treeview_table.bind(right_click, self.assign_treeview_click)
 
-        lbl_text = ttk.Label(lblframe, text=label_text)
-        lbl_text.pack()
+        self.scrollbar_vertical = ttk.Scrollbar(
+            self.middle_frame, orient="vertical")
+        self.scrollbar_vertical.pack(side="right", fill="y")
+        self.scrollbar_horizontal = ttk.Scrollbar(
+            self.middle_frame, orient="horizontal", command=self.treeview_table.xview)
+        self.scrollbar_horizontal.pack(side="bottom", fill="x")
+        self.treeview_table.configure(
+            yscrollcommand=self.scrollbar_vertical.set, xscrollcommand=self.scrollbar_horizontal.set)
+        self.treeview_table.pack(fill="both", expand=1)
+
+        
+        column_name = 'Linking URL'
+        self.treeview_table["columns"] = tuple([column_name])
+
+        self.treeview_table.heading("#0", text="id", anchor='w')
+        self.treeview_table.column("#0", width=55, stretch=False)
+
+        self.treeview_table.heading(column_name, text=column_name, anchor='w')
+        self.treeview_table.column(column_name, stretch=True)
+
+        self.add_inlinks()
+
+
+    def add_inlinks(self):
+        inlinks = self.query_func(self.url)
+
+        for i, link in enumerate(inlinks, 1):
+            self.treeview_table.insert('', 'end', text=i, values=link)
+
+
+
