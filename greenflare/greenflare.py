@@ -69,7 +69,7 @@ class mainWindow(ttk.Frame):
         self.menubar = Menu(self)
 
         self.filemenu = Menu(self.menubar, tearoff=0)
-        self.filemenu.add_command(label="New", command=self.reset_ui)
+        self.filemenu.add_command(label="New", command=self.new_crawl)
         self.filemenu.add_command(label="Load Crawl", command=self.load_crawl)
         self.filemenu.add_separator()
         self.filemenu.add_command(
@@ -161,12 +161,6 @@ class mainWindow(ttk.Frame):
         if exception:
             raise exception
 
-    def reset_ui(self):
-        self.tab_crawl.reset()
-        self.crawler.reset_crawl()
-        self.crawler.settings = Defaults.settings.copy()
-        self.master.title(Defaults.window_title)
-
     def show_crawl_output(self):
         self.tab_crawl.load_crawl_to_outputtable(None, 'crawl')
         self.tab_crawl.viewed_table = 'crawl'
@@ -197,6 +191,11 @@ class mainWindow(ttk.Frame):
             messagebox.showerror(title='Error - Invalid database',
                                  message=f'Could not load {db_file} as it is invalid!')
             print(e)
+
+    def new_crawl(self):
+        self.crawler.reset_crawl()
+        self.crawler.settings = Defaults.settings.copy()
+        self.tab_crawl.reset()
 
     def export_view(self):
         files = [('CSV files', '*.csv')]
