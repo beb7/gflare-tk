@@ -337,6 +337,14 @@ class GFlareDB:
             return rows
         return []
 
+    def get_inlinks(self, url):
+        query = fr"SELECT crawl.url as inlink FROM (SELECT url_from_id, url as url_to, status_code as sc FROM crawl INNER JOIN inlinks ON inlinks.url_to_id = crawl.id WHERE url_to = '{url}') INNER JOIN crawl ON crawl.id = url_from_id"
+        self.cur.execute(query)
+        inlinks = self.cur.fetchall()
+        if inlinks:
+            return inlinks
+        return []
+
     @exception_handler
     def chunk_list(self, l: list, chunk_size=100) -> list:
         return [l[i * chunk_size:(i + 1) * chunk_size] for i in range((len(l) + chunk_size - 1) // chunk_size)]
