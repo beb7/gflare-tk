@@ -38,11 +38,13 @@ import sys
 
 class CrawlTab(ttk.Frame):
 
-    def __init__(self, root, crawler=None):
+    def __init__(self, root, crawler=None, freeze_tabs=None, unfreeze_tabs=None):
         ttk.Frame.__init__(self)
         self.root = root
         self.crawler = crawler
         self.lock = crawler.lock
+        self.freeze_tabs = freeze_tabs
+        self.unfreeze_tabs = unfreeze_tabs
 
         self.executor = futures.ThreadPoolExecutor(max_workers=1)
         self.win_progress = None
@@ -281,18 +283,21 @@ class CrawlTab(ttk.Frame):
         if btn_txt == "Start":
             self.button_crawl["text"] = "Pause"
             self.button_clear['state'] = 'disabled'
+            self.freeze_tabs()
         elif btn_txt == "Pause":
             self.button_crawl["text"] = "Resume"
             self.button_clear['state'] = 'enabled'
+            self.unfreeze_tabs()
         elif btn_txt == "Resume":
             self.button_crawl["text"] = "Pause"
             self.button_clear['state'] = 'enabled'
+            self.freeze_tabs()
         elif btn_txt == "Restart":
             self.button_crawl["text"] = "Pause"
             self.button_clear['state'] = 'enabled'
 
     def btn_clear_pushed(self):
-        msg = messagebox.askquestion ('Clear View','Are you sure you want clear the view?', icon = 'warning')
+        msg = messagebox.askquestion ('Clear View','Are you sure you want clear the view? All data has been saved.', icon = 'warning')
         
         if msg == 'yes':
             self.progressbar["value"] = 0
@@ -334,6 +339,8 @@ class CrawlTab(ttk.Frame):
 
         if self.crawler.crawl_completed.is_set():
             self.button_crawl["text"] = "Restart"
+            self.unfreeze_tabs()
+            self.button_clear['state'] = 'enabled'
             if self.crawler.settings.get("MODE", "") == "Spider":
                 messagebox.showinfo(title='Crawl completed', message=f'{self.crawler.settings.get("ROOT_DOMAIN", "")} has been crawled successfully!')
             else:
