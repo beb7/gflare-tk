@@ -33,7 +33,6 @@ from greenflare.widgets.extractionstab import ExtractionsTab
 from greenflare.widgets.listcrawl import ListModeWindow
 from greenflare.widgets.progresswindow import ProgressWindow
 from greenflare.widgets.aboutwindow import AboutWindow
-from greenflare.widgets.urltab import URLTab
 from greenflare.widgets.menuhelper import generate_menu
 from concurrent import futures
 from csv import writer as csvwriter
@@ -148,12 +147,6 @@ class mainWindow(ttk.Frame):
 
         return decorator
 
-    def add_url_tab(self, data):
-        if data.get('page_title', None):
-            self.tab_parent.add(URLTab(data), text=data['page_title'])
-        else:
-            self.tab_parent.add(URLTab(data), text=data['url'])
-
     def daemon_call_back(self, future):
         self.win_progress.grab_release()
         self.win_progress.destroy()
@@ -185,6 +178,7 @@ class mainWindow(ttk.Frame):
 
             self.update_gui()
             self.tab_crawl.freeze_input()
+            self.tab_crawl.button_clear['state'] = 'enabled'
             self.show_crawl_output()
             self.tab_crawl.update_bottom_stats()
         except Exception as e:

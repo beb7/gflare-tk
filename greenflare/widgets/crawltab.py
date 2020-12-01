@@ -26,6 +26,7 @@ from tkinter import LEFT, RIGHT, ttk, W, NO, filedialog as fd, messagebox, Strin
 from greenflare.widgets.progresswindow import ProgressWindow
 from greenflare.widgets.filterwindow import FilterWindow
 from greenflare.widgets.enhancedentry import EnhancedEntry
+from greenflare.widgets.viewinlinks import ViewInlinks
 from greenflare.widgets.menuhelper import generate_menu
 from greenflare.core.defaults import Defaults
 from concurrent import futures
@@ -134,8 +135,7 @@ class CrawlTab(ttk.Frame):
 
         # action menu for treeview row items
         self.action_menu = Menu(self, tearoff=0)
-        #labels = ['Copy URL', 'Open URL in Browser', '_', 'Inspect']
-        labels = ['Copy URL', 'Open URL in Browser']
+        labels = ['Copy URL', 'Open URL in Browser', '_', 'View Inlinks']
         generate_menu(self.action_menu, labels, self.show_action_window)
         self.row_values = []
         self.suspend_auto_scroll = False
@@ -495,10 +495,8 @@ class CrawlTab(ttk.Frame):
             self.master.clipboard_append(url)
         elif label == 'Open URL in Browser' and url:
             open_in_browser(url, new=2)
-        elif label == 'Inspect' and url:
-            print(self.row_values)
-            self.root.add_url_tab(
-                dict(zip(self.crawler.columns, self.row_values)))
+        elif label == 'View Inlinks' and url:
+            ViewInlinks(url, self.crawler.get_inlinks)
 
     def vertical_scrollbar_clicked(self, *args, **kwargs):
         self.treeview_table.yview(*args, **kwargs)
