@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 
-#define VERSION "0.94.4"
+#define VERSION "0.95"
 #define MyAppName "Greenflare SEO Web Crawler"
 #define MyAppShortName "Greenflare"
 #define MyAppProjectFileDesc "Greenflare Database File"
