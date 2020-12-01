@@ -505,7 +505,17 @@ class GFlareCrawler:
     def get_columns(self, table='crawl'):
         if self.db_file:
             db = self._connect_to_db()
-            return db.get_table_columns(table=table)
+            columns =  db.get_table_columns(table=table)
+            db.close()
+            return columns
+        return []
+
+    def get_inlinks(self, url):
+        if self.db_file:
+            db = self._connect_to_db()
+            inlinks = db.get_inlinks(url)
+            db.close()
+            return inlinks
         return []
 
     def end_crawl_gracefully(self):
