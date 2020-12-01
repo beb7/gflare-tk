@@ -46,7 +46,6 @@ class GFlareDB:
             "redirect_url": "TEXT",
             "meta_robots": "TEXT",
             "x_robots_tag": "TEXT",
-            "unique_inlinks": "INT"
         }
 
         self.crawl_items = crawl_items
