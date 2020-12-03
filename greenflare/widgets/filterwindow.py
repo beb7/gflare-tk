@@ -78,8 +78,10 @@ class FilterWindow(Toplevel):
         self.widgets.append(ttk.Frame(self.middle_frame))
         self.widgets[-1].pack(anchor='center', padx=20, pady=(0, 20), fill="x")
 
+        columns = [c.replace('_', ' ').title() for c in self.columns]
+
         cmb_column = ttk.Combobox(
-            self.widgets[-1], values=self.columns, state="readonly", width=12)
+            self.widgets[-1], values=columns, state="readonly", width=12)
         cmb_column.pack(side=LEFT, padx=10)
 
         cmb_operators = ttk.Combobox(
