@@ -162,7 +162,7 @@ class SettingsTab(ttk.Frame):
 
         # robots.txt Group
         self.checkboxgroup_robots_txt = CheckboxGroup(self.frame_third, 'robots.txt', [
-                                                      'Respect robots.txt', 'Report on status', 'Follow blocked redirects', 'Check blocked URLs'], self.crawler.settings, 'CRAWL_ITEMS')
+                                                      'Respect robots.txt', 'Follow blocked redirects', 'Check blocked URLs'], self.crawler.settings, 'CRAWL_ITEMS')
         self.checkboxgroup_robots_txt.pack(**self.group_args)
 
         # Resources Group
