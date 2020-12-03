@@ -44,7 +44,8 @@ class GFlareResponse:
         self.robots_txt_status = None
 
         self.spider_links = "Spider" in self.settings.get("MODE", "")
-        if self.robots_txt_status == "BLOCKED":
+        
+        if self.robots_txt_status == "BLOCKED" and 'respect_robots_txt' in self.settings.get('CRAWL_ITEMS', ''):
             self.spider_links = False
 
         self.extraction_separator = self.settings.get(
