@@ -114,7 +114,7 @@ class CrawlTab(ttk.Frame):
         self.label_urls_per_second.pack(side=LEFT)
 
         self.urls_crawled_string_var = StringVar()
-        self.urls_crawled_string_var.set("URLs crawled/discovered: 0/0")
+        self.urls_crawled_string_var.set("URLs crawled/discovered: 0/0 (0%)")
         self.label_urls_crawled = ttk.Label(
             self.bottom_frame, textvariable=self.urls_crawled_string_var)
         self.label_urls_crawled.pack(side=RIGHT)
@@ -386,16 +386,16 @@ class CrawlTab(ttk.Frame):
     def update_progressbar(self):
         with self.lock:
             if self.crawler.urls_total > 0:
-                percentage = int((self.crawler.urls_crawled /
+                self.percentage = int((self.crawler.urls_crawled /
                                   self.crawler.urls_total) * 100)
-                self.progressbar["value"] = percentage
+                self.progressbar["value"] = self.percentage
                 if sys.platform == "win32":
-                    self.style.configure('text.Horizontal.TProgressbar', text=f'{percentage} %')
+                    self.style.configure('text.Horizontal.TProgressbar', text=f'{self.percentage} %')
 
     def update_bottom_stats(self):
         with self.lock:
             self.urls_string_var.set(f"Speed: {self.crawler.current_urls_per_second} URL/s")
-            self.urls_crawled_string_var.set(f"URLs crawled/discovered: {self.crawler.urls_crawled}/{self.crawler.urls_total}")
+            self.urls_crawled_string_var.set(f"URLs crawled/discovered: {'{:,}'.format(self.crawler.urls_crawled)}/{'{:,}'.format(self.crawler.urls_total)} ({self.percentage}%)")
 
     def update(self):
         self.button_crawl["text"] = "Resume"
