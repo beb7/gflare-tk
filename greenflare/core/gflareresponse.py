@@ -23,7 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from lxml.html import fromstring
-from .gflarerobots import GFlareRobots
+from greenflare.core.gflarerobots import GFlareRobots
 from requests import status_codes
 import urllib.parse
 from re import match, escape
