@@ -25,6 +25,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from tkinter import ttk, Toplevel, RIGHT, filedialog as fd
 from os import path, remove
 from greenflare.widgets.helpers import export_to_csv
+from greenflare.widgets.windowhelper import center_on_parent
 import sys
 
 
@@ -33,6 +34,7 @@ class ViewInlinks(Toplevel):
     def __init__(self, url, query_func):
         Toplevel.__init__(self)
         self.geometry('750x400')
+        center_on_parent(self.master, self)
         self.url = url
         self.query_func = query_func
 
