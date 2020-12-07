@@ -19,7 +19,7 @@ OPTIONS = {
                 'CFBundleShortVersionString': Defaults.version,
                 'CFBundleDocumentTypes': [{'CFBundleTypeExtensions': ["gflaredb"], 'CFBundleTypeName': "Greenflare Crawl DB", 'CFBundleTypeRole': "Editor"}]
     },
-    'packages': ['PIL', 'greenflare', 'sqlite3', 'requests', 'lxml', 'cssselect', 'ua-parser'],
+    #'packages': ['PIL', 'greenflare', 'sqlite3', 'requests', 'lxml', 'cssselect', 'ua-parser'],
     'argv_emulation': False
 }
 
