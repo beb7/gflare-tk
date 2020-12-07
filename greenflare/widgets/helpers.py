@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from functools import partial
+from csv import writer as csvwriter
 
 
 def generate_menu(menu, labels, func):
@@ -32,3 +33,10 @@ def generate_menu(menu, labels, func):
             menu.add_command(label=label, command=action_with_arg)
         else:
             menu.add_separator()
+
+def export_to_csv(csv_file, columns, data):
+
+    with open(csv_file, "w", newline='', encoding='utf-8-sig') as csv_file:
+        csv_writer = csvwriter(csv_file, delimiter=",", dialect='excel')
+        csv_writer.writerow([i for i in columns])
+        csv_writer.writerows(data)
