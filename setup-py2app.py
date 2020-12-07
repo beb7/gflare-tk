@@ -8,7 +8,7 @@ Usage:
 from setuptools import setup
 from greenflare.core.defaults import Defaults
 
-APP = ['greenflare/greenflare.py']
+APP = ['greenflare.py']
 DATA_FILES = [('images', ['greenflare/resources/greenflare-icon-192x192.png'])]
 OPTIONS = {
     'iconfile': 'macos/greenflare.icns',
