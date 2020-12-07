@@ -22,7 +22,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from tkinter import ttk, Toplevel
+from tkinter import ttk, Toplevel, RIGHT, filedialog as fd
+from os import path, remove
+from greenflare.widgets.helpers import export_to_csv
 import sys
 
 
@@ -30,12 +32,17 @@ class ViewInlinks(Toplevel):
 
     def __init__(self, url, query_func):
         Toplevel.__init__(self)
+        self.geometry('750x400')
         self.url = url
         self.query_func = query_func
 
         self.title(f'View Inlinks - {self.url}')
 
         self.top_frame = ttk.Frame(self)
+        self.top_frame.pack(anchor='center', fill='x', expand=True)
+        self.btn_export =  ttk.Button(
+            self.top_frame, text='Export', command=self.export_button_pushed)
+        self.btn_export.pack(side=RIGHT, padx=20)
 
         self.middle_frame = ttk.Frame(self)
         self.middle_frame.pack(anchor='center', fill='both', expand=True)
@@ -80,5 +87,20 @@ class ViewInlinks(Toplevel):
         for i, link in enumerate(inlinks, 1):
             self.treeview_table.insert('', 'end', text=i, values=link)
 
+    def export_button_pushed(self):
+        files = [('CSV files', '*.csv')]
+        export_file = fd.asksaveasfilename(filetypes=files)
 
+        if not export_file:
+            return
 
+        if not export_file.endswith(".csv"):
+            export_file += ".csv"
+        if path.isfile(export_file):
+            remove(export_file)
+
+        data = [self.treeview_table.item(
+            child)['values'] for child in self.treeview_table.get_children()]
+
+        export_to_csv(
+            export_file, self.treeview_table['columns'], data)
