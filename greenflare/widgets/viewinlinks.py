@@ -91,6 +91,7 @@ class ViewInlinks(Toplevel):
 
     def export_button_pushed(self):
         files = [('CSV files', '*.csv')]
+        self.withdraw()
         export_file = fd.asksaveasfilename(filetypes=files)
 
         if not export_file:
