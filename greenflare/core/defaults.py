@@ -127,11 +127,17 @@ class Defaults:
 
     @classmethod
     def root_icon(cls):
-        return cls.working_dir + path.sep + 'resources' + path.sep + 'greenflare-icon-32x32.png'
+        pkg_path = cls.working_dir + path.sep + 'resources' + path.sep + 'greenflare-icon-32x32.png'
+        if path.isfile(pkg_path):
+            return pkg_path
+        return cls.working_dir + path.sep + 'greenflare/resources' + path.sep + 'greenflare-icon-32x32.png'
 
     @classmethod
     def about_icon(cls):
         # Check if we are run as part of an macOS APP bundle
         if getattr(sys, 'frozen', False) and sys.platform == 'darwin':
             return str(Path(cls.working_dir).parent) + path.sep + 'Resources' + path.sep + 'images' + path.sep + 'greenflare-icon-192x192.png'
-        return cls.working_dir + path.sep + 'resources' + path.sep + 'greenflare-icon-192x192.png'
+        pkg_path = cls.working_dir + path.sep + 'resources' + path.sep + 'greenflare-icon-192x192.png'
+        if path.isfile(pkg_path): 
+            return pkg_path
+        return cls.working_dir + path.sep + 'greenflare/resources' + path.sep + 'greenflare-icon-192x192.png' 
