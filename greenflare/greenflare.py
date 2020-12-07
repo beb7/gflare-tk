@@ -33,9 +33,8 @@ from greenflare.widgets.extractionstab import ExtractionsTab
 from greenflare.widgets.listcrawl import ListModeWindow
 from greenflare.widgets.progresswindow import ProgressWindow
 from greenflare.widgets.aboutwindow import AboutWindow
-from greenflare.widgets.menuhelper import generate_menu
+from greenflare.widgets.helpers import generate_menu, export_to_csv
 from concurrent import futures
-from csv import writer as csvwriter
 import functools
 from threading import Lock
 from os import path, remove
@@ -206,19 +205,15 @@ class mainWindow(ttk.Frame):
         data = [self.tab_crawl.treeview_table.item(
             child)['values'] for child in self.tab_crawl.treeview_table.get_children()]
 
-        self.export_to_csv(
+        self._export_to_csv(
             export_file, self.tab_crawl.treeview_table['columns'], data)
 
     def show_export_completed_msg(self):
         messagebox.showinfo(title='Export completed', message=f'All data has been successfully exported!')
 
     @daemonize(title="Exporting view ...", msg="Exporting to CSV, that might take a while ...", callbacks=[show_export_completed_msg])
-    def export_to_csv(self, csv_file, columns, data):
-
-        with open(csv_file, "w", newline='', encoding='utf-8-sig') as csv_file:
-            csv_writer = csvwriter(csv_file, delimiter=",", dialect='excel')
-            csv_writer.writerow([i for i in columns])
-            csv_writer.writerows(data)
+    def _export_to_csv(self, csv_file, columns, data):
+        export_to_csv(csv_file, columns, data)
 
     def spider_mode(self):
         self.crawler.settings['MODE'] = 'Spider'
