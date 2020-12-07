@@ -26,6 +26,7 @@ from tkinter import ttk, Toplevel, TOP, LEFT, Text, END
 from PIL import ImageTk, Image
 from greenflare.core.defaults import Defaults
 from greenflare.widgets.windowhelper import center_on_parent
+from webbrowser import open as open_in_browser
 
 
 class AboutWindow(Toplevel):
@@ -52,17 +53,34 @@ class AboutWindow(Toplevel):
 
         self.info_text.tag_configure('h1', font=('Arial', 16, 'bold'))
         self.info_text.tag_configure('h2', font=('Arial', 14))
+        self.info_text.tag_configure('website', foreground='blue')
+        self.info_text.tag_configure('twitter', foreground='blue')
+        self.info_text.tag_configure('github', foreground='blue')
 
         heading_1 = 'Greenflare SEO Crawler'
         heading_2 = f'\nVersion {Defaults.version}'
 
-        text = '\n\n© Greenflare Developers 2020\n\nCreated By Benjamin Görler (ben@greenflare.io)'
+        text = '\n\n© Greenflare Developers 2020\n\nCreated By Benjamin Görler (ben@greenflare.io)\n\nWebsite: '
+        website = 'https://greenflare.io'
+        twitter = 'https://twitter.com/GreenflareEN'
+        github = 'https://github.com/beb7/gflare-tk/'
+        self.info_text.tag_bind('link',"<Button-1>", lambda event, link=website: self.link_clicked(event, link))
+        self.info_text.tag_bind('twitter',"<Button-1>", lambda event, link=twitter: self.link_clicked(event, link))
+        self.info_text.tag_bind('github',"<Button-1>", lambda event, link=github: self.link_clicked(event, link))
 
         self.info_text.insert(END, heading_1, 'h1')
         self.info_text.insert(END, heading_2, 'h2')
         self.info_text.insert(END, text)
+        self.info_text.insert(END, website, 'website')
+        self.info_text.insert(END, '\n\nTwitter: ')
+        self.info_text.insert(END, twitter, 'twitter')
+        self.info_text.insert(END, '\n\nGithub: ')
+        self.info_text.insert(END, github, 'github')
         self.info_text.configure(state='disabled')
 
         center_on_parent(self.master, self)
 
         self.lift()
+
+    def link_clicked(self, e, link):
+        open_in_browser(link, new=2)
