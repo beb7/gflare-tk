@@ -29,7 +29,7 @@ from pathlib import Path
 
 class Defaults:
 
-    version = '0.95'
+    version = '0.96~dev'
 
     crawl_items = [
         'url',
