@@ -27,7 +27,7 @@ from greenflare.widgets.progresswindow import ProgressWindow
 from greenflare.widgets.filterwindow import FilterWindow
 from greenflare.widgets.enhancedentry import EnhancedEntry
 from greenflare.widgets.viewinlinks import ViewInlinks
-from greenflare.widgets.menuhelper import generate_menu
+from greenflare.widgets.helpers import generate_menu
 from greenflare.core.defaults import Defaults
 from concurrent import futures
 import functools
