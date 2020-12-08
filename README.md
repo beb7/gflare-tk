@@ -28,11 +28,21 @@ our pre-built installers. Choose the version for your OS from our Download page:
 
 https://greenflare.io/download
 
+## Python Package
+
+Greenflare is also available as a pypi package:
+
+`pip install greenflare`
+
+The use of a virtual environment (venv) is recommended. 
+Linux users may chose to install ttkthemes for an improved visual experience.  
+
 
 ## Developers
 
 Are you interested in becoming more involved in the development of 
-Greenflare? Please email beb7 if you want to help to build new amazing features or to fix nasty bugs!
+Greenflare? Please submit a pull request if you want to help to build new amazing features or to fix nasty bugs!
+Alternatively, please email ben at greenflare dot io
 
 ## Report a bug
 
