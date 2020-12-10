@@ -119,6 +119,8 @@ class CrawlTab(ttk.Frame):
             self.bottom_frame, textvariable=self.urls_crawled_string_var)
         self.label_urls_crawled.pack(side=RIGHT)
 
+        self.percentage = 0
+
         self.populate_columns()
         self.row_counter = 1
 
