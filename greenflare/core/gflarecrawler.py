@@ -80,6 +80,10 @@ class GFlareCrawler:
     def request_robots_txt(self, url):
         robots_txt_url = self.gf.get_robots_txt_url(url)
         response = self.crawl_url(robots_txt_url)
+        
+        if isinstance(response, str):
+            return response
+            
         return self.response_to_data(response)
 
     def start_crawl(self):
@@ -184,11 +188,11 @@ class GFlareCrawler:
         if self.settings['MODE'] != 'List':
             response = self.request_robots_txt(
                 self.settings.get('STARTING_URL'))
-            if response == 'SKIP_ME':
-                self.crawl_timed_out.set()
-                self.crawl_running.set()
-                db.close()
-                return
+            # if response == 'SKIP_ME':
+            #     self.crawl_timed_out.set()
+            #     self.crawl_running.set()
+            #     db.close()
+            #     return
 
         # Reinit URL queue
         self.add_to_url_queue(db.get_url_queue(), count=False)
