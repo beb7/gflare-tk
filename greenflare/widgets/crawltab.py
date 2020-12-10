@@ -352,6 +352,7 @@ class CrawlTab(ttk.Frame):
             messagebox.showerror(title='Error - Timed Out',
                                  message='Crawl timed out!')
             self.button_crawl["text"] = "Resume"
+            self.button_clear['state'] = 'enabled'
             self.update_bottom_stats()
             return
         if self.crawler.crawl_running.is_set():
