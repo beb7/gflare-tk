@@ -38,7 +38,7 @@ class EnhancedEntry(ttk.Frame):
         self.entry = ttk.Entry(parent, style='Grey.TEntry')
         self.entry.pack(side='left', padx=(0, 20), expand=True, fill='x')
 
-        self.entry.insert(0, default_text_)
+        self.entry.insert(0, self.default_text)
         self.entry.bind('<FocusIn>', self.handle_focus_in)
         self.entry.bind('<FocusOut>', self.handle_focus_out)
 
@@ -52,3 +52,6 @@ class EnhancedEntry(ttk.Frame):
             self.entry.delete(0, 'end')
             self.entry.config(style='Grey.TEntry')
             self.entry.insert(0, self.default_text)
+
+    def get(self):
+        return self.entry.get()
