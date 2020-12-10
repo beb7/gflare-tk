@@ -242,7 +242,8 @@ class CrawlTab(ttk.Frame):
         self.after(10, self.update_buttons)
 
     def btn_crawl_pushed(self):
-        url = self.entry_url_input.entry.get().strip()
+        url = self.entry_url_input.get().strip()
+        print('>>>', url)
         if self.button_crawl["text"] == "Start":
             # Validate input url
             url_components = self.crawler.gf.parse_url(url)
@@ -252,7 +253,6 @@ class CrawlTab(ttk.Frame):
                 if url_components['scheme'] == '':
                     url = 'http://' + url
                     url_components = self.crawler.gf.parse_url(url)
-                    print(url_components, url)
 
                 if url_components['netloc'] == '' or ' ' in url_components['netloc']:
                     messagebox.showerror(
@@ -302,17 +302,10 @@ class CrawlTab(ttk.Frame):
         msg = messagebox.askquestion ('Clear View','Are you sure you want clear the view? All data has been saved.', icon = 'warning')
         
         if msg == 'yes':
-            self.progressbar["value"] = 0
-            self.clear_output_table()
-            self.populate_columns()
-            self.button_crawl["text"] = "Start"
-            self.suspend_auto_scroll = False
-            self.filters = None
-            self.reset_filter_window()
-            self.entry_url_input.entry['state'] = 'enabled'
+            self.reset(reset_url_input=False)
         else:
-            pass
-
+            return
+        
     def add_item_to_outputtable(self, item):
         self.treeview_table.insert(
             '', 'end', text=self.row_counter, values=item)
@@ -410,10 +403,13 @@ class CrawlTab(ttk.Frame):
         self.populate_columns()
         self.update_progressbar()
 
-    def reset(self):
+    def reset(self, reset_url_input=True):
         self.entry_url_input.entry["state"] = "enabled"
-        self.entry_url_input.entry.delete(0, 'end')
-        self.entry_url_input.entry.insert(0, "Enter URL to crawl")
+        
+        if reset_url_input:
+            self.entry_url_input.entry.delete(0, 'end')
+            self.entry_url_input.entry.insert(0, "Enter URL to crawl")
+        
         self.progressbar["value"] = 0
         self.clear_output_table()
         self.populate_columns()
@@ -421,6 +417,7 @@ class CrawlTab(ttk.Frame):
         self.suspend_auto_scroll = False
         self.filters = None
         self.reset_filter_window()
+        self.crawler.reset_crawl()
         self.master.title(Defaults.window_title)
 
     def show_list_mode(self):
