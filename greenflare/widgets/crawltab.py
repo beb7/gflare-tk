@@ -29,8 +29,7 @@ from greenflare.widgets.enhancedentry import EnhancedEntry
 from greenflare.widgets.viewinlinks import ViewInlinks
 from greenflare.widgets.helpers import generate_menu
 from greenflare.core.defaults import Defaults
-from concurrent import futures
-import functools
+from greenflare.widgets.helpers import run_in_background_with_window, tk_after
 from os import path, remove
 from webbrowser import open as open_in_browser
 import queue
@@ -46,9 +45,6 @@ class CrawlTab(ttk.Frame):
         self.lock = crawler.lock
         self.freeze_tabs = freeze_tabs
         self.unfreeze_tabs = unfreeze_tabs
-
-        self.executor = futures.ThreadPoolExecutor(max_workers=1)
-        self.win_progress = None
 
         self.topframe = ttk.Frame(self)
         self.topframe.pack(anchor='center', padx=20, pady=20, fill="x")
@@ -145,28 +141,6 @@ class CrawlTab(ttk.Frame):
         self.viewed_table = 'crawl'
         self.filters = []
 
-    def daemonize(title=None, msg=None):
-        def decorator(target):
-            @functools.wraps(target)
-            def wrapper(*args, **kwargs):
-                args[0].win_progress = ProgressWindow(title=title, msg=msg)
-                args[0].win_progress.focus_force()
-                args[0].win_progress.grab_set()
-                result = args[0].executor.submit(target, *args, **kwargs)
-                result.add_done_callback(args[0].daemon_call_back)
-                return result
-
-            return wrapper
-
-        return decorator
-
-    def daemon_call_back(self, future):
-        self.win_progress.grab_release()
-        self.win_progress.destroy()
-        exception = future.exception()
-        if exception:
-            raise exception
-
     def clear_output_table(self):
         # Clear table
         self.treeview_table.delete(*self.treeview_table.get_children())
@@ -236,7 +210,7 @@ class CrawlTab(ttk.Frame):
             self.after(10, self.add_to_outputtable)
             self.after(10, self.update_buttons)
 
-    @daemonize(title="Stopping crawl ...", msg="Waiting for crawl to finish ...")
+    @run_in_background_with_window([], title='Stopping crawl ...', msg='Waiting for crawl to finish ...')
     def stop_crawl(self):
         self.crawler.end_crawl_gracefully()
         self.after(10, self.update_buttons)
@@ -356,7 +330,12 @@ class CrawlTab(ttk.Frame):
 
         self.after(250, self.add_to_outputtable)
 
-    # @daemonize(title="Loading crawl ...", msg="Please wait while the crawl is loading ...")
+    @tk_after
+    def add_items(self, items):
+        for i, item in enumerate(items, 1):
+            self.treeview_table.insert('', 'end', text=i, values=item)
+
+    @run_in_background_with_window([], title='Loading crawl ...', msg='Please wait while the crawl is loading ...')
     def load_crawl_to_outputtable(self, filters, table, columns=None):
         self.suspend_auto_scroll = True
         print('load_crawl_to_outputtable', filters, table, columns)
@@ -373,8 +352,7 @@ class CrawlTab(ttk.Frame):
             filters, table, columns)
         self.populate_columns(columns=columns)
 
-        for item in items:
-            self.add_item_to_outputtable(item)
+        self.add_items(items)
 
         self.suspend_auto_scroll = False
         self.treeview_table.yview_moveto(1)

@@ -24,7 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from tkinter import ttk, Toplevel, RIGHT, filedialog as fd
 from os import path, remove
-from greenflare.widgets.helpers import export_to_csv
+from greenflare.widgets.helpers import export_to_csv, run_in_background_with_window, tk_after
 from greenflare.widgets.windowhelper import center_on_parent
 import sys
 
@@ -33,18 +33,19 @@ class ViewInlinks(Toplevel):
 
     def __init__(self, url, query_func):
         Toplevel.__init__(self)
-        self.geometry('750x400')
         center_on_parent(self.master, self)
+        self.geometry('750x400')
         self.url = url
         self.query_func = query_func
 
         self.title(f'View Inlinks - {self.url}')
 
         self.top_frame = ttk.Frame(self)
-        self.top_frame.pack(anchor='center', fill='x', expand=True)
+        self.top_frame.pack(anchor='center', fill='x')
+        
         self.btn_export =  ttk.Button(
             self.top_frame, text='Export', command=self.export_button_pushed)
-        self.btn_export.pack(side=RIGHT, padx=20)
+        self.btn_export.pack(side=RIGHT, padx=20, pady=20)
 
         self.middle_frame = ttk.Frame(self)
         self.middle_frame.pack(anchor='center', fill='both', expand=True)
@@ -80,15 +81,19 @@ class ViewInlinks(Toplevel):
         self.treeview_table.heading(column_name, text=column_name, anchor='w')
         self.treeview_table.column(column_name, stretch=True)
 
-        self.add_inlinks()
+        self.inlinks = None
 
+        self._query_func()
 
+    @tk_after
     def add_inlinks(self):
-        inlinks = self.query_func(self.url)
-
-        for i, link in enumerate(inlinks, 1):
+        for i, link in enumerate(self.inlinks, 1):
             self.treeview_table.insert('', 'end', text=i, values=link)
 
+    @run_in_background_with_window([add_inlinks], title='Running query ...', msg='Please wait while the data is being requested')
+    def _query_func(self):
+        self.inlinks = self.query_func(self.url)
+ 
     def export_button_pushed(self):
         files = [('CSV files', '*.csv')]
         self.withdraw()

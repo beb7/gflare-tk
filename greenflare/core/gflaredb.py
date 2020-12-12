@@ -340,7 +340,7 @@ class GFlareDB:
     def get_inlinks(self, url):
         url_id = self.get_ids([url]).pop()
         query = fr"SELECT url as inlink FROM crawl LEFT JOIN inlinks ON crawl.id = inlinks.url_from_id WHERE inlinks.url_to_id = {url_id}"
-            self.cur.execute(query)
+        self.cur.execute(query)
         inlinks = self.cur.fetchall()
         if inlinks:
             return inlinks
