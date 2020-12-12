@@ -329,8 +329,6 @@ class GFlareDB:
         else:
             query += "WHERE status_code != ''"
 
-        print(query)
-
         self.cur.execute(query)
         rows = self.cur.fetchall()
         if rows != None:
