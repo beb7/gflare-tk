@@ -338,7 +338,6 @@ class CrawlTab(ttk.Frame):
     @run_in_background_with_window([], title='Loading crawl ...', msg='Please wait while the data is being loaded ...')
     def load_crawl_to_outputtable(self, filters, table, columns=None):
         self.suspend_auto_scroll = True
-        print('load_crawl_to_outputtable', filters, table, columns)
 
         if not filters:
             self.master.title(
