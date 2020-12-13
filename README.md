@@ -2,6 +2,7 @@
 [![PyPI version](https://badge.fury.io/py/greenflare.svg)](https://badge.fury.io/py/greenflare)
 [![Supported Python Versions](https://img.shields.io/pypi/pyversions/greenflare.svg)](https://img.shields.io/pypi/pyversions/greenflare.svg)
 [![Downloads](https://pepy.tech/badge/greenflare)](https://pepy.tech/project/greenflare)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 Greenflare is a lightweight free and open-source SEO web crawler for Linux, Mac, and Windows, and is dedicated to delivering high quality 
 SEO insights and analysis solutions to the world.
