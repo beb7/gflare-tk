@@ -1,5 +1,7 @@
 # Greenflare SEO Web Crawler
-<img alt="Greenflare SEO Web Crawler Logo" src="greenflare/resources/greenflare-logo.svg" width="120" />
+[![PyPI version](https://badge.fury.io/py/greenflare.svg)](https://badge.fury.io/py/greenflare)
+[![Supported Python Versions](https://img.shields.io/pypi/pyversions/greenflare.svg)](https://img.shields.io/pypi/pyversions/greenflare.svg)
+
 
 Greenflare is a lightweight free and open-source SEO web crawler for Linux, Mac, and Windows, and is dedicated to delivering high quality 
 SEO insights and analysis solutions to the world.
