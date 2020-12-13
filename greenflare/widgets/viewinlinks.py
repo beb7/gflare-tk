@@ -34,6 +34,7 @@ class ViewInlinks(Toplevel):
     def __init__(self, url, query_func):
         Toplevel.__init__(self)
         center_on_parent(self.master, self)
+
         self.geometry('750x400')
         self.url = url
         self.query_func = query_func
@@ -43,56 +44,43 @@ class ViewInlinks(Toplevel):
         self.top_frame = ttk.Frame(self)
         self.top_frame.pack(anchor='center', fill='x')
         
-        self.btn_export =  ttk.Button(
-            self.top_frame, text='Export', command=self.export_button_pushed)
+        self.btn_export =  ttk.Button(self.top_frame, text='Export', command=self.export_button_pushed)
         self.btn_export.pack(side=RIGHT, padx=20, pady=20)
 
-        self.middle_frame = ttk.Frame(self)
-        self.middle_frame.pack(anchor='center', fill='both', expand=True)
+        self.frame_tbl = ttk.Frame(self)
+        self.frame_tbl.pack(anchor='center', fill='both', expand=True)
 
-        self.treeview_table = ttk.Treeview(
-            self.middle_frame, selectmode="browse")
+        self.tbl = ttk.Treeview(self.frame_tbl, selectmode="browse")
 
-        # Capture right clicks on table
-        right_click = '<Button-3>'
-
-        if sys.platform == 'darwin':
-            right_click = '<Button-2>'
-
-        # self.treeview_table.bind(right_click, self.assign_treeview_click)
-
-        self.scrollbar_vertical = ttk.Scrollbar(
-            self.middle_frame, orient="vertical")
+        self.scrollbar_vertical = ttk.Scrollbar(self.frame_tbl, orient='vertical', command=self.tbl.yview)
         self.scrollbar_vertical.pack(side="right", fill="y")
-        self.scrollbar_horizontal = ttk.Scrollbar(
-            self.middle_frame, orient="horizontal", command=self.treeview_table.xview)
+        
+        self.scrollbar_horizontal = ttk.Scrollbar(self.frame_tbl, orient='horizontal', command=self.tbl.xview)
         self.scrollbar_horizontal.pack(side="bottom", fill="x")
-        self.treeview_table.configure(
-            yscrollcommand=self.scrollbar_vertical.set, xscrollcommand=self.scrollbar_horizontal.set)
-        self.treeview_table.pack(fill="both", expand=1)
-
+        
+        self.tbl.configure(yscrollcommand=self.scrollbar_vertical.set, xscrollcommand=self.scrollbar_horizontal.set)
+        self.tbl.pack(fill="both", expand=True)
         
         column_name = 'Linking URL'
-        self.treeview_table["columns"] = tuple([column_name])
+        self.tbl["columns"] = tuple([column_name])
 
-        self.treeview_table.heading("#0", text="id", anchor='w')
-        self.treeview_table.column("#0", width=55, stretch=False)
+        self.tbl.heading("#0", text="id", anchor='w')
+        self.tbl.column("#0", width=55, stretch=False)
 
-        self.treeview_table.heading(column_name, text=column_name, anchor='w')
-        self.treeview_table.column(column_name, stretch=True)
-
-        self.inlinks = None
+        self.tbl.heading(column_name, text=column_name, anchor='w')
+        self.tbl.column(column_name, width=750, stretch=False)
 
         self._query_func()
 
     @tk_after
-    def add_inlinks(self):
-        for i, link in enumerate(self.inlinks, 1):
-            self.treeview_table.insert('', 'end', text=i, values=link)
+    def add_inlinks(self, inlinks):
+        for i, link in enumerate(inlinks, 1):
+            self.tbl.insert('', 'end', text=i, values=link)
 
-    @run_in_background_with_window([add_inlinks], title='Running query ...', msg='Please wait while the data is being requested')
+    @run_in_background_with_window([], title='Running query ...', msg='Please wait while the data is being requested')
     def _query_func(self):
-        self.inlinks = self.query_func(self.url)
+        inlinks = self.query_func(self.url)
+        self.add_inlinks(inlinks)
  
     def export_button_pushed(self):
         files = [('CSV files', '*.csv')]
@@ -107,8 +95,8 @@ class ViewInlinks(Toplevel):
         if path.isfile(export_file):
             remove(export_file)
 
-        data = [self.treeview_table.item(
-            child)['values'] for child in self.treeview_table.get_children()]
+        data = [self.tbl.item(
+            child)['values'] for child in self.tbl.get_children()]
 
         export_to_csv(
-            export_file, self.treeview_table['columns'], data)
+            export_file, self.tbl['columns'], data)
