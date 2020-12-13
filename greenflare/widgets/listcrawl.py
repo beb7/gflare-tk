@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 from tkinter import LEFT, RIGHT, Toplevel, ttk, Text, messagebox
+from greenflare.widgets.windowhelper import center_on_parent
 import urllib.parse
 
 
@@ -30,7 +31,7 @@ class ListModeWindow(Toplevel):
 
     def __init__(self, crawler=None, crawl_tab=None, root=None):
         Toplevel.__init__(self)
-
+        
         self.crawler = crawler
         self.crawl_tab = crawl_tab
 
@@ -56,6 +57,8 @@ class ListModeWindow(Toplevel):
         self.list_crawl_btn = ttk.Button(
             self.bottom_frame, text="OK", command=self.start_list_crawl)
         self.list_crawl_btn.pack(side=RIGHT)
+
+        center_on_parent(self.master, self)
 
     def start_list_crawl(self):
         urls = self.url_input_field.get("1.0", 'end-1c')
