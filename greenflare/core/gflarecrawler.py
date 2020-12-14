@@ -83,6 +83,8 @@ class GFlareCrawler:
         
         if isinstance(response, str):
             return response
+        if isinstance(response, dict):
+            return response
             
         return self.response_to_data(response)
 
@@ -159,6 +161,7 @@ class GFlareCrawler:
             self.data_queue = queue.Queue(maxsize=25)
             self.url_queue = queue.Queue()
             self.gui_url_queue = []
+            self.url_attempts = {}
 
         self.gf = gf(self.settings, columns=None)
 
@@ -188,11 +191,11 @@ class GFlareCrawler:
         if self.settings['MODE'] != 'List':
             response = self.request_robots_txt(
                 self.settings.get('STARTING_URL'))
-            # if response == 'SKIP_ME':
-            #     self.crawl_timed_out.set()
-            #     self.crawl_running.set()
-            #     db.close()
-            #     return
+            if response == 'SKIP_ME':
+                self.crawl_timed_out.set()
+                self.crawl_running.set()
+                db.close()
+                return
 
         # Reinit URL queue
         self.add_to_url_queue(db.get_url_queue(), count=False)
