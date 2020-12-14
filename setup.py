@@ -57,7 +57,7 @@ setup(
     install_requires=['requests', 'lxml', 'cssselect', 'ua-parser', 'pillow', 'packaging'],
     entry_points={
         'console_scripts': [
-            'greenflare=greenflare.greenflare:main',
+            'greenflare=greenflare.app:main',
         ]
     },
 )
