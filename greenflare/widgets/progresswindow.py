@@ -30,7 +30,6 @@ class ProgressWindow(Toplevel):
 
     def __init__(self, title=None, msg=None):
         Toplevel.__init__(self)
-
         self.topframe = ttk.Frame(self)
         self.topframe.pack(anchor='center', padx=20, pady=20, fill="x")
 
