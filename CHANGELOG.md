@@ -1,8 +1,11 @@
 # Changelog
 
 ## [0.97] - In development
-- Much faster viewing of inlinks
-- Fixed faulty behaviour of Clear / New functionality
+- Much faster viewing of inlinks (requires new crawl)
+- Added automatic update notifications
+- Better handling of large crawls
+- Fixed crash when using Clear / New functionality
+- Fixed View Inlinks table
 
 
 ## [0.96] - 2020-12-07
