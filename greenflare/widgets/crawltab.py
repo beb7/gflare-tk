@@ -217,7 +217,7 @@ class CrawlTab(ttk.Frame):
 
     def btn_crawl_pushed(self):
         url = self.entry_url_input.get().strip()
-        print('>>>', url)
+
         if self.button_crawl["text"] == "Start":
             # Validate input url
             url_components = self.crawler.gf.parse_url(url)
@@ -246,6 +246,7 @@ class CrawlTab(ttk.Frame):
         elif self.button_crawl["text"] == "Resume":
             self.populate_columns()
             self.crawler.resume_crawl()
+            self.row_counter = self.crawler.urls_crawled + 1
             self.after(10, self.add_to_outputtable)
             self.after(10, self.update_buttons)
 
