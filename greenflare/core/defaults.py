@@ -121,6 +121,9 @@ class Defaults:
 
     linux_theme = 'breeze'
 
+    download_url = 'https://greenflare.io/download/'
+    latest_release_url = 'https://greenflare.io/download/LATEST'
+
     @classmethod
     def set_working_dir(cls, directory):
         cls.working_dir = directory
