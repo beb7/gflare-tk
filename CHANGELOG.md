@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.97] - In development
+## [0.97] - 2020-12-14
 - Much faster viewing of inlinks (requires new crawl)
 - Added automatic update notifications
 - Better handling of large crawls
