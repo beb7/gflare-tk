@@ -68,7 +68,7 @@ class ViewInlinks(Toplevel):
         self.tbl.column("#0", width=55, stretch=False)
 
         self.tbl.heading(column_name, text=column_name, anchor='w')
-        self.tbl.column(column_name, width=750, stretch=False)
+        self.tbl.column(column_name, width=750, stretch=True)
 
         self._query_func()
 
