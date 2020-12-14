@@ -32,9 +32,11 @@ from greenflare.widgets.exclusionstab import ExclusionsTab
 from greenflare.widgets.extractionstab import ExtractionsTab
 from greenflare.widgets.listcrawl import ListModeWindow
 from greenflare.widgets.progresswindow import ProgressWindow
+from greenflare.widgets.updatewindow import UpdateWindow
 from greenflare.widgets.aboutwindow import AboutWindow
 from greenflare.widgets.helpers import generate_menu, export_to_csv, run_in_background_with_window
-from threading import Lock
+from threading import Lock, Thread
+from packaging import version
 from os import path, remove
 from pathlib import Path
 import sys
@@ -121,6 +123,9 @@ class mainWindow(ttk.Frame):
 
         self.about_window = None
         self.root.config(menu=self.menubar)
+        
+        if self.crawler.settings.get('CHECK_FOR_UPDATES', True):
+            Thread(target=self.request_current_version).start()
 
     def show_crawl_output(self):
         self.tab_crawl.load_crawl_to_outputtable(None, 'crawl')
@@ -258,6 +263,21 @@ class mainWindow(ttk.Frame):
         except Exception as e:
             print('ERROR: view_crawl_status failed!')
             print(e)
+    
+    def request_current_version(self):
+        self.crawler.init_crawl_headers()
+        self.crawler.init_session()
+        
+        response = self.crawler.crawl_url(Defaults.latest_release_url)
+        
+        if isinstance(response, str):
+            return
+        
+        if response.ok:
+            
+            latest_ver = response.text
+            if version.parse(latest_ver) > version.parse(Defaults.version):
+                UpdateWindow('New Version Available!', latest_ver)
 
     def update_gui(self):
         self.tab_crawl.update()
