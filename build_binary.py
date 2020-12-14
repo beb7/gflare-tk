@@ -21,7 +21,7 @@ if sys.platform == "win32":
     targetName = "greenflare.exe"
 
 target = Executable(
-    script='greenflare.py',
+    script='greenflare/app.py',
     base=base,
     icon='greenflare/resources/greenflare-icon-32x32.ico',
     targetName=targetName
