@@ -153,7 +153,7 @@ class GFlareDB:
     @exception_handler
     def create_inlinks_table(self):
         self.cur.execute(
-            "CREATE TABLE IF NOT EXISTS inlinks(url_from_id INTEGER, url_to_id INTEGER, UNIQUE(url_from_id, url_to_id))")
+            "CREATE TABLE IF NOT EXISTS inlinks(id INTEGER PRIMARY KEY, url_from_id INTEGER, url_to_id INTEGER, UNIQUE(url_from_id, url_to_id))")
 
     @exception_handler
     def create_extractions_table(self):
@@ -196,7 +196,7 @@ class GFlareDB:
 
         for k, v in result.items():
             if 'CRAWL_ITEMS' in k:
-                result[k] = ' '.join(result[k].split()).split(',')
+                result[k] = [r.strip() for r in result[k].split(',')]
 
         self.cur.execute("SELECT * FROM extractions")
         extractions = self.cur.fetchall()
@@ -401,7 +401,7 @@ class GFlareDB:
             ids = self.get_ids(urls)
             rows = [(from_id, to_id) for to_id in ids]
             self.cur.executemany(
-                "INSERT OR IGNORE INTO inlinks VALUES(?, ?)", rows)
+                "INSERT OR IGNORE INTO inlinks VALUES(NULL, ?, ?)", rows)
         else:
             print(f"{from_url} not in db!")
 
@@ -475,6 +475,9 @@ class GFlareDB:
         elif crawl_status == 'ok':
             query = f"CREATE VIEW IF NOT EXISTS {table_name} AS SELECT {columns} FROM crawl WHERE crawl_status = 'ok' AND status_code !=''"
         self.cur.execute(query)
+
+    def create_onpage_view_length(self, table_name, column):
+        query = fr"CREATE VIEW IF NOT EXISTS {table_name} AS SELECT url, {column}, LENGTH(column) as length FROM crawl ORDER BY length DESC"
 
     def create_views(self):
         self.create_view_broken_inlinks('broken_inlinks_3xx', 300, 399)
