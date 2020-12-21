@@ -182,6 +182,9 @@ class GFlareCrawler:
             self.gui_url_queue = []
             self.url_attempts = {}
 
+        self.init_crawl_headers()
+        self.init_session()
+
         self.gf = gf(self.settings, columns=None)
 
         self.crawl_running.clear()
@@ -192,20 +195,14 @@ class GFlareCrawler:
         self.urls_total = 0
 
     def resume_crawl(self) -> None:
-        """Resume a paused crawl."""
+        """Resumes a crawl using the settings from the connected database."""
         print('Resuming crawl ...')
-        self.init_crawl_headers()
-        # Reinit session
-        self.init_session()
-
         self.reset_crawl()
-
         db = self._connect_to_db()
-
         self.urls_crawled = db.get_urls_crawled()
         self.urls_total = db.get_total_urls()
 
-        # Reset response object
+        # Create a new response object with the columns from the loaded databse
         self.gf = gf(self.settings, columns=db.get_columns())
 
         if self.settings['MODE'] != 'List':
