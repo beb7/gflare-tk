@@ -247,14 +247,17 @@ class GFlareCrawler:
                 t.join()
         print('All workers joined ...')
 
-    def urls_per_second_stats(self):
-        url_limit = int(self.settings.get("URLS_PER_SECOND", 0))
+    def urls_per_second_stats(self) -> None:
+        """Thread-safe: Sets crawl statistics. Meant to be run as single tread. Controls URL limit."""
+
+        url_limit = int(self.settings.get('URLS_PER_SECOND', 0))
         step = 0.1
 
         # Set initial limit depending on the number of threads
+        # FIXME: Move the url_limit control to a dedicated function
         if url_limit > 0:
             self.rate_limit_delay = 1 / url_limit * \
-                int(self.settings.get("THREADS", 1)) * step
+                int(self.settings.get('THREADS', 1)) * step
         while self.crawl_running.is_set() == False:
             with self.lock:
                 old = self.urls_crawled
