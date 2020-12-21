@@ -240,12 +240,12 @@ class GFlareCrawler:
         if self.stats:
             Thread(target=self.urls_per_second_stats, name='stats').start()
 
-    def wait_for_threads(self):
-        ts = tenum()
-        for t in ts:
-            if "worker-" in t.name:
+    def wait_for_threads(self) -> None:
+        """Waits for all worker threads to join/finish."""
+        for t in tenum():
+            if 'worker-' in t.name:
                 t.join()
-        print("All workers joined ...")
+        print('All workers joined ...')
 
     def urls_per_second_stats(self):
         url_limit = int(self.settings.get("URLS_PER_SECOND", 0))
