@@ -124,6 +124,7 @@ class GFlareDB:
         self.create_exclusions_table()
         self.create_extractions_table()
         self.create_views()
+        self.commit()
 
     @exception_handler
     def db_connect(self):
@@ -451,6 +452,11 @@ class GFlareDB:
 
         return (new_data, updated_data)
 
+    def create_view_non_ok_inlinks(self, table_name):
+        query = f"CREATE VIEW IF NOT EXISTS {table_name} AS SELECT crawl.url as url_from, url_to, sc as status_code FROM (SELECT url_from_id, url as url_to, status_code as sc FROM crawl INNER JOIN inlinks ON inlinks.url_to_id = crawl.id WHERE status_code != 200) INNER JOIN crawl ON crawl.id = url_from_id"
+        self.cur.execute(query)
+        print('>>', query)
+
     def create_view_broken_inlinks(self, table_name, from_status_code, to_status_code):
         query = f"CREATE VIEW IF NOT EXISTS {table_name} AS SELECT crawl.url as url_from, url_to, sc as status_code FROM (SELECT url_from_id, url as url_to, status_code as sc FROM crawl INNER JOIN inlinks ON inlinks.url_to_id = crawl.id WHERE status_code BETWEEN {from_status_code} AND {to_status_code}) INNER JOIN crawl ON crawl.id = url_from_id"
         self.cur.execute(query)
@@ -480,6 +486,7 @@ class GFlareDB:
         query = fr"CREATE VIEW IF NOT EXISTS {table_name} AS SELECT url, {column}, LENGTH(column) as length FROM crawl ORDER BY length DESC"
 
     def create_views(self):
+        self.create_view_non_ok_inlinks('broken_inlinks_non_ok')
         self.create_view_broken_inlinks('broken_inlinks_3xx', 300, 399)
         self.create_view_broken_inlinks('broken_inlinks_4xx', 400, 499)
         self.create_view_broken_inlinks('broken_inlinks_5xx', 500, 599)
