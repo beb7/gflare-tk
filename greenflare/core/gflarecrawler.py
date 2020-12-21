@@ -191,8 +191,9 @@ class GFlareCrawler:
         self.urls_crawled = 0
         self.urls_total = 0
 
-    def resume_crawl(self):
-        print("Resuming crawl ...")
+    def resume_crawl(self) -> None:
+        """Resume a paused crawl."""
+        print('Resuming crawl ...')
         self.init_crawl_headers()
         # Reinit session
         self.init_session()
