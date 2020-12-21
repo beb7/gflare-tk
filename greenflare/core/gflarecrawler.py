@@ -153,7 +153,8 @@ class GFlareCrawler:
         self.start_consumer()
         Thread(target=self.spawn_threads).start()
 
-    def load_crawl(self, db_file):
+    def load_crawl(self, db_file: str) -> None:
+        """Load a database by using the file path as string. Raises Exception if it fails."""
         self.db_file = db_file
 
         try:
@@ -164,7 +165,7 @@ class GFlareCrawler:
             self.urls_total = db.get_total_urls()
             self.settings = db.get_settings()
             print('Loaded:', self.settings)
-            db.extractions = self.settings.get("EXTRACTIONS", "")
+            db.extractions = self.settings.get('EXTRACTIONS', '')
             self.columns = db.columns.copy()
             db.close()
         except Exception as e:
