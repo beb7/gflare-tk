@@ -66,7 +66,7 @@ class GFlareCrawler:
         self.session = None
         self.header_only = False
 
-    def _connect_to_db(self):
+    def _connect_to_db(self) -> None:
         try:
             return GFlareDB(self.db_file, crawl_items=self.settings.get("CRAWL_ITEMS"), extractions=self.settings.get('EXTRACTIONS', []))
         except Exception as e:
@@ -143,6 +143,8 @@ class GFlareCrawler:
 
         try:
             db = self._connect_to_db()
+            # Add new views if any
+            db.create()
             self.urls_crawled = db.get_urls_crawled()
             self.urls_total = db.get_total_urls()
             self.settings = db.get_settings()
