@@ -66,7 +66,8 @@ class GFlareCrawler:
         self.session = None
         self.header_only = False
 
-    def _connect_to_db(self) -> None:
+    def _connect_to_db(self) -> GFlareDB:
+        """Connects to the database and returns a GFLareDB object if successful"""
         try:
             return GFlareDB(self.db_file, crawl_items=self.settings.get("CRAWL_ITEMS"), extractions=self.settings.get('EXTRACTIONS', []))
         except Exception as e:
