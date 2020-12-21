@@ -102,7 +102,8 @@ class GFlareCrawler:
         data = self.response_to_data(response)
         return data
 
-    def start_crawl(self):
+    def start_crawl(self) -> None:
+        """Starts a new crawl using the config from self.settings"""
         print("Crawl started")
         self.init_crawl_headers()
         self.init_session()
