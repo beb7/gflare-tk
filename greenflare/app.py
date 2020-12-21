@@ -102,7 +102,7 @@ class mainWindow(ttk.Frame):
         self.menubar.add_cascade(label="Help", menu=self.aboutmenu)
 
         inlinks_labels = [
-            'Redirects (3xx)', 'Client Error (4xx)', 'Server Error (5xx)']
+            'All Non 200', 'Redirects (3xx)', 'Client Error (4xx)', 'Server Error (5xx)']
         generate_menu(self.inlinks_menu, inlinks_labels,
                       self.view_broken_inlinks)
 
@@ -199,7 +199,9 @@ class mainWindow(ttk.Frame):
             pass
 
     def view_broken_inlinks(self, label):
-        if '3xx' in label:
+        if '200' in label:
+            table = 'broken_inlinks_non_ok'
+        elif '3xx' in label:
             table = 'broken_inlinks_3xx'
         elif '4xx' in label:
             table = 'broken_inlinks_4xx'
