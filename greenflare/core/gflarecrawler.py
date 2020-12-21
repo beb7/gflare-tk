@@ -173,7 +173,8 @@ class GFlareCrawler:
             print(e)
             raise
 
-    def reset_crawl(self):
+    def reset_crawl(self) -> None:
+        """Reset crawl to default state in preparation for a new crawl. """
         # Reset queue
         if self.settings['MODE'] != 'List':
             self.data_queue = queue.Queue(maxsize=25)
