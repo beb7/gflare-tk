@@ -223,9 +223,10 @@ class GFlareCrawler:
         self.start_consumer()
         Thread(target=self.spawn_threads).start()
 
-    def start_consumer(self):
+    def start_consumer(self) -> None:
+        """Starts a single thread responsible for storing crawl data in the database."""
         self.consumer_thread = Thread(
-            target=self.consumer_worker, name="consumer")
+            target=self.consumer_worker, name='consumer')
         self.consumer_thread.start()
 
     def spawn_threads(self):
