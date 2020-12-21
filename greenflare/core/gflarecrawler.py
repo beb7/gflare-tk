@@ -104,14 +104,14 @@ class GFlareCrawler:
 
     def start_crawl(self) -> None:
         """Starts a new crawl using the config from self.settings"""
-        print("Crawl started")
+        print('Crawl started')
         self.init_crawl_headers()
         self.init_session()
 
         # Set speed limit
-        if int(self.settings.get("URLS_PER_SECOND", 0)) > 0:
+        if int(self.settings.get('URLS_PER_SECOND', 0)) > 0:
             self.parallel_requests_limit = (
-                1 / int(self.settings["URLS_PER_SECOND"])) * int(self.settings["THREADS"])
+                1 / int(self.settings['URLS_PER_SECOND'])) * int(self.settings['THREADS'])
 
         db = self._connect_to_db()
         db.create()
@@ -121,10 +121,10 @@ class GFlareCrawler:
 
         self.columns = self.gf.all_items = db.get_columns()
 
-        if self.settings["MODE"] == "Spider":
+        if self.settings['MODE'] == 'Spider':
             self.settings['STARTING_URL'] = self.gf.url_components_to_str(
                 self.gf.parse_url(self.settings['STARTING_URL']))
-            self.settings["ROOT_DOMAIN"] = self.gf.get_domain(
+            self.settings['ROOT_DOMAIN'] = self.gf.get_domain(
                 self.settings['STARTING_URL'])
             response = self.crawl_url(self.settings['STARTING_URL'])
 
@@ -140,12 +140,12 @@ class GFlareCrawler:
             self.add_to_data_queue(data)
             self.request_robots_txt(data['url'])
 
-        elif self.settings["MODE"] == "List":
+        elif self.settings['MODE'] == 'List':
             if len(self.list_mode_urls) > 0:
                 self.add_to_url_queue(self.list_mode_urls)
                 db.insert_new_urls(self.list_mode_urls)
             else:
-                print("ERROR: No urls to list crawl found!")
+                print('ERROR: No urls to list crawl found!')
 
         db.commit()
         db.close()
