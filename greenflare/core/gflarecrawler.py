@@ -229,15 +229,16 @@ class GFlareCrawler:
             target=self.consumer_worker, name='consumer')
         self.consumer_thread.start()
 
-    def spawn_threads(self):
+    def spawn_threads(self) -> None:
+        """Starts n crawl worker threads as defined in self.settings"""
         if self.crawl_running.is_set() == False:
-            threads = int(self.settings["THREADS"])
+            threads = int(self.settings['THREADS'])
             for i in range(threads):
-                tname = f"worker-{i}"
+                tname = f'worker-{i}'
                 t = Thread(target=self.crawl_worker, name=tname, args=(tname,))
                 t.start()
         if self.stats:
-            Thread(target=self.urls_per_second_stats, name="stats").start()
+            Thread(target=self.urls_per_second_stats, name='stats').start()
 
     def wait_for_threads(self):
         ts = tenum()
