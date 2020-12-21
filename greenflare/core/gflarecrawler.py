@@ -73,7 +73,8 @@ class GFlareCrawler:
         except Exception as e:
             raise
 
-    def init_crawl_headers(self):
+    def init_crawl_headers(self) -> None:
+        """Initialises headers to be used in the requests session. Uses default settings if no user-agent has been specified."""
         if not self.settings.get('USER_AGENT', ''):
             self.settings['USER_AGENT'] = "Greenflare SEO Spider/1.0"
         self.HEADERS = {'User-Agent': self.settings['USER_AGENT'], **Defaults.headers}
