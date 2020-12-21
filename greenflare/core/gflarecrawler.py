@@ -240,7 +240,7 @@ class GFlareCrawler:
         if self.stats:
             Thread(target=self.urls_per_second_stats, name='stats').start()
 
-    def wait_for_threads(self) -> None:
+    def wait_for_workers(self) -> None:
         """Waits for all worker threads to join/finish."""
         for t in tenum():
             if 'worker-' in t.name:
@@ -545,9 +545,9 @@ class GFlareCrawler:
         return []
 
     def end_crawl_gracefully(self):
-        print("Ending all worker threads gracefully ...")
+        print('Ending all worker threads gracefully ...')
         self.crawl_running.set()
-        self.wait_for_threads()
+        self.wait_for_workers()
         try:
             self.save_config(self.settings)
         except Exception as e:
