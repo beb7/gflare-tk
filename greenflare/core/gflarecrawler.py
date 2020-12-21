@@ -27,6 +27,7 @@ from greenflare.core.gflaredb import GFlareDB
 from greenflare.core.gflareresponse import GFlareResponse as gf
 from greenflare.core.defaults import Defaults
 from requests import Session, exceptions
+from typing import Union
 from time import sleep, time
 import queue
 
@@ -79,16 +80,27 @@ class GFlareCrawler:
             self.settings['USER_AGENT'] = "Greenflare SEO Spider/1.0"
         self.HEADERS = {'User-Agent': self.settings['USER_AGENT'], **Defaults.headers}
 
-    def request_robots_txt(self, url):
+    def request_robots_txt(self, url: str):
+        """
+        Determines and crawls the robots.txt of any given URL.
+    
+        Returns:
+            skip_url (str): string that says SKIP_ME
+            issue_response (dict): dict crafted by the deal_with_response method
+            data (dict): parsed results of a valid response
+        """
         robots_txt_url = self.gf.get_robots_txt_url(url)
         response = self.crawl_url(robots_txt_url)
         
         if isinstance(response, str):
-            return response
+            skip_url = response
+            return skip_url
         if isinstance(response, dict):
-            return response
+            issue_response = response
+            return issue_response
             
-        return self.response_to_data(response)
+        data = self.response_to_data(response)
+        return data
 
     def start_crawl(self):
         print("Crawl started")
