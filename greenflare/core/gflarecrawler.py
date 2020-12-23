@@ -414,7 +414,8 @@ class GFlareCrawler:
                     break
             busy.clear()
 
-    def consumer_worker(self):
+    def consumer_worker(self) -> None:
+        """Function to be run as a _single_ consumer Thread. Extracts information from request responses and inserts data into the database."""
         db = self._connect_to_db()
         do_commit = False
         with self.lock:
@@ -434,7 +435,7 @@ class GFlareCrawler:
                 self.crawl_running.set()
                 self.crawl_timed_out.set()
                 for t in tenum():
-                    if "worker-" in t.name:
+                    if 'worker-' in t.name:
                         self.url_queue.put('END')
                 break
 
