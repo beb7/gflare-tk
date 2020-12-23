@@ -403,8 +403,6 @@ class GFlareCrawler:
                 self.data_queue.put(response, timeout=adj_timeout)
                 response = None
             except queue.Full:
-                    # print(f'{name} has hit a full queue, retrying in
-                    # {adj_timeout} ...')
                 adj_timeout += backoff_factor * timeout
                 continue
                 if self.crawl_running.is_set():
@@ -419,55 +417,40 @@ class GFlareCrawler:
             urls_last = self.urls_crawled
 
         while not self.crawl_running.is_set():
-            ts = time()
+
             with self.lock:
                 if self.url_queue.empty() and self.data_queue.empty() and all([not i.is_set() for i in self.worker_status]):
                     self.crawl_running.set()
                     self.crawl_completed.set()
                     break
-            after_lock = time() - ts
             try:
-                # print(f"Queue size: {self.data_queue.qsize()}")
-                wait_before = time()
                 response = self.data_queue.get()
-                wait_after = time() - wait_before
             except queue.Empty:
-                print("Consumer thread timed out")
+                print('Consumer thread timed out')
                 self.crawl_running.set()
                 self.crawl_timed_out.set()
                 for t in tenum():
                     if "worker-" in t.name:
-                        self.url_queue.put("END")
+                        self.url_queue.put('END')
                 break
 
-            response_to_data_time = 0
             if isinstance(response, dict):
                 data = response
             else:
-                before = time()
                 data = self.response_to_data(response)
-                response_to_data_time = time() - before
 
             crawl_data = data['data']
-
-            before_insert = time()
             new, updated = db.insert_new_data(crawl_data)
-            after_insert = time() - before_insert
 
-            before_gui = time()
             with self.lock:
                 self.urls_crawled += len(updated) + len(new)
                 self.urls_total += len(new)
             if self.gui_mode:
                 if new or updated:
                     self.add_to_gui_queue(new + updated)
-            after_gui = time() - before_gui
 
-            before_links = time()
-            extracted_links = data.get("links", []) + data.get("hreflang_links", []) + data.get(
-                "canonical_links", []) + data.get("pagination_links", [])
-            after_links = 0
-            after_inlink = 0
+            extracted_links = data.get('links', []) + data.get('hreflang_links', []) + data.get(
+                'canonical_links', []) + data.get('pagination_links', [])
 
             if len(extracted_links) > 0:
                 new_urls = db.get_new_urls(extracted_links)
@@ -478,7 +461,7 @@ class GFlareCrawler:
                 after_links = time() - before_links
 
                 inlink_before = time()
-                if "unique_inlinks" in self.settings.get("CRAWL_ITEMS", ""):
+                if 'unique_inlinks' in self.settings.get('CRAWL_ITEMS', ''):
                     db.insert_inlinks(extracted_links, data['url'])
                 after_inlink = time() - inlink_before
 
@@ -487,19 +470,9 @@ class GFlareCrawler:
                     do_commit = True
                     urls_last = self.urls_crawled
 
-            after_commit = 0
-            before_commit = time()
             if do_commit:
                 db.commit()
                 do_commit = False
-                after_commit = time() - before_commit
-
-            # print(f"Iteration took {time() - ts:.2f} sec | waited
-            # {wait_after:.2f} sec | response_to_data
-            # {response_to_data_time:.2f} sec | insert took {after_insert:.2f}
-            # sec | commit took {after_commit:.2f} | links took
-            # {after_links:.2f}| inlinks took {after_inlink:.2f} sec | gui took
-            # {after_gui:.2f} | locked for {after_lock:.2f} secs")
 
         # Outside while loop, wrap things up
         self.crawl_running.set()
@@ -508,15 +481,15 @@ class GFlareCrawler:
         with self.url_queue.mutex:
             self.url_queue.queue.clear()
         # Add signals for our waiting workers that they are done for today
-        [self.url_queue.put("END")
-         for _ in range(int(self.settings["THREADS"]))]
+        [self.url_queue.put('END')
+         for _ in range(int(self.settings['THREADS']))]
 
         # Always commit to db at the very end
         db.commit()
         db.close()
 
         self.session.close()
-        print("Consumer thread finished")
+        print('Consumer thread finished')
 
     def get_crawl_data(self, filters, table, columns=None):
         if self.db_file:
