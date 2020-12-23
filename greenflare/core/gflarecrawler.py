@@ -360,7 +360,8 @@ class GFlareCrawler:
         self.add_to_url_queue([url], count=False)
         return 'SKIP_ME'
 
-    def add_to_url_queue(self, urls, count=True):
+    def add_to_url_queue(self, urls: list, count=True) -> None:
+        """Append and count (enabled by default) a list of URLs to the URL queue."""
         if count:
             with self.lock:
                 self.urls_total += len(urls)
