@@ -373,7 +373,8 @@ class GFlareCrawler:
         with self.lock:
             self.gui_url_queue += data
 
-    def add_to_data_queue(self, data):
+    def add_to_data_queue(self, data: dict) -> None:
+        """Add gflare response dict data object to data queue."""
         self.data_queue.put(data)
 
     def crawl_worker(self, name):
