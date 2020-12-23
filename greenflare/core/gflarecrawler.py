@@ -295,7 +295,8 @@ class GFlareCrawler:
             else:
                 self.session.proxies = {'https': f"https://{self.settings['PROXY_USER']}:{self.settings['PROXY_PASSWORD']}@{self.settings['PROXY_HOST']}"}
 
-    def response_to_data(self, response):
+    def response_to_data(self, response) -> dict:
+        """Function to parse a requests object into a gflare resposne dict."""
         self.gf.set_response(response)
         return self.gf.get_data()
 
