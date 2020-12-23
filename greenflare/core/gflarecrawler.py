@@ -458,12 +458,9 @@ class GFlareCrawler:
                 if len(new_urls) > 0:
                     db.insert_new_urls(new_urls)
                     self.add_to_url_queue(new_urls)
-                after_links = time() - before_links
 
-                inlink_before = time()
                 if 'unique_inlinks' in self.settings.get('CRAWL_ITEMS', ''):
                     db.insert_inlinks(extracted_links, data['url'])
-                after_inlink = time() - inlink_before
 
             with self.lock:
                 if self.urls_crawled - urls_last >= 100:
