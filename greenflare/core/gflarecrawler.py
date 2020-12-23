@@ -129,7 +129,7 @@ class GFlareCrawler:
             response = self.crawl_url(self.settings['STARTING_URL'])
 
             # Check if we are dealing with a reachable host
-            if response == 'SKIP_ME':
+            if isinstance(response, str):
                 self.crawl_timed_out.set()
                 self.crawl_running.set()
                 db.close()
@@ -208,7 +208,7 @@ class GFlareCrawler:
         if self.settings['MODE'] != 'List':
             response = self.request_robots_txt(
                 self.settings.get('STARTING_URL'))
-            if response == 'SKIP_ME':
+            if isinstance(response, str):
                 self.crawl_timed_out.set()
                 self.crawl_running.set()
                 db.close()
@@ -308,7 +308,7 @@ class GFlareCrawler:
 
         # timeout (connection, response)
         timeout = (3, 5)
-        issue = ""
+        issue = ''
 
         with self.lock:
             if self.gf.is_external(url):
@@ -323,30 +323,30 @@ class GFlareCrawler:
             header = self.session.head(
                 url, headers=self.HEADERS, allow_redirects=True, timeout=timeout)
 
-            content_type = header.headers.get("content-type", "")
-            if "text" in content_type:
+            content_type = header.headers.get('content-type', '')
+            if 'text' in content_type:
                 body = self.session.get(
                     url, headers=self.HEADERS, allow_redirects=True, timeout=timeout)
                 return body
 
             return header
         except exceptions.TooManyRedirects:
-            return self.deal_with_exception(url, "Too Many Redirects")
+            return self.deal_with_exception(url, 'Too Many Redirects')
 
         except exceptions.ConnectionError:
-            return self.deal_with_exception(url, "Connection Refused")
+            return self.deal_with_exception(url, 'Connection Refused')
 
         except exceptions.ReadTimeout:
-            return self.deal_with_exception(url, "Read timed out")
+            return self.deal_with_exception(url, 'Read timed out')
 
         except exceptions.InvalidURL:
-            return self.deal_with_exception(url, "Invalid URL")
+            return self.deal_with_exception(url, 'Invalid URL')
 
         except Exception as e:
-            return self.deal_with_exception(url, "Unknown Exception")
+            return self.deal_with_exception(url, 'Unknown Exception')
 
     def deal_with_exception(self, url: str, issue: str) -> dict:
-        """Adds URL back to the URL queue until the retry threshold has been reached. Returns mocked data response otherwise"""
+        """Adds URL back to the URL queue until the retry threshold has been reached. Returns mock string instead."""
         with self.lock:
             attempts = self.url_attempts.get(url, 0)
 
@@ -358,7 +358,7 @@ class GFlareCrawler:
             self.url_attempts[url] = self.url_attempts.get(url, 0) + 1
 
         self.add_to_url_queue([url], count=False)
-        return {'url': url, 'data': [tuple([url, '', '', ''] + [''] * (len(self.columns) - 4))], 'links': []}
+        return 'SKIP_ME'
 
     def add_to_url_queue(self, urls, count=True):
         if count:
@@ -394,7 +394,7 @@ class GFlareCrawler:
                 busy.set()
                 response = self.crawl_url(url)
 
-            if response == "SKIP_ME":
+            if isinstance(response, str):
                 response = None
                 busy.clear()
                 continue
