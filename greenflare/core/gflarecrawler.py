@@ -377,7 +377,8 @@ class GFlareCrawler:
         """Add gflare response dict data object to data queue."""
         self.data_queue.put(data)
 
-    def crawl_worker(self, name):
+    def crawl_worker(self, name: str) -> None:
+        """Function to be run as a worker Thread. Requests URLs and inserts responses into the data queue."""
         busy = Event()
         response = None
         timeout = 0.25
