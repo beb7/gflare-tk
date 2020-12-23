@@ -517,7 +517,8 @@ class GFlareCrawler:
             db.commit()
             db.close()
 
-    def get_columns(self, table='crawl'):
+    def get_columns(self, table='crawl') -> list:
+        """Retrieve columns from database table. Return empty list if no db file is known."""
         if self.db_file:
             db = self._connect_to_db()
             columns =  db.get_table_columns(table=table)
