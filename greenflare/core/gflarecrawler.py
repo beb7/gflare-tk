@@ -302,7 +302,7 @@ class GFlareCrawler:
 
     def crawl_url(self, url, header_only=False) -> dict:
         """Crawl any given URL."""
-        
+
         header = None
         body = None
 
@@ -345,7 +345,8 @@ class GFlareCrawler:
         except Exception as e:
             return self.deal_with_exception(url, "Unknown Exception")
 
-    def deal_with_exception(self, url, issue):
+    def deal_with_exception(self, url: str, issue: str) -> dict:
+        """Adds URL back to the URL queue until the retry threshold has been reached. Returns mocked data response otherwise"""
         with self.lock:
             attempts = self.url_attempts.get(url, 0)
 
@@ -357,7 +358,7 @@ class GFlareCrawler:
             self.url_attempts[url] = self.url_attempts.get(url, 0) + 1
 
         self.add_to_url_queue([url], count=False)
-        return "SKIP_ME"
+        return {'url': url, 'data': [tuple([url, '', '', ''] + [''] * (len(self.columns) - 4))], 'links': []}
 
     def add_to_url_queue(self, urls, count=True):
         if count:
