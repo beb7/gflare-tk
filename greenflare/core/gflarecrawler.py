@@ -300,7 +300,9 @@ class GFlareCrawler:
         self.gf.set_response(response)
         return self.gf.get_data()
 
-    def crawl_url(self, url, header_only=False):
+    def crawl_url(self, url, header_only=False) -> dict:
+        """Crawl any given URL."""
+        
         header = None
         body = None
 
