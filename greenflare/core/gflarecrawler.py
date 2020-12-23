@@ -493,7 +493,13 @@ class GFlareCrawler:
         self.session.close()
         print('Consumer thread finished')
 
-    def get_crawl_data(self, filters, table, columns=None):
+    def get_crawl_data(self, filters: list, table: str, columns=None):
+        """Requests data from a db table based on optional filters and columns.
+
+            Returns:
+                data (tuple): list of columns and list of data.
+                empty list (list): empty list if no db_file has been defined yet.
+        """
         if self.db_file:
             db = self._connect_to_db()
             data = db.query(filters, table, columns=columns)
