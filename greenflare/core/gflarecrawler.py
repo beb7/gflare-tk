@@ -535,7 +535,8 @@ class GFlareCrawler:
             return inlinks
         return []
 
-    def end_crawl_gracefully(self):
+    def end_crawl_gracefully(self) -> None:
+        """End all crawl workers and save config before exit."""
         print('Ending all worker threads gracefully ...')
         self.crawl_running.set()
         self.wait_for_workers()
