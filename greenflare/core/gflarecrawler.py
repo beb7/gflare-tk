@@ -509,7 +509,8 @@ class GFlareCrawler:
             return columns, data
         return []
 
-    def save_config(self, settings):
+    def save_config(self, settings: str) -> None:
+        """Save settings dict to database (if exists)."""
         if self.db_file:
             db = self._connect_to_db()
             db.insert_config(settings)
