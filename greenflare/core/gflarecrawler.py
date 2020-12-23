@@ -368,7 +368,8 @@ class GFlareCrawler:
         for url in urls:
             self.url_queue.put(url)
 
-    def add_to_gui_queue(self, data):
+    def add_to_gui_queue(self, data: dict) -> None:
+        """Add gflare response dict data object to GUI queue."""
         with self.lock:
             self.gui_url_queue += data
 
