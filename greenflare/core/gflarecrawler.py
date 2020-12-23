@@ -526,7 +526,8 @@ class GFlareCrawler:
             return columns
         return []
 
-    def get_inlinks(self, url):
+    def get_inlinks(self, url: str) -> list:
+        """Returns a list of URLs linking to input url."""
         if self.db_file:
             db = self._connect_to_db()
             inlinks = db.get_inlinks(url)
