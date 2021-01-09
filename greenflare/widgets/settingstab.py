@@ -46,9 +46,9 @@ class SettingsTab(ttk.Frame):
         self.group_args = {'side': 'left', 'anchor': 'w',
                            'fill': 'both', 'padx': self.group_x, 'pady': self.group_y}
         self.item_left_args = {'side': 'left',
-                               'anchor': 'w', 'padx': (5, 0), 'pady': 3}
+                               'anchor': 'w', 'padx': (5, 5), 'pady': 3}
         self.item_right_args = {'side': 'right',
-                                'anchor': 'e', 'padx': (5, 0), 'pady': 3}
+                                'anchor': 'e', 'padx': (5, 5), 'pady': 3}
 
         # First row
         self.frame_first = ttk.Frame(self)
