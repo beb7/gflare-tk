@@ -171,8 +171,8 @@ class SettingsTab(ttk.Frame):
         self.checkboxgroup_resources.pack(**self.group_args)
 
         # Analysis Group
-        self.checkboxgroup_analysis = CheckboxGroup(self.frame_third, 'Analysis', [
-            'Unique Inlinks'], self.crawler.settings, 'CRAWL_ITEMS')
+        self.checkboxgroup_analysis = CheckboxGroup(self.frame_third, 'Misc', [
+            'Unique Inlinks', 'Respect nofollow'], self.crawler.settings, 'CRAWL_ITEMS')
         self.checkboxgroup_analysis.pack(**self.group_args)
 
     def update(self):
