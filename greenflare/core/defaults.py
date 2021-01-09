@@ -29,7 +29,7 @@ from pathlib import Path
 
 class Defaults:
 
-    version = '0.97'
+    version = '0.9792'
 
     crawl_items = [
         'url',
@@ -40,6 +40,7 @@ class Defaults:
         'meta_description',
         'h1',
         'unique_inlinks',
+        'respect_nofollow',
         'canonicals',
         'canonical_tag',
         'pagination',
