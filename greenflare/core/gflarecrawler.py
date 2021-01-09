@@ -122,8 +122,6 @@ class GFlareCrawler:
         self.columns = self.gf.all_items = db.get_columns()
 
         if self.settings['MODE'] == 'Spider':
-            self.settings['STARTING_URL'] = self.gf.url_components_to_str(
-                self.gf.parse_url(self.settings['STARTING_URL']))
             self.settings['ROOT_DOMAIN'] = self.gf.get_domain(
                 self.settings['STARTING_URL'])
             response = self.crawl_url(self.settings['STARTING_URL'])
