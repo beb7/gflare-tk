@@ -284,14 +284,14 @@ class GFlareCrawler:
 
         self.session = Session()
         status_forcelist = (500, 502, 504)
-        retries = self.settings.get("MAX_RETRIES", 0)
+        retries = self.settings.get('MAX_RETRIES', 0)
         self.header_only = False
 
-        if self.settings.get("PROXY_HOST", "") != "":
-            if self.settings.get("PROXY_USER", "") == "":
-                self.session.proxies = {"https": f"{self.settings['PROXY_HOST']}"}
+        if self.settings.get('PROXY_HOST', '') != '':
+            if self.settings.get('PROXY_USER', '') == '':
+                self.session.proxies = {'https': f'{self.settings["PROXY_HOST"]}'}
             else:
-                self.session.proxies = {'https': f"https://{self.settings['PROXY_USER']}:{self.settings['PROXY_PASSWORD']}@{self.settings['PROXY_HOST']}"}
+                self.session.proxies = {'https': f'https://{self.settings["PROXY_USER"]}:{self.settings["PROXY_PASSWORD"]}@{self.settings["PROXY_HOST"]}'}
 
     def response_to_data(self, response) -> dict:
         """Function to parse a requests object into a gflare resposne dict."""
