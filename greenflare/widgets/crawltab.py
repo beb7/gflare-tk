@@ -32,6 +32,7 @@ from greenflare.core.defaults import Defaults
 from greenflare.widgets.helpers import run_in_background_with_window, tk_after
 from os import path, remove
 from webbrowser import open as open_in_browser
+from urllib.parse import urlsplit, urlunsplit
 import queue
 import sys
 
@@ -80,7 +81,7 @@ class CrawlTab(ttk.Frame):
         self.middle_frame.pack(anchor='center', fill='both', expand=True)
 
         self.treeview_table = ttk.Treeview(
-            self.middle_frame, selectmode="browse")
+            self.middle_frame, selectmode='browse')
 
         # Capture right clicks on table
         right_click = '<Button-3>'
@@ -218,22 +219,23 @@ class CrawlTab(ttk.Frame):
     def btn_crawl_pushed(self):
         url = self.entry_url_input.get().strip()
 
-        if self.button_crawl["text"] == "Start":
+        if self.button_crawl['text'] == 'Start':
             # Validate input url
-            url_components = self.crawler.gf.parse_url(url)
+            url_components = urlsplit(url)
 
             if self.crawler.settings.get('MODE', '') == 'Spider':
 
-                if url_components['scheme'] == '':
+                if url_components.scheme == '':
                     url = 'http://' + url
-                    url_components = self.crawler.gf.parse_url(url)
+                    url_components = urlsplit(url)
 
-                if url_components['netloc'] == '' or ' ' in url_components['netloc']:
+                if url_components.netloc == '' or ' ' in url_components.netloc:
                     messagebox.showerror(
                         title='Invalid URL', message='Please enter a valid URL!')
                     return
 
-            url = self.crawler.gf.url_components_to_str(url_components)
+            url = urlunsplit(url_components)
+            url = self.crawler.gf.sanitise_url(url, base_url='', encoding='utf-8')
 
             self.entry_url_input.entry.delete(0, 'end')
             self.entry_url_input.entry.insert(0, url)
@@ -281,7 +283,21 @@ class CrawlTab(ttk.Frame):
         else:
             return
         
+    def remove_unicode_from_item(self, item: tuple) -> tuple:
+        return item
+        # tkinter does not support displaying unicode characters
+        # Remove unicode characters from strings to avoid crashing the UI
+        try:
+            output = tuple([str(i).encode('ascii', 'ignore').decode('utf-8').strip() for i in item])
+        except Exception as e:
+            print('ERROR removing unicode from item')
+            print(e)
+            output = tuple([])
+        finally:
+            return output
+
     def add_item_to_outputtable(self, item):
+        item = self.remove_unicode_from_item(item)
         self.treeview_table.insert(
             '', 'end', text=self.row_counter, values=item)
         with self.lock:
@@ -302,6 +318,7 @@ class CrawlTab(ttk.Frame):
 
         if len(items) > 0:
             for item in items:
+                # item = self.remove_unicode_from_item(item)
                 self.add_item_to_outputtable(item)
 
             self.update_progressbar()
@@ -334,6 +351,7 @@ class CrawlTab(ttk.Frame):
     @tk_after
     def add_items(self, items):
         for i, item in enumerate(items, 1):
+            # item_decoded = self.remove_unicode_from_item(item)
             self.treeview_table.insert('', 'end', text=i, values=item)
 
     @run_in_background_with_window([], title='Loading crawl ...', msg='Please wait while the data is being loaded ...')
