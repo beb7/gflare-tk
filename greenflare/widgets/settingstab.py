@@ -97,6 +97,37 @@ class SettingsTab(ttk.Frame):
         self.combobox_ua.current(0)
         self.combobox_ua.pack(**self.item_right_args)
 
+        # Group HTTP Auth
+
+        self.group_auth = ttk.LabelFrame(self.frame_first, text='HTTP Basic Auth')
+        self.group_auth.pack(**self.group_args)
+
+        self.group_auth_one = ttk.Frame(self.group_auth)
+        self.group_auth_one.pack(expand=True, fill='x')
+
+        self.label_auth_user = ttk.Label(self.group_auth_one, text='User')
+        self.label_auth_user.pack(**self.item_left_args)
+
+        self.var_auth_user = StringVar()
+        self.entry_auth_user = ttk.Entry(self.group_auth_one, textvariable=self.var_auth_user,
+                                    validatecommand=self.save_auth, validate='focusout')
+        self.entry_auth_user.insert(0, 'Username')
+        self.entry_auth_user.pack(**self.item_right_args)
+
+        self.group_auth_two = ttk.Frame(self.group_auth)
+        self.group_auth_two.pack(expand=True, fill='x')
+
+        self.label_auth_password = ttk.Label(self.group_auth_two, text='Password')
+        self.label_auth_password.pack(**self.item_left_args)
+
+        self.var_auth_password = StringVar()
+        self.entry_auth_password = ttk.Entry(self.group_auth_two, show='*', textvariable=self.var_auth_password,
+                                    validatecommand=self.save_auth, validate='focusout')
+        self.entry_auth_password.insert(0, '')
+        self.entry_auth_password.pack(**self.item_right_args)
+
+        # Group Network/Proxy
+
         self.group_network = ttk.LabelFrame(self.frame_first, text='Proxy')
         self.group_network.pack(**self.group_args)
 
@@ -198,6 +229,10 @@ class SettingsTab(ttk.Frame):
         self.crawler.settings['PROXY_HOST'] = self.var_host.get()
         self.crawler.settings['PROXY_USER'] = self.var_user.get()
         self.crawler.settings['PROXY_PASSWORD'] = self.var_password.get()
+
+    def save_auth(self):
+        self.crawler.settings['AUTH_USER'] = self.var_auth_user.get()
+        self.crawler.settings['AUTH_PASSWORD'] = self.var_auth_password.get()
 
     def url_limit_clicked(self):
         if self.on_off_var.get() == 1:
