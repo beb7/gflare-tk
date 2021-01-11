@@ -171,9 +171,9 @@ class SettingsTab(ttk.Frame):
         self.checkboxgroup_resources.pack(**self.group_args)
 
         # Analysis Group
-        self.checkboxgroup_analysis = CheckboxGroup(self.frame_third, 'Misc', [
+        self.checkboxgroup_misc = CheckboxGroup(self.frame_third, 'Misc', [
             'Unique Inlinks', 'Respect nofollow'], self.crawler.settings, 'CRAWL_ITEMS')
-        self.checkboxgroup_analysis.pack(**self.group_args)
+        self.checkboxgroup_misc.pack(**self.group_args)
 
     def update(self):
         self.spinbox_threads.set(int(self.crawler.settings['THREADS']))
