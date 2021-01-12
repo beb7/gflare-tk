@@ -417,6 +417,7 @@ class GFlareCrawler:
 
     def consumer_worker(self) -> None:
         """Function to be run as a _single_ consumer Thread. Extracts information from request responses and inserts data into the database."""
+        
         db = self._connect_to_db()
         do_commit = False
         with self.lock:
@@ -455,8 +456,7 @@ class GFlareCrawler:
                 if new or updated:
                     self.add_to_gui_queue(new + updated)
 
-            extracted_links = data.get('links', []) + data.get('hreflang_links', []) + data.get(
-                'canonical_links', []) + data.get('pagination_links', [])
+            extracted_links = data.get('links', [])
 
             if len(extracted_links) > 0:
                 new_urls = db.get_new_urls(extracted_links)
