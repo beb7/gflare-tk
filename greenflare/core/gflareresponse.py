@@ -25,9 +25,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from lxml.html import fromstring
 from greenflare.core.gflarerobots import GFlareRobots
 from requests import status_codes
+from requests.utils import requote_uri
+from requests.compat import urlunparse
 from urllib.parse import urljoin, urlsplit, urlunsplit
-from w3lib.html import strip_html5_whitespace
-from w3lib.url import safe_url_string
+from urllib3.util import parse_url
 from re import match, escape
 from functools import wraps
 from time import time
@@ -41,6 +42,7 @@ class GFlareResponse:
         self.response = None
         self.url = ''
         self.base_url = ''
+        self.host = ''
         self.robots_txt_ua = "Googlebot"
         self.gfrobots = GFlareRobots('', self.settings.get("USER_AGENT", ''))
         self.robots_txt_status = None
@@ -58,7 +60,7 @@ class GFlareResponse:
             'href_respect_nofollow': '//a[not(contains(@rel, "nofollow"))]/@href',
             'canonical_tag': '/html/head/link[@rel="canonical"]/@href',
             'hreflang': '/html/head/link[@rel="alternate"]/@href',
-            'pagination': '/html/head/link[@rel="next"]/@href|//link[@rel="prev"]/@href',
+            'pagination': '/html/head/link[@rel="next"]/@href|/html/head/link[@rel="prev"]/@href',
             'images': '//img/@src',
             'stylesheets': '//link[@rel="stylesheet"]/@href',
             'javascript': '//script/@src',
@@ -74,6 +76,8 @@ class GFlareResponse:
         self.exclusions_regex = self.exclusions_to_regex(
             self.settings.get('EXCLUSIONS', []))
 
+        self.crawlable_schemes = ('http', 'https', '')
+
     def timing(f):
         @wraps(f)
         def wrap(*args, **kw):
@@ -86,7 +90,8 @@ class GFlareResponse:
 
     def set_response(self, response):
         self.response = response
-        self.url = self.sanitise_url(self.response.url)
+        self.url = self.response.url
+        self.host = self.get_domain(self.url)
 
         if self.is_robots_txt():
             self.response_to_robots_txt()
@@ -152,7 +157,6 @@ class GFlareResponse:
 
         return d
 
-    # @timing
     def get_tree(self):
         try:
             # We need to use page.content rather than page.text because
@@ -163,9 +167,17 @@ class GFlareResponse:
             print(e)
 
     def get_domain(self, url):
-        domain = str(urlsplit(url).netloc)
+        try:
+            _, _, domain, _, _, _, _ = parse_url(url)
+        except:
+            return ''
+
+        if not domain:
+            return ''
+        
         if domain.startswith('www.'):
             return domain.replace('www.', '')
+        
         return domain
 
     def get_robots_txt_url(self, url):
@@ -173,9 +185,12 @@ class GFlareResponse:
         return urlunsplit((comp.scheme, comp.netloc, 'robots.txt', '', ''))
 
     def is_external(self, url):
-        if self.settings.get("ROOT_DOMAIN", "") == "":
+        domain = self.get_domain(url)
+        
+        if not domain:
             return False
-        return self.get_domain(url) != self.settings.get("ROOT_DOMAIN", "")
+        
+        return domain != self.settings.get('ROOT_DOMAIN', '')
 
     def is_excluded(self, url):
         if self.exclusions_regex:
@@ -186,8 +201,7 @@ class GFlareResponse:
         extraction = self.extract_xpath(self.xpath_mapping['base_url'])
         
         if extraction:
-            url = strip_html5_whitespace(extraction[0])
-            return url
+            return self.sanitise_url(extraction[0], base_url=self.url)
 
         return self.url
 
@@ -224,7 +238,7 @@ class GFlareResponse:
         return urlsplit(url).path == '/robots.txt'
 
     def get_final_url(self):
-        return self.sanitise_url(self.response.url)
+        return self.response.url
 
     def get_text(self):
         return self.response.text
@@ -247,10 +261,13 @@ class GFlareResponse:
         return header
 
     def valid_url(self, url):
-        if not url.startswith('http'):
+        try:
+            cmps = urlsplit(url)
+        except:
             return False
 
-        url = self.sanitise_url(url)
+        if not cmps.scheme in self.crawlable_schemes:
+            return False
 
         # Filter out external links if needed
         if "external_links" not in self.settings.get("CRAWL_ITEMS", "") and self.is_external(url):
@@ -264,34 +281,49 @@ class GFlareResponse:
             return False
         return True
 
-    def sanitise_url(self, url: str, base_url='', encoding='') -> str:
+    def sanitise_url(self, url: str, base_url='') -> str:
         """Cleans a given input URL and returns a RFC compliant URL as a string."""
 
-        if not base_url:
-            base_url = self.base_url
+        if isinstance(url, bytes):
+            url = url.decode('utf8')
+        else:
+            url = str(url)
 
-        if not encoding:
-            encoding = self.response.encoding
-
-        url = strip_html5_whitespace(url)
-        url = safe_url_string(url, encoding=encoding)
-
-        # Search engines ignore fragments hence we remove them from URLs
-        url = url.split('#')[0]
-        url = urljoin(base_url, url)
-
+        # Remove leading whitespaces from url
+        url = url.lstrip()
         
-        # RFC1945 3.2.2 http URL: Empty paths must be replaced with '/'
-        cmps = urlsplit(url)
-        if 'http' in cmps.scheme and cmps.path == '':
-            url += '/'
+        if base_url:
+            url = urljoin(base_url, url)
+
+        try:
+            scheme, auth, host, port, path, query, fragment = parse_url(url)
+        except:
+            print('ERROR parsing', url)
+            return
+
+        # Carefully reconstruct the network location
+        netloc = auth or ''
+        if netloc:
+            netloc += '@'
+        netloc += host
+        if port:
+            netloc += ':' + str(port)
+
+        # Bare domains aren't valid URLs.
+        if not path:
+            path = '/'
+
+        url = requote_uri(urlunparse([scheme, netloc, path, None, query, fragment]))
+
+        # Search engines ignore hash fragments hence we remove them from URLs
+        url = url.split('#')[0]
 
         return url
 
     def extract_links(self):
-        links = [self.sanitise_url(url) for url in self.extract_xpath(self.xpath_link_extraction) if self.valid_url(self.sanitise_url(url))]
+        links = [self.sanitise_url(url, base_url=self.base_url) for url in self.extract_xpath(self.xpath_link_extraction) if self.valid_url(url)]
 
-        return links
+        return list(set(links))
 
     def get_txt_by_selector(self, selector, method="css", get="txt"):
         try:
@@ -347,7 +379,7 @@ class GFlareResponse:
             canonicals = self.extract_xpath(
                 self.xpath_mapping['canonical_tag'])
             if len(canonicals) > 0:
-                d['canonical_tag'] = canonicals[0]
+                d['canonical_tag'] = self.sanitise_url(canonicals[0], base_url=self.base_url)
             else:
                 d['canonical_tag'] = ''
 
