@@ -235,7 +235,7 @@ class CrawlTab(ttk.Frame):
                     return
 
             url = urlunsplit(url_components)
-            url = self.crawler.gf.sanitise_url(url, base_url='', encoding='utf-8')
+            url = self.crawler.gf.sanitise_url(url, base_url='')
 
             self.entry_url_input.entry.delete(0, 'end')
             self.entry_url_input.entry.insert(0, url)
@@ -283,21 +283,7 @@ class CrawlTab(ttk.Frame):
         else:
             return
         
-    def remove_unicode_from_item(self, item: tuple) -> tuple:
-        return item
-        # tkinter does not support displaying unicode characters
-        # Remove unicode characters from strings to avoid crashing the UI
-        try:
-            output = tuple([str(i).encode('ascii', 'ignore').decode('utf-8').strip() for i in item])
-        except Exception as e:
-            print('ERROR removing unicode from item')
-            print(e)
-            output = tuple([])
-        finally:
-            return output
-
     def add_item_to_outputtable(self, item):
-        item = self.remove_unicode_from_item(item)
         self.treeview_table.insert(
             '', 'end', text=self.row_counter, values=item)
         with self.lock:
@@ -351,7 +337,6 @@ class CrawlTab(ttk.Frame):
     @tk_after
     def add_items(self, items):
         for i, item in enumerate(items, 1):
-            # item_decoded = self.remove_unicode_from_item(item)
             self.treeview_table.insert('', 'end', text=i, values=item)
 
     @run_in_background_with_window([], title='Loading crawl ...', msg='Please wait while the data is being loaded ...')
