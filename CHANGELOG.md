@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.98] - In development
+- Added support for password protected sites (basic http auth)
+- Added option to respect/ignore nofollow href links
+- Added support for HTML base tags
+- Fixed crawl finishing before reaching 100%
+
+
 ## [0.97] - 2020-12-14
 - Much faster viewing of inlinks (requires new crawl)
 - Added automatic update notifications
