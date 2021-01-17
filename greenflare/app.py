@@ -156,8 +156,9 @@ class mainWindow(ttk.Frame):
             self.tab_crawl.update_bottom_stats()
         except Exception as e:
             messagebox.showerror(title='Error - Invalid database',
-                                 message=f'Could not load {db_file} as it is invalid!')
+                                 message=f'Could not load {db_file} as it is invalid, falling back to default settings!')
             print(e)
+            self.crawler.settings = Defaults.settings.copy()
 
     def new_crawl(self):
         self.crawler.reset_crawl()
