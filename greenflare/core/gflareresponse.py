@@ -27,7 +27,7 @@ from greenflare.core.gflarerobots import GFlareRobots
 from requests import status_codes
 from requests.utils import requote_uri
 from requests.compat import urlunparse
-from urllib.parse import urljoin, urlsplit, urlunsplit
+from urllib.parse import urljoin
 from urllib3.util import parse_url
 from re import match, escape
 from functools import wraps
@@ -45,13 +45,9 @@ class GFlareResponse:
         self.host = ''
         self.robots_txt_ua = "Googlebot"
         self.gfrobots = GFlareRobots('', self.settings.get("USER_AGENT", ''))
-        self.robots_txt_status = None
 
         self.spider_links = "Spider" in self.settings.get("MODE", "")
         
-        if self.robots_txt_status == "BLOCKED" and 'respect_robots_txt' in self.settings.get('CRAWL_ITEMS', ''):
-            self.spider_links = False
-
         self.extraction_separator = self.settings.get(
             'EXTRACTION_SEPARATOR', '; ')
 
@@ -59,7 +55,7 @@ class GFlareResponse:
             'href_all': '//a/@href',
             'href_respect_nofollow': '//a[not(contains(@rel, "nofollow"))]/@href',
             'canonical_tag': '/html/head/link[@rel="canonical"]/@href',
-            'hreflang': '/html/head/link[@rel="alternate"]/@href',
+            'hreflang': '/html/head/link[@rel="alternate" and @hreflang]/@href',
             'pagination': '/html/head/link[@rel="next"]/@href|/html/head/link[@rel="prev"]/@href',
             'images': '//img/@src',
             'stylesheets': '//link[@rel="stylesheet"]/@href',
@@ -92,6 +88,10 @@ class GFlareResponse:
         self.response = response
         self.url = self.response.url
         self.host = self.get_domain(self.url)
+        self.spider_links = "Spider" in self.settings.get("MODE", "")
+
+        if self.get_robots_txt_status == 'blocked' and 'respect_robots_txt' in self.settings.get('CRAWL_ITEMS', ''):
+            self.spider_links = False
 
         if self.is_robots_txt():
             self.response_to_robots_txt()
@@ -134,7 +134,6 @@ class GFlareResponse:
 
         return '|'.join(xpaths)
 
-    # @timing
     def get_data(self):
 
         d = {'url': self.url}
@@ -181,8 +180,9 @@ class GFlareResponse:
         return domain
 
     def get_robots_txt_url(self, url):
-        comp = urlsplit(url)
-        return urlunsplit((comp.scheme, comp.netloc, 'robots.txt', '', ''))
+        comps = parse_url(url)
+        url = requote_uri(urlunparse([comps.scheme, comps.host, 'robots.txt', None, comps.query, comps.fragment]))
+        return url
 
     def is_external(self, url):
         domain = self.get_domain(url)
@@ -235,7 +235,7 @@ class GFlareResponse:
 
         if self.is_external(url):
             return False
-        return urlsplit(url).path == '/robots.txt'
+        return parse_url(url).path == '/robots.txt'
 
     def get_final_url(self):
         return self.response.url
@@ -262,7 +262,7 @@ class GFlareResponse:
 
     def valid_url(self, url):
         try:
-            cmps = urlsplit(url)
+            cmps = parse_url(url)
         except:
             return False
 
@@ -277,7 +277,9 @@ class GFlareResponse:
             return False
 
         # Do not check and report on on-page links
+        print(url, '->', self.allowed_by_robots_txt(url))
         if "check_blocked_urls" not in self.settings.get("CRAWL_ITEMS", "") and self.allowed_by_robots_txt(url) == False:
+            ('> Blocked:', url)
             return False
         return True
 
