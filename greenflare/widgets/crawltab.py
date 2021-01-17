@@ -255,8 +255,6 @@ class CrawlTab(ttk.Frame):
         elif self.button_crawl["text"] == "Restart":
             self.start_new_crawl(url)
 
-        print(self.crawler.settings)
-
     def update_buttons(self):
         btn_txt = self.button_crawl["text"]
         if btn_txt == "Start":
