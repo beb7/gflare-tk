@@ -87,7 +87,7 @@ class CrawlTab(ttk.Frame):
         # Left clicks work best on all three platforms (right clicks are tricky on darwin)
         left_click = '<Button-1>'
 
-        self.treeview_table.bind(right_click, self.assign_treeview_click)
+        self.treeview_table.bind(left_click, self.assign_treeview_click)
 
         self.scrollbar_vertical = ttk.Scrollbar(
             self.middle_frame, orient="vertical", command=self.vertical_scrollbar_clicked)
