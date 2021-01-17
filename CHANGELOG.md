@@ -4,6 +4,7 @@
 - Added support for password protected sites (basic http auth)
 - Added option to respect/ignore nofollow href links
 - Added support for HTML base tags
+- Added view to inspect all broken internal links
 - Fixed crawl finishing before reaching 100%
 
 
@@ -16,7 +17,6 @@
 
 
 ## [0.96] - 2020-12-07
-
 - Improved information under About
 - Allow exporting inlinks (#6)
 - Improved formatting of bottom stats
