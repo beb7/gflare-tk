@@ -277,7 +277,6 @@ class GFlareResponse:
             return False
 
         # Do not check and report on on-page links
-        print(url, '->', self.allowed_by_robots_txt(url))
         if "check_blocked_urls" not in self.settings.get("CRAWL_ITEMS", "") and self.allowed_by_robots_txt(url) == False:
             ('> Blocked:', url)
             return False
