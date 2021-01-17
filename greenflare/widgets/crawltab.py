@@ -83,11 +83,9 @@ class CrawlTab(ttk.Frame):
         self.treeview_table = ttk.Treeview(
             self.middle_frame, selectmode='browse')
 
-        # Capture right clicks on table
-        right_click = '<Button-3>'
-
-        if sys.platform == 'darwin':
-            right_click = '<Button-2>'
+        # Capture left clicks on table
+        # Left clicks work best on all three platforms (right clicks are tricky on darwin)
+        left_click = '<Button-1>'
 
         self.treeview_table.bind(right_click, self.assign_treeview_click)
 
