@@ -133,11 +133,11 @@ class GFlareCrawler:
                 db.close()
                 return
 
+            self.request_robots_txt(response.url)
             data = self.response_to_data(response)
 
             self.add_to_data_queue(data)
-            self.request_robots_txt(data['url'])
-
+            
         elif self.settings['MODE'] == 'List':
             if len(self.list_mode_urls) > 0:
                 self.add_to_url_queue(self.list_mode_urls)
@@ -167,8 +167,7 @@ class GFlareCrawler:
             db.close()
         except Exception as e:
             print('load_crawl failed!')
-            print(e)
-            raise
+            raise e
 
     def reset_crawl(self) -> None:
         """Reset crawl to default state in preparation for a new crawl. """
