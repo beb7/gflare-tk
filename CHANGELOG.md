@@ -6,6 +6,7 @@
 - Added support for HTML base tags
 - Added view to inspect all broken internal links
 - Fixed crawl finishing before reaching 100%
+- Context menus are now opened by left clicking rows/columns (Fixes macOS issues)
 
 
 ## [0.97] - 2020-12-14
