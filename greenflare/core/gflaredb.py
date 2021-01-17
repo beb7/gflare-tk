@@ -114,7 +114,6 @@ class GFlareDB:
             self.extractions = []
         out = [(k, v) for k, v in self.columns_map.items(
         ) if k in self.crawl_items] + [(e[0], 'TEXT') for e in self.extractions]
-        print("get_sql_columns:", out)
         return out
 
     def create(self):
@@ -455,7 +454,6 @@ class GFlareDB:
     def create_view_non_ok_inlinks(self, table_name):
         query = f"CREATE VIEW IF NOT EXISTS {table_name} AS SELECT crawl.url as url_from, url_to, sc as status_code FROM (SELECT url_from_id, url as url_to, status_code as sc FROM crawl INNER JOIN inlinks ON inlinks.url_to_id = crawl.id WHERE status_code != 200) INNER JOIN crawl ON crawl.id = url_from_id"
         self.cur.execute(query)
-        print('>>', query)
 
     def create_view_broken_inlinks(self, table_name, from_status_code, to_status_code):
         query = f"CREATE VIEW IF NOT EXISTS {table_name} AS SELECT crawl.url as url_from, url_to, sc as status_code FROM (SELECT url_from_id, url as url_to, status_code as sc FROM crawl INNER JOIN inlinks ON inlinks.url_to_id = crawl.id WHERE status_code BETWEEN {from_status_code} AND {to_status_code}) INNER JOIN crawl ON crawl.id = url_from_id"
