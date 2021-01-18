@@ -120,11 +120,17 @@ class GFlareRobots:
             # compatibility
             d_match = re.match(exp_disallow_rule, row)
             if d_match:
-                self.disallows.append(d_match.group(1))
+                # Skip emtpy Disallow:
+                path = d_match.group(1)
+                if path:
+                    self.disallows.append(path)
 
             a_match = re.match(exp_allow_rule, row)
             if a_match:
-                self.allows.append(a_match.group(1))
+                # Skip emtpy Allow:
+                path = a_match.group(1)
+                if path:
+                    self.allows.append(path)
 
         self.allow_lines = sorted(self.allows.copy(), key=len, reverse=True)
         self.disallow_lines = sorted(
