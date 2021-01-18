@@ -266,7 +266,7 @@ class GFlareResponse:
         except:
             return False
 
-        if not cmps.scheme in self.crawlable_schemes:
+        if cmps.scheme and not cmps.scheme in self.crawlable_schemes:
             return False
 
         # Filter out external links if needed
@@ -278,7 +278,6 @@ class GFlareResponse:
 
         # Do not check and report on on-page links
         if "check_blocked_urls" not in self.settings.get("CRAWL_ITEMS", "") and self.allowed_by_robots_txt(url) == False:
-            ('> Blocked:', url)
             return False
         return True
 
@@ -323,7 +322,6 @@ class GFlareResponse:
 
     def extract_links(self):
         links = [self.sanitise_url(url, base_url=self.base_url) for url in self.extract_xpath(self.xpath_link_extraction) if self.valid_url(url)]
-
         return list(set(links))
 
     def get_txt_by_selector(self, selector, method="css", get="txt"):
