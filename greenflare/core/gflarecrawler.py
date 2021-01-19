@@ -27,7 +27,6 @@ from greenflare.core.gflaredb import GFlareDB
 from greenflare.core.gflareresponse import GFlareResponse as gf
 from greenflare.core.defaults import Defaults
 from requests import Session, exceptions
-from typing import Union
 from time import sleep, time
 import queue
 
