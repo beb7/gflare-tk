@@ -310,9 +310,12 @@ class GFlareResponse:
             netloc += '@'
         netloc += host
         if port:
-            if not (scheme == 'http' and port == 80):
-                netloc += ':' + str(port)
-            if not (scheme == 'https' and port == 443):
+            # Only report on ports if they are used in a non-standard way
+            if scheme == 'http' and port == 80:
+                pass
+            elif scheme == 'https' and port == 443:
+                pass
+            else:
                 netloc += ':' + str(port)
 
         # Bare domains aren't valid URLs.
