@@ -263,6 +263,10 @@ class GFlareResponse:
     def valid_url(self, url):
         try:
             cmps = parse_url(url)
+            if cmps.scheme and not cmps.host:
+                return False
+            if not cmps.scheme and cmps.host:
+                return False
         except:
             return False
 
@@ -298,8 +302,7 @@ class GFlareResponse:
         try:
             scheme, auth, host, port, path, query, fragment = parse_url(url)
         except:
-            print('ERROR parsing', url)
-            return
+            return None
 
         # Carefully reconstruct the network location
         netloc = auth or ''
@@ -307,7 +310,10 @@ class GFlareResponse:
             netloc += '@'
         netloc += host
         if port:
-            netloc += ':' + str(port)
+            if not (scheme == 'http' and port == 80):
+                netloc += ':' + str(port)
+            if not (scheme == 'https' and port == 443):
+                netloc += ':' + str(port)
 
         # Bare domains aren't valid URLs.
         if not path:
