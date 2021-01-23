@@ -50,7 +50,7 @@ class GFlareCrawler:
         self.crawl_running = Event()
         self.crawl_completed = Event()
         self.crawl_timed_out = Event()
-        self.worker_status = []
+        self.active_workers = 0
         self.db_file = None
 
         self.rate_limit_delay = 0
@@ -179,6 +179,8 @@ class GFlareCrawler:
 
         self.init_crawl_headers()
         self.init_session()
+
+        self.active_workers = 0
 
         self.gf = gf(self.settings, columns=None)
 
@@ -375,31 +377,47 @@ class GFlareCrawler:
         """Add gflare response dict data object to data queue."""
         self.data_queue.put(data)
 
+    def clock_workers(self, increase: bool) -> None:
+        """Increases or decreases the count of active workers (Thread safe)."""
+
+        if increase:
+            with self.lock:
+                self.active_workers += 1
+        else:
+            with self.lock:
+                self.active_workers -= 1
+
+    def get_buys_workers(self) -> int:
+        """Get number of active workers (Thread safe)."""
+        with self.lock:
+            print(self.active_workers)
+            return self.active_workers
+
     def crawl_worker(self, name: str) -> None:
         """Function to be run as a worker Thread. Requests URLs and inserts responses into the data queue."""
-        busy = Event()
         response = None
         timeout = 0.25
         backoff_factor = 1
         adj_timeout = timeout
 
-        with self.lock:
-            self.worker_status.append(busy)
-
+        # Set to active
+        self.clock_workers(True)
+        
         while self.crawl_running.is_set() == False:
-            sleep(self.rate_limit_delay)
-
             if not response:
+                sleep(self.rate_limit_delay)
+                self.clock_workers(False)
                 url = self.url_queue.get()
+                self.clock_workers(True)
+                
                 if url == "END":
-                    break
-                busy.set()
+                    break                
+                
                 response = self.crawl_url(url)
 
             if isinstance(response, str):
                 response = None
-                busy.clear()
-                continue
+                continue            
             try:
                 adj_timeout = timeout
                 self.data_queue.put(response, timeout=adj_timeout)
@@ -407,36 +425,31 @@ class GFlareCrawler:
             except queue.Full:
                 adj_timeout += backoff_factor * timeout
                 continue
-                if self.crawl_running.is_set():
-                    busy.clear()
-                    break
-            busy.clear()
-
+            
+        self.clock_workers(False)
+                    
     def consumer_worker(self) -> None:
         """Function to be run as a _single_ consumer Thread. Extracts information from request responses and inserts data into the database."""
         
         db = self._connect_to_db()
         do_commit = False
+        
         with self.lock:
             urls_last = self.urls_crawled
 
         while not self.crawl_running.is_set():
-
-            with self.lock:
-                if self.url_queue.empty() and self.data_queue.empty() and all([not i.is_set() for i in self.worker_status]):
+            try:
+                response = self.data_queue.get(timeout=1)
+            except queue.Empty:
+                if self.get_buys_workers() == 0:
                     self.crawl_running.set()
                     self.crawl_completed.set()
+                    print('URL Queue:', self.url_queue.qsize())
+                    for t in tenum():
+                        if 'worker-' in t.name:
+                            self.url_queue.put('END')
                     break
-            try:
-                response = self.data_queue.get()
-            except queue.Empty:
-                print('Consumer thread timed out')
-                self.crawl_running.set()
-                self.crawl_timed_out.set()
-                for t in tenum():
-                    if 'worker-' in t.name:
-                        self.url_queue.put('END')
-                break
+                continue
 
             if isinstance(response, dict):
                 data = response
