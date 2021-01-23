@@ -190,6 +190,8 @@ class GFlareDB:
         self.cur.executemany(
             'REPLACE INTO config (setting, value) VALUES (?, ?)', rows)
 
+        self.commit()
+
     def get_settings(self):
         self.cur.execute("SELECT * FROM config")
         result = dict(self.cur.fetchall())
@@ -402,6 +404,7 @@ class GFlareDB:
             rows = [(from_id, to_id) for to_id in ids]
             self.cur.executemany(
                 "INSERT OR IGNORE INTO inlinks VALUES(NULL, ?, ?)", rows)
+            self.commit()
         else:
             print(f"{from_url} not in db!")
 
@@ -416,12 +419,11 @@ class GFlareDB:
         if new == False:
             rows = [self.tuple_front_to_end(t) for t in data]
             query = f"UPDATE crawl SET {self.items_to_sql(self.columns, op='= ?', remove='url')} WHERE url = ?"
-            # print("columns:", self.columns)
-            # print("query:", query)
             self.cur.executemany(query, rows)
         else:
             query = f"INSERT INTO crawl VALUES(NULL, {','.join(['?'] * self.columns_total)})"
             self.cur.executemany(query, data)
+        self.commit()
 
     @exception_handler
     def insert_new_data(self, redirects):
