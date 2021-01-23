@@ -391,7 +391,6 @@ class GFlareCrawler:
     def get_buys_workers(self) -> int:
         """Get number of active workers (Thread safe)."""
         with self.lock:
-            print(self.active_workers)
             return self.active_workers
 
     def crawl_worker(self, name: str) -> None:
@@ -445,7 +444,7 @@ class GFlareCrawler:
             try:
                 response = self.data_queue.get(timeout=1)
             except queue.Empty:
-                if self.get_buys_workers() == 0:
+                if self.get_buys_workers() == 0 and self.url_queue.empty():
                     # Ugly hack to ensure that ALL remaining URLs have been crawled
                     # Otherwise, the above check is not fail safe and URLs may be overlooked
                     remaining_urls = db.get_url_queue()
