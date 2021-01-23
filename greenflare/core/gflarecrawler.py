@@ -82,7 +82,7 @@ class GFlareCrawler:
     def request_robots_txt(self, url: str):
         """
         Determines and crawls the robots.txt of any given URL.
-    
+
         Returns:
             skip_url (str): string that says SKIP_ME
             issue_response (dict): dict crafted by the deal_with_response method
@@ -90,14 +90,14 @@ class GFlareCrawler:
         """
         robots_txt_url = self.gf.get_robots_txt_url(url)
         response = self.crawl_url(robots_txt_url)
-        
+
         if isinstance(response, str):
             skip_url = response
             return skip_url
         if isinstance(response, dict):
             issue_response = response
             return issue_response
-            
+
         data = self.response_to_data(response)
         return data
 
@@ -114,6 +114,7 @@ class GFlareCrawler:
 
         db = self._connect_to_db()
         db.create()
+        db.insert_config(self.settings)
 
         # # Reset response object
         self.gf = gf(self.settings, columns=None)
@@ -136,7 +137,7 @@ class GFlareCrawler:
             data = self.response_to_data(response)
 
             self.add_to_data_queue(data)
-            
+
         elif self.settings['MODE'] == 'List':
             if len(self.list_mode_urls) > 0:
                 self.add_to_url_queue(self.list_mode_urls)
@@ -144,7 +145,6 @@ class GFlareCrawler:
             else:
                 print('ERROR: No urls to list crawl found!')
 
-        db.commit()
         db.close()
 
         self.start_consumer()
@@ -214,7 +214,6 @@ class GFlareCrawler:
         # Reinit URL queue
         self.add_to_url_queue(db.get_url_queue(), count=False)
 
-        db.commit()
         db.close()
 
         self.start_consumer()
@@ -282,6 +281,7 @@ class GFlareCrawler:
         """
 
         self.session = Session()
+        self.session.headers.update(self.HEADERS)
         status_forcelist = (500, 502, 504)
         retries = self.settings.get('MAX_RETRIES', 0)
         self.header_only = False
@@ -293,7 +293,8 @@ class GFlareCrawler:
                 self.session.proxies = {'https': f'https://{self.settings["PROXY_USER"]}:{self.settings["PROXY_PASSWORD"]}@{self.settings["PROXY_HOST"]}'}
 
         if self.settings.get('AUTH_USER', '') != '':
-            self.session.auth = (self.settings['AUTH_USER'], self.settings['AUTH_PASSWORD'])
+            self.session.auth = (
+                self.settings['AUTH_USER'], self.settings['AUTH_PASSWORD'])
 
     def response_to_data(self, response) -> dict:
         """Function to parse a requests object into a gflare resposne dict."""
@@ -317,16 +318,16 @@ class GFlareCrawler:
         try:
             if header_only:
                 header = self.session.head(
-                    url, headers=self.HEADERS, allow_redirects=True, timeout=timeout)
+                    url, allow_redirects=True, timeout=timeout)
                 return header
 
             header = self.session.head(
-                url, headers=self.HEADERS, allow_redirects=True, timeout=timeout)
+                url, allow_redirects=True, timeout=timeout)
 
             content_type = header.headers.get('content-type', '')
             if 'text' in content_type:
                 body = self.session.get(
-                    url, headers=self.HEADERS, allow_redirects=True, timeout=timeout)
+                    url, allow_redirects=True, timeout=timeout)
                 return body
 
             return header
@@ -402,22 +403,22 @@ class GFlareCrawler:
 
         # Set to active
         self.clock_workers(True)
-        
+
         while self.crawl_running.is_set() == False:
             if not response:
                 sleep(self.rate_limit_delay)
                 self.clock_workers(False)
                 url = self.url_queue.get()
                 self.clock_workers(True)
-                
+
                 if url == "END":
-                    break                
-                
+                    break
+
                 response = self.crawl_url(url)
 
             if isinstance(response, str):
                 response = None
-                continue            
+                continue
             try:
                 adj_timeout = timeout
                 self.data_queue.put(response, timeout=adj_timeout)
@@ -425,30 +426,36 @@ class GFlareCrawler:
             except queue.Full:
                 adj_timeout += backoff_factor * timeout
                 continue
-            
+
         self.clock_workers(False)
-                    
+
+    def notify_crawl_workers_to_stop(self) -> None:
+        """ Notifies all crawl workers to stop by inserting an END element into the URL queue."""
+
+        for t in tenum():
+            if 'worker-' in t.name:
+                self.url_queue.put('END')
+
     def consumer_worker(self) -> None:
         """Function to be run as a _single_ consumer Thread. Extracts information from request responses and inserts data into the database."""
-        
+
         db = self._connect_to_db()
-        do_commit = False
-        
-        with self.lock:
-            urls_last = self.urls_crawled
 
         while not self.crawl_running.is_set():
             try:
                 response = self.data_queue.get(timeout=1)
             except queue.Empty:
                 if self.get_buys_workers() == 0:
-                    self.crawl_running.set()
-                    self.crawl_completed.set()
-                    print('URL Queue:', self.url_queue.qsize())
-                    for t in tenum():
-                        if 'worker-' in t.name:
-                            self.url_queue.put('END')
-                    break
+                    # Ugly hack to ensure that ALL remaining URLs have been crawled
+                    # Otherwise, the above check is not fail safe and URLs may be overlooked
+                    remaining_urls = db.get_url_queue()
+                    if remaining_urls:
+                        self.add_to_url_queue(remaining_urls, count=False)
+                    else:
+                        self.crawl_running.set()
+                        self.crawl_completed.set()
+                        self.notify_crawl_workers_to_stop()
+                        break
                 continue
 
             if isinstance(response, dict):
@@ -478,29 +485,16 @@ class GFlareCrawler:
                 if 'unique_inlinks' in self.settings.get('CRAWL_ITEMS', ''):
                     db.insert_inlinks(extracted_links, data['url'])
 
-            with self.lock:
-                if self.urls_crawled - urls_last >= 100:
-                    do_commit = True
-                    urls_last = self.urls_crawled
-
-            if do_commit:
-                db.commit()
-                do_commit = False
-
         # Outside while loop, wrap things up
         self.crawl_running.set()
 
-        # Empty our URL Queue first
-        with self.url_queue.mutex:
-            self.url_queue.queue.clear()
-        # Add signals for our waiting workers that they are done for today
-        [self.url_queue.put('END')
-         for _ in range(int(self.settings['THREADS']))]
+        if not self.crawl_completed.is_set():
+            # Empty our URL Queue first
+            with self.url_queue.mutex:
+                self.url_queue.queue.clear()
+            self.notify_crawl_workers_to_stop()
 
-        # Always commit to db at the very end
-        db.commit()
         db.close()
-
         self.session.close()
         print('Consumer thread finished')
 
@@ -525,14 +519,13 @@ class GFlareCrawler:
         if self.db_file:
             db = self._connect_to_db()
             db.insert_config(settings)
-            db.commit()
             db.close()
 
     def get_columns(self, table='crawl') -> list:
         """Retrieve columns from database table. Return empty list if no db file is known."""
         if self.db_file:
             db = self._connect_to_db()
-            columns =  db.get_table_columns(table=table)
+            columns = db.get_table_columns(table=table)
             db.close()
             return columns
         return []
