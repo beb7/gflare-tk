@@ -51,7 +51,7 @@ class GFlareDB:
         self.crawl_items = crawl_items
         self.extractions = extractions
 
-        self.con, self.cur = self.db_connect()
+        self.con = sqlite.connect(self.db_name)
         self.con.create_function("REGEXP", 2, self.regexp)
         self.columns = self.get_columns()
         self.columns_total = len(self.columns)
@@ -70,8 +70,10 @@ class GFlareDB:
 
     @exception_handler
     def check_if_table_exists(self, table_name):
-        self.cur.execute(f"SELECT count(*) FROM sqlite_master WHERE type='table' AND name='{table_name}'")
-        result = self.cur.fetchone()[0]
+        cur = self.con.cursor()
+        cur.execute(f"SELECT count(*) FROM sqlite_master WHERE type='table' AND name='{table_name}'")
+        result = cur.fetchone()[0]
+        cur.close()
         return result
 
     @exception_handler
@@ -88,9 +90,10 @@ class GFlareDB:
 
     @exception_handler
     def get_table_columns(self, table='crawl'):
-        self.cur.execute(f"SELECT * FROM {table}")
-        out = [description[0] for description in self.cur.description]
-
+        cur = self.con.cursor()
+        cur.execute(f"SELECT * FROM {table}")
+        out = [description[0] for description in cur.description]
+        cur.close()
         # remove id from our output
         if 'id' in out:
             out.remove('id')
@@ -126,12 +129,6 @@ class GFlareDB:
         self.commit()
 
     @exception_handler
-    def db_connect(self):
-        con = sqlite.connect(self.db_name)
-        cur = con.cursor()
-        return (con, cur)
-
-    @exception_handler
     def items_to_sql(self, items, op=None, remove=None):
         if op and not remove:
             return ", ".join(f"{i} {op}" for i in items)
@@ -141,29 +138,39 @@ class GFlareDB:
 
     @exception_handler
     def create_data_table(self):
-        self.cur.execute(f"CREATE TABLE IF NOT EXISTS crawl(id INTEGER PRIMARY KEY, {self.items_to_sql(self.get_sql_columns())})")
-        self.cur.execute(
+        cur = self.con.cursor()
+        cur.execute(f"CREATE TABLE IF NOT EXISTS crawl(id INTEGER PRIMARY KEY, {self.items_to_sql(self.get_sql_columns())})")
+        cur.execute(
             "CREATE INDEX IF NOT EXISTS url_index ON crawl (url);")
+        cur.close()
 
     @exception_handler
     def create_config_table(self):
-        self.cur.execute(
+        cur = self.con.cursor()
+        cur.execute(
             "CREATE TABLE IF NOT EXISTS config(setting TEXT type UNIQUE, value TEXT)")
+        cur.close()
 
     @exception_handler
     def create_inlinks_table(self):
-        self.cur.execute(
+        cur = self.con.cursor()
+        cur.execute(
             "CREATE TABLE IF NOT EXISTS inlinks(id INTEGER PRIMARY KEY, url_from_id INTEGER, url_to_id INTEGER, UNIQUE(url_from_id, url_to_id))")
+        cur.close()
 
     @exception_handler
     def create_extractions_table(self):
-        self.cur.execute(
+        cur = self.con.cursor()
+        cur.execute(
             "CREATE TABLE IF NOT EXISTS extractions(name TEXT, type TEXT, value TEXT)")
+        cur.close()
 
     @exception_handler
     def create_exclusions_table(self):
-        self.cur.execute(
+        cur = self.con.cursor()
+        cur.execute(
             'CREATE TABLE IF NOT EXISTS exclusions(operator TEXT, value TEXT)')
+        cur.close()
 
     @exception_handler
     def insert_config(self, settings):
@@ -171,52 +178,60 @@ class GFlareDB:
         special_settings = ['EXTRACTIONS', 'EXCLUSIONS', 'CRAWL_ITEMS']
         rows = [(key, value)
                 for key, value in settings.items() if key not in special_settings]
+        cur = self.con.cursor()
 
         if 'CRAWL_ITEMS' in settings:
             rows += [('CRAWL_ITEMS', ', '.join(settings['CRAWL_ITEMS']))]
 
         if 'EXTRACTIONS' in settings:
-            self.cur.execute('DROP TABLE IF EXISTS extractions')
+            cur.execute('DROP TABLE IF EXISTS extractions')
             self.create_extractions_table()
-            self.cur.executemany(
+            cur.executemany(
                 'REPLACE INTO extractions (name, type, value) VALUES (?, ?, ?)', settings['EXTRACTIONS'])
 
         if 'EXCLUSIONS' in settings:
-            self.cur.execute('DROP TABLE IF EXISTS exclusions')
+            cur.execute('DROP TABLE IF EXISTS exclusions')
             self.create_exclusions_table()
-            self.cur.executemany(
+            cur.executemany(
                 'REPLACE INTO exclusions (operator, value) VALUES (?, ?)', settings['EXCLUSIONS'])
 
-        self.cur.executemany(
+        cur.executemany(
             'REPLACE INTO config (setting, value) VALUES (?, ?)', rows)
 
         self.commit()
+        cur.close()
 
     def get_settings(self):
-        self.cur.execute("SELECT * FROM config")
-        result = dict(self.cur.fetchall())
+        cur = self.con.cursor()
+        cur.execute("SELECT * FROM config")
+        result = dict(cur.fetchall())
 
         for k, v in result.items():
             if 'CRAWL_ITEMS' in k:
                 result[k] = [r.strip() for r in result[k].split(',')]
 
-        self.cur.execute("SELECT * FROM extractions")
-        extractions = self.cur.fetchall()
+        cur.execute("SELECT * FROM extractions")
+        extractions = cur.fetchall()
 
-        self.cur.execute('SELECT * FROM exclusions')
-        exclusions = self.cur.fetchall()
+        cur.execute('SELECT * FROM exclusions')
+        exclusions = cur.fetchall()
+        cur.close()
         return {**result, 'EXCLUSIONS': exclusions, 'EXTRACTIONS': extractions}
 
     @exception_handler
     def print_version(self):
-        self.cur.execute('SELECT SQLITE_VERSION()')
-        data = self.cur.fetchone()[0]
+        cur = self.con.cursor()
+        cur.execute('SELECT SQLITE_VERSION()')
+        data = cur.fetchone()[0]
+        cur.close()
         print(f"SQLite version: {data}")
 
     @exception_handler
     def url_in_db(self, url):
-        result = self.cur.execute(
+        cur = self.con.cursor()
+        result = cur.execute(
             '''SELECT EXISTS(SELECT 1 FROM crawl WHERE url = ?)''', (url,))
+        cur.close()
         if result != None:
             if result.fetchone()[0] == 0:
                 return False
@@ -229,8 +244,10 @@ class GFlareDB:
 
     @exception_handler
     def get_total_urls(self):
-        self.cur.execute("""SELECT count(*) FROM crawl""")
-        result = self.cur.fetchone()[0]
+        cur = self.con.cursor()
+        cur.execute("""SELECT count(*) FROM crawl""")
+        result = cur.fetchone()[0]
+        cur.close()
         return result
 
     @exception_handler
@@ -239,14 +256,20 @@ class GFlareDB:
 
     @exception_handler
     def get_urls_crawled(self):
-        self.cur.execute(
+        cur = self.con.cursor()
+        cur.execute(
             """SELECT count(*) FROM crawl WHERE status_code != ''""")
-        return self.cur.fetchone()[0]
+        out = cur.fetchone()[0]
+        cur.close()
+        return out
 
     @exception_handler
     def get_crawl_data(self):
-        self.cur.execute(f"SELECT {', '.join(self.columns)} FROM crawl WHERE status_code != ''")
-        return self.cur.fetchall()
+        cur = self.con.cursor()
+        cur.execute(f"SELECT {', '.join(self.columns)} FROM crawl WHERE status_code != ''")
+        out = cur.fetchall()
+        cur.close()
+        return out
 
     @exception_handler
     def close(self):
@@ -254,16 +277,20 @@ class GFlareDB:
 
     @exception_handler
     def print_db(self):
-        self.cur.execute("SELECT * FROM crawl")
-        rows = self.cur.fetchall()
+        cur = self.con.cursor()
+        cur.execute("SELECT * FROM crawl")
+        rows = cur.fetchall()
+        cur.close()
         [print(row) for row in rows]
 
     @exception_handler
     def get_url_queue(self):
-        self.cur.row_factory = lambda cursor, row: row[0]
-        self.cur.execute("SELECT url from crawl where status_code = ''")
-        rows = self.cur.fetchall()
-        self.cur.row_factory = None
+        cur = self.con.cursor()
+        cur.row_factory = lambda cursor, row: row[0]
+        cur.execute("SELECT url from crawl where status_code = ''")
+        rows = cur.fetchall()
+        cur.row_factory = None
+        cur.close()
         return rows
 
     def regexp(self, expr, item):
@@ -331,8 +358,10 @@ class GFlareDB:
         else:
             query += "WHERE status_code != ''"
 
-        self.cur.execute(query)
-        rows = self.cur.fetchall()
+        cur = self.con.cursor()
+        cur.execute(query)
+        rows = cur.fetchall()
+        cur.close()
         if rows != None:
             return rows
         return []
@@ -340,8 +369,10 @@ class GFlareDB:
     def get_inlinks(self, url):
         url_id = self.get_ids([url]).pop()
         query = fr"SELECT url as inlink FROM crawl LEFT JOIN inlinks ON crawl.id = inlinks.url_from_id WHERE inlinks.url_to_id = {url_id}"
-        self.cur.execute(query)
-        inlinks = self.cur.fetchall()
+        cur = self.con.cursor()
+        cur.execute(query)
+        inlinks = cur.fetchall()
+        cur.close()
         if inlinks:
             return inlinks
         return []
@@ -351,7 +382,8 @@ class GFlareDB:
         return [l[i * chunk_size:(i + 1) * chunk_size] for i in range((len(l) + chunk_size - 1) // chunk_size)]
 
     def get_new_urls(self, links, chunk_size=999, check_crawled=False):
-        self.cur.row_factory = lambda cursor, row: row[0]
+        cur = self.con.cursor()
+        cur.row_factory = lambda cursor, row: row[0]
         chunked_list = self.chunk_list(links, chunk_size=chunk_size)
         urls_in_db = []
 
@@ -360,14 +392,16 @@ class GFlareDB:
                 sql = f"SELECT url FROM crawl WHERE url in ({','.join(['?']*len(chunk))})"
                 if check_crawled:
                     sql = f"SELECT url FROM crawl WHERE url in ({','.join(['?']*len(chunk))}) AND status_code != ''"
-                self.cur.execute(sql, chunk)
-                urls_in_db += self.cur.fetchall()
-                self.cur.row_factory = None
+                cur.execute(sql, chunk)
+                urls_in_db += cur.fetchall()
             except Exception as e:
                 print("ERROR returning new urls")
                 print(e)
                 print(f"input: {links}")
-
+        
+        cur.row_factory = None
+        cur.close()
+        
         urls_not_in_db = list(set(links) - set(urls_in_db))
 
         if not urls_not_in_db:
@@ -379,20 +413,24 @@ class GFlareDB:
         urls = list(set(urls))
         rows = [tuple([url] + [""] * (self.columns_total - 1)) for url in urls]
         query = f"INSERT OR IGNORE INTO crawl VALUES(NULL, {','.join(['?'] * self.columns_total)})"
-        self.cur.executemany(query, rows)
+        cur = self.con.cursor()
+        cur.executemany(query, rows)
+        cur.close()
 
     @exception_handler
     def get_ids(self, urls):
         chunks = self.chunk_list(urls, chunk_size=999)
-        self.cur.row_factory = lambda cursor, row: row[0]
+        cur = self.con.cursor()
+        cur.row_factory = lambda cursor, row: row[0]
         results = []
 
         for chunk in chunks:
             sql = f"SELECT id FROM crawl WHERE url IN ({','.join(['?']*len(chunk))})"
-            self.cur.execute(sql, chunk)
-            results += self.cur.fetchall()
+            cur.execute(sql, chunk)
+            results += cur.fetchall()
 
-        self.cur.row_factory = None
+        cur.row_factory = None
+        cur.close()
         return results
 
     @exception_handler
@@ -402,8 +440,10 @@ class GFlareDB:
             from_id = from_id[0]
             ids = self.get_ids(urls)
             rows = [(from_id, to_id) for to_id in ids]
-            self.cur.executemany(
+            cur = self.con.cursor()
+            cur.executemany(
                 "INSERT OR IGNORE INTO inlinks VALUES(NULL, ?, ?)", rows)
+            cur.close()
             self.commit()
         else:
             print(f"{from_url} not in db!")
@@ -416,13 +456,15 @@ class GFlareDB:
 
     @exception_handler
     def insert_crawl_data(self, data, new=False):
+        cur = self.con.cursor()
         if new == False:
             rows = [self.tuple_front_to_end(t) for t in data]
             query = f"UPDATE crawl SET {self.items_to_sql(self.columns, op='= ?', remove='url')} WHERE url = ?"
-            self.cur.executemany(query, rows)
+            cur.executemany(query, rows)
         else:
             query = f"INSERT INTO crawl VALUES(NULL, {','.join(['?'] * self.columns_total)})"
-            self.cur.executemany(query, data)
+            cur.executemany(query, data)
+        cur.close()
         self.commit()
 
     @exception_handler
@@ -455,21 +497,29 @@ class GFlareDB:
 
     def create_view_non_ok_inlinks(self, table_name):
         query = f"CREATE VIEW IF NOT EXISTS {table_name} AS SELECT crawl.url as url_from, url_to, sc as status_code FROM (SELECT url_from_id, url as url_to, status_code as sc FROM crawl INNER JOIN inlinks ON inlinks.url_to_id = crawl.id WHERE status_code != 200) INNER JOIN crawl ON crawl.id = url_from_id"
-        self.cur.execute(query)
+        cur = self.con.cursor()
+        cur.execute(query)
+        cur.close()
 
     def create_view_broken_inlinks(self, table_name, from_status_code, to_status_code):
         query = f"CREATE VIEW IF NOT EXISTS {table_name} AS SELECT crawl.url as url_from, url_to, sc as status_code FROM (SELECT url_from_id, url as url_to, status_code as sc FROM crawl INNER JOIN inlinks ON inlinks.url_to_id = crawl.id WHERE status_code BETWEEN {from_status_code} AND {to_status_code}) INNER JOIN crawl ON crawl.id = url_from_id"
-        self.cur.execute(query)
+        cur = self.con.cursor()
+        cur.execute(query)
+        cur.close()
 
     def create_view_status_codes(self, table_name, from_status_code, to_status_code):
         columns = f"{', '.join(self.columns)}"
         query = f"CREATE VIEW IF NOT EXISTS {table_name} AS SELECT {columns} FROM crawl WHERE status_code BETWEEN {from_status_code} AND {to_status_code}"
-        self.cur.execute(query)
+        cur = self.con.cursor()
+        cur.execute(query)
+        cur.close()
 
     def create_view_content_type(self, table_name, content_type):
         columns = f"{', '.join(self.columns)}"
         query = f"CREATE VIEW IF NOT EXISTS {table_name} AS SELECT {columns} FROM crawl WHERE content_type LIKE '%{content_type}%' AND status_code != ''"
-        self.cur.execute(query)
+        cur = self.con.cursor()
+        cur.execute(query)
+        cur.close()
 
     def create_view_crawl_status(self, table_name, crawl_status):
         columns = f"{', '.join(self.columns)}"
@@ -480,7 +530,9 @@ class GFlareDB:
             query = f"CREATE VIEW IF NOT EXISTS {table_name} AS SELECT {columns} FROM crawl WHERE crawl_status NOT LIKE '%ok%' AND status_code !=''"
         elif crawl_status == 'ok':
             query = f"CREATE VIEW IF NOT EXISTS {table_name} AS SELECT {columns} FROM crawl WHERE crawl_status = 'ok' AND status_code !=''"
-        self.cur.execute(query)
+        cur = self.con.cursor()
+        cur.execute(query)
+        cur.close()
 
     def create_onpage_view_length(self, table_name, column):
         query = fr"CREATE VIEW IF NOT EXISTS {table_name} AS SELECT url, {column}, LENGTH(column) as length FROM crawl ORDER BY length DESC"
