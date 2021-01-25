@@ -311,6 +311,8 @@ class GFlareCrawler:
         timeout = (3, 5)
         issue = ''
 
+        self.session.cookies.clear()
+
         with self.lock:
             if self.gf.is_external(url):
                 header_only = True
@@ -439,7 +441,7 @@ class GFlareCrawler:
         """Function to be run as a _single_ consumer Thread. Extracts information from request responses and inserts data into the database."""
 
         db = self._connect_to_db()
-
+        
         while not self.crawl_running.is_set():
             try:
                 response = self.data_queue.get(timeout=1)
@@ -476,7 +478,6 @@ class GFlareCrawler:
 
             if len(extracted_links) > 0:
                 new_urls = db.get_new_urls(extracted_links)
-
                 if len(new_urls) > 0:
                     db.insert_new_urls(new_urls)
                     self.add_to_url_queue(new_urls)
