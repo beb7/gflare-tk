@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 
-#define VERSION "0.97"
+#define VERSION "0.98"
 #define MyAppName "Greenflare SEO Web Crawler"
 #define MyAppShortName "Greenflare"
 #define MyAppProjectFileDesc "Greenflare Database File"
@@ -19,7 +19,7 @@ VersionInfoVersion={#VERSION}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyPublisherURL}
 AppSupportURL={#MySupportURL}
-AppCopyright=Copyright (c) 2020 {#MyAppPublisher}
+AppCopyright=Copyright (c) 2021 {#MyAppPublisher}
 DefaultDirName={pf}\{#MyAppName}
 DisableProgramGroupPage=yes
 LicenseFile=LICENSE
