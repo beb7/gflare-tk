@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.98] - In development
+## [0.98] - 2021-02-04
 - Added support for password protected sites (basic http auth)
 - Added option to respect/ignore nofollow href links
 - Added support for HTML base tags
