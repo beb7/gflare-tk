@@ -266,7 +266,8 @@ class GFlareDB:
     @exception_handler
     def get_crawl_data(self):
         cur = self.con.cursor()
-        cur.execute(f"SELECT {', '.join(self.columns)} FROM crawl WHERE status_code != ''")
+        query = f"SELECT VALUES ({','.join(['?'] * self.columns)}) FROM crawl WHERE status_code != ''"
+        cur.execute(query, (self.columns,))
         out = cur.fetchall()
         cur.close()
         return out
