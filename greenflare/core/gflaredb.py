@@ -359,8 +359,12 @@ class GFlareDB:
             query += "WHERE status_code != ''"
 
         cur = self.con.cursor()
-        cur.execute(query)
-        rows = cur.fetchall()
+        try:
+            cur.execute(query)
+            rows = cur.fetchall()
+        except Exception as e:
+            print(e)
+
         cur.close()
         if rows != None:
             return rows
