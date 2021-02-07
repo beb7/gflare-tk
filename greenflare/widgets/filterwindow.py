@@ -106,7 +106,7 @@ class FilterWindow(Toplevel):
 
         for w in self.widgets:
             children = w.winfo_children()
-            column = children[0].get()
+            column = children[0].get().lower().replace(' ', '_')
             operation = children[1].get()
             values = children[2].get()
 
