@@ -312,11 +312,14 @@ class GFlareDB:
             'Less Than Or Equal To': '<='
         }
 
+        values = []
+
         if not table:
             table = 'crawl'
 
         if columns:
             columns = f"{', '.join(columns)}"
+
         elif table == 'crawl':
             columns = f"{', '.join(self.columns)}"
         else:
@@ -328,16 +331,17 @@ class GFlareDB:
 
             queries = []
             order_cols = []
+            values = []
 
             for f in filters:
                 column, operator, value = f
-
+                value = value.replace('%', r'\%').replace('_', r'\_')
                 if operator == 'Begins With':
-                    value = f'{value}%'
+                    values.append(f'{value}%')
                 elif operator == 'Ends With':
-                    value = f'%{value}'
+                    values.append(f'%{value}')
                 elif 'Contain' in operator:
-                    value = f'%{value}%'
+                    values.append(f'%{value}%')
                 elif operator == 'Sort A-Z' or operator == 'Sort Smallest To Largest':
                     order_cols.append(f'{column} ASC')
                     continue
@@ -346,7 +350,13 @@ class GFlareDB:
                     continue
 
                 operator = operator_mapping[operator]
-                queries.append(f"{column} {operator} '{value}'")
+
+                # Like values need to be escaped and the escape character needs to be defined as there is no default in sqlite
+                if 'LIKE' in operator:
+                    queries.append(f"{column} {operator} ? ESCAPE '\\'")
+                else:
+                    values.append(value)
+                    queries.append(f"{column} {operator} ?")
 
             if queries:
                 query += 'WHERE ' + \
@@ -361,14 +371,19 @@ class GFlareDB:
 
         cur = self.con.cursor()
         try:
-            cur.execute(query)
+            if values:
+                cur.execute(query, tuple(values))
+            else:
+                cur.execute(query)
+
             rows = cur.fetchall()
+            if rows != None:
+                return rows
         except Exception as e:
             print(e)
 
         cur.close()
-        if rows != None:
-            return rows
+
         return []
 
     def get_inlinks(self, url):
@@ -403,10 +418,10 @@ class GFlareDB:
                 print("ERROR returning new urls")
                 print(e)
                 print(f"input: {links}")
-        
+
         cur.row_factory = None
         cur.close()
-        
+
         urls_not_in_db = list(set(links) - set(urls_in_db))
 
         if not urls_not_in_db:
