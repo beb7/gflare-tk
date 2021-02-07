@@ -22,11 +22,17 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from tkinter import ttk, Toplevel, RIGHT, filedialog as fd
-from os import path, remove
-from greenflare.widgets.helpers import export_to_csv, run_in_background_with_window, tk_after
-from greenflare.widgets.windowhelper import center_on_parent
 import sys
+from os import path, remove
+from tkinter import (
+    filedialog as fd, ttk,
+    Toplevel, RIGHT,
+)
+from greenflare.widgets.helpers import (
+    export_to_csv, run_in_background_with_window,
+    tk_after,
+)
+from greenflare.widgets.windowhelper import center_on_parent
 
 
 class ViewInlinks(Toplevel):
@@ -43,8 +49,9 @@ class ViewInlinks(Toplevel):
 
         self.top_frame = ttk.Frame(self)
         self.top_frame.pack(anchor='center', fill='x')
-        
-        self.btn_export =  ttk.Button(self.top_frame, text='Export', command=self.export_button_pushed)
+
+        self.btn_export = ttk.Button(
+            self.top_frame, text='Export', command=self.export_button_pushed)
         self.btn_export.pack(side=RIGHT, padx=20, pady=20)
 
         self.frame_tbl = ttk.Frame(self)
@@ -52,20 +59,23 @@ class ViewInlinks(Toplevel):
 
         self.tbl = ttk.Treeview(self.frame_tbl, selectmode="browse")
 
-        self.scrollbar_vertical = ttk.Scrollbar(self.frame_tbl, orient='vertical', command=self.tbl.yview)
-        self.scrollbar_vertical.pack(side="right", fill="y")
-        
-        self.scrollbar_horizontal = ttk.Scrollbar(self.frame_tbl, orient='horizontal', command=self.tbl.xview)
-        self.scrollbar_horizontal.pack(side="bottom", fill="x")
-        
-        self.tbl.configure(yscrollcommand=self.scrollbar_vertical.set, xscrollcommand=self.scrollbar_horizontal.set)
-        self.tbl.pack(fill="both", expand=True)
-        
-        column_name = 'Linking URL'
-        self.tbl["columns"] = tuple([column_name])
+        self.scrollbar_vertical = ttk.Scrollbar(
+            self.frame_tbl, orient='vertical', command=self.tbl.yview)
+        self.scrollbar_vertical.pack(side='right', fill='y')
 
-        self.tbl.heading("#0", text="id", anchor='w')
-        self.tbl.column("#0", width=55, stretch=False)
+        self.scrollbar_horizontal = ttk.Scrollbar(
+            self.frame_tbl, orient='horizontal', command=self.tbl.xview)
+        self.scrollbar_horizontal.pack(side='bottom', fill='x')
+
+        self.tbl.configure(yscrollcommand=self.scrollbar_vertical.set,
+                           xscrollcommand=self.scrollbar_horizontal.set)
+        self.tbl.pack(fill='both', expand=True)
+
+        column_name = 'Linking URL'
+        self.tbl['columns'] = tuple([column_name])
+
+        self.tbl.heading('#0', text='id', anchor='w')
+        self.tbl.column('#0', width=55, stretch=False)
 
         self.tbl.heading(column_name, text=column_name, anchor='w')
         self.tbl.column(column_name, width=750, stretch=True)
@@ -81,7 +91,7 @@ class ViewInlinks(Toplevel):
     def _query_func(self):
         inlinks = self.query_func(self.url)
         self.add_inlinks(inlinks)
- 
+
     def export_button_pushed(self):
         files = [('CSV files', '*.csv')]
         self.withdraw()
