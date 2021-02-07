@@ -430,10 +430,12 @@ class CrawlTab(ttk.Frame):
             col = self.treeview_table.identify_column(event.x)
             self.selected_column = self.treeview_table.heading(col)['text']
 
-            try:
-                self.popup_menu.tk_popup(event.x_root, event.y_root + 20, 0)
-            finally:
-                self.popup_menu.grab_release()
+            # Only show a context menu if the table is not empty
+            if len(self.treeview_table.get_children()) > 0:
+                try:
+                    self.popup_menu.tk_popup(event.x_root, event.y_root + 20, 0)
+                finally:
+                    self.popup_menu.grab_release()
 
     def show_filter_window(self, label):
         columns = self.get_display_columns()
