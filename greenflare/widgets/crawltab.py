@@ -232,11 +232,11 @@ class CrawlTab(ttk.Frame):
                         title='Invalid URL', message='Please enter a valid URL!')
                     return
 
-            url = urlunsplit(url_components)
-            url = self.crawler.gf.sanitise_url(url, base_url='')
+                url = urlunsplit(url_components)
+                url = self.crawler.gf.sanitise_url(url, base_url='')
 
-            self.entry_url_input.entry.delete(0, 'end')
-            self.entry_url_input.entry.insert(0, url)
+                self.entry_url_input.entry.delete(0, 'end')
+                self.entry_url_input.entry.insert(0, url)
 
             self.start_new_crawl(url)
 
