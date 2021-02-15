@@ -74,8 +74,8 @@ class ListModeWindow(Toplevel):
             self.crawler.settings['MODE'] = 'List'
             self.crawler.list_mode_urls = urls
             self.crawl_tab.show_list_mode()
-            messagebox.showinfo(title='Reading URLs completed', message=f'Loaded {len(urls)} valid and unique URLs!')
             self.destroy()
+            messagebox.showinfo(title='Reading URLs completed', message=f'Loaded {len(urls)} valid and unique URLs!')
         else:
             messagebox.showerror(title='Reading URLs failed',
                                  message='No valid URLs found, please check your input!')
