@@ -436,6 +436,7 @@ class GFlareDB:
         cur = self.con.cursor()
         cur.executemany(query, rows)
         cur.close()
+        self.commit()
 
     @exception_handler
     def get_ids(self, urls):
