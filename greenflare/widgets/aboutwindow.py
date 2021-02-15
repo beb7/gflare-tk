@@ -4,7 +4,7 @@
 @section LICENSE
 
 Greenflare SEO Web Crawler (https://greenflare.io)
-Copyright (C) 2020  Benjamin Görler. This file is part of
+Copyright (C) 2020-2021 Benjamin Görler. This file is part of
 Greenflare, an open-source project dedicated to delivering
 high quality SEO insights and analysis solutions to the world.
 
@@ -60,7 +60,7 @@ class AboutWindow(Toplevel):
         heading_1 = 'Greenflare SEO Crawler'
         heading_2 = f'\nVersion {Defaults.version}'
 
-        text = '\n\n© Greenflare Developers 2020\n\nCreated By Benjamin Görler (ben@greenflare.io)\n\nWebsite: '
+        text = '\n\n© Greenflare Developers 2020-2021\n\nCreated By Benjamin Görler (ben@greenflare.io)\n\nWebsite: '
         website = 'https://greenflare.io'
         twitter = 'https://twitter.com/GreenflareEN'
         github = 'https://github.com/beb7/gflare-tk/'
