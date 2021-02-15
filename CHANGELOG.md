@@ -1,8 +1,9 @@
 # Changelog
 
-# [0.98.1] - IN DEVELOPMENT
-- Fixed filtering of columns other than URL
+## [0.98.1] - 2021-02-15
+- Fixed filtering of columns
 - Fixed List mode not working
+- Fixed redirects in List mode
 
 
 ## [0.98] - 2021-02-04
