@@ -4,7 +4,7 @@
 @section LICENSE
 
 Greenflare SEO Web Crawler (https://greenflare.io)
-Copyright (C) 2020  Benjamin Görler. This file is part of
+Copyright (C) 2020-2021 Benjamin Görler. This file is part of
 Greenflare, an open-source project dedicated to delivering
 high quality SEO insights and analysis solutions to the world.
 
@@ -266,7 +266,8 @@ class GFlareDB:
     @exception_handler
     def get_crawl_data(self):
         cur = self.con.cursor()
-        cur.execute(f"SELECT {', '.join(self.columns)} FROM crawl WHERE status_code != ''")
+        query = f"SELECT VALUES ({','.join(['?'] * self.columns)}) FROM crawl WHERE status_code != ''"
+        cur.execute(query, (self.columns,))
         out = cur.fetchall()
         cur.close()
         return out
@@ -311,11 +312,14 @@ class GFlareDB:
             'Less Than Or Equal To': '<='
         }
 
+        values = []
+
         if not table:
             table = 'crawl'
 
         if columns:
             columns = f"{', '.join(columns)}"
+
         elif table == 'crawl':
             columns = f"{', '.join(self.columns)}"
         else:
@@ -327,16 +331,17 @@ class GFlareDB:
 
             queries = []
             order_cols = []
+            values = []
 
             for f in filters:
                 column, operator, value = f
-
+                value = value.replace('%', r'\%').replace('_', r'\_')
                 if operator == 'Begins With':
-                    value = f'{value}%'
+                    values.append(f'{value}%')
                 elif operator == 'Ends With':
-                    value = f'%{value}'
+                    values.append(f'%{value}')
                 elif 'Contain' in operator:
-                    value = f'%{value}%'
+                    values.append(f'%{value}%')
                 elif operator == 'Sort A-Z' or operator == 'Sort Smallest To Largest':
                     order_cols.append(f'{column} ASC')
                     continue
@@ -345,7 +350,13 @@ class GFlareDB:
                     continue
 
                 operator = operator_mapping[operator]
-                queries.append(f"{column} {operator} '{value}'")
+
+                # Like values need to be escaped and the escape character needs to be defined as there is no default in sqlite
+                if 'LIKE' in operator:
+                    queries.append(f"{column} {operator} ? ESCAPE '\\'")
+                else:
+                    values.append(value)
+                    queries.append(f"{column} {operator} ?")
 
             if queries:
                 query += 'WHERE ' + \
@@ -359,18 +370,27 @@ class GFlareDB:
             query += "WHERE status_code != ''"
 
         cur = self.con.cursor()
-        cur.execute(query)
-        rows = cur.fetchall()
+        try:
+            if values:
+                cur.execute(query, tuple(values))
+            else:
+                cur.execute(query)
+
+            rows = cur.fetchall()
+            if rows != None:
+                return rows
+        except Exception as e:
+            print(e)
+
         cur.close()
-        if rows != None:
-            return rows
+
         return []
 
     def get_inlinks(self, url):
         url_id = self.get_ids([url]).pop()
-        query = fr"SELECT url as inlink FROM crawl LEFT JOIN inlinks ON crawl.id = inlinks.url_from_id WHERE inlinks.url_to_id = {url_id}"
+        query = "SELECT url as inlink FROM crawl LEFT JOIN inlinks ON crawl.id = inlinks.url_from_id WHERE inlinks.url_to_id = ?"
         cur = self.con.cursor()
-        cur.execute(query)
+        cur.execute(query, (url_id,))
         inlinks = cur.fetchall()
         cur.close()
         if inlinks:
@@ -398,10 +418,10 @@ class GFlareDB:
                 print("ERROR returning new urls")
                 print(e)
                 print(f"input: {links}")
-        
+
         cur.row_factory = None
         cur.close()
-        
+
         urls_not_in_db = list(set(links) - set(urls_in_db))
 
         if not urls_not_in_db:
@@ -416,6 +436,7 @@ class GFlareDB:
         cur = self.con.cursor()
         cur.executemany(query, rows)
         cur.close()
+        self.commit()
 
     @exception_handler
     def get_ids(self, urls):

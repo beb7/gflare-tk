@@ -4,7 +4,7 @@
 @section LICENSE
 
 Greenflare SEO Web Crawler (https://greenflare.io)
-Copyright (C) 2020  Benjamin Görler. This file is part of
+Copyright (C) 2020-2021 Benjamin Görler. This file is part of
 Greenflare, an open-source project dedicated to delivering
 high quality SEO insights and analysis solutions to the world.
 
@@ -232,11 +232,11 @@ class CrawlTab(ttk.Frame):
                         title='Invalid URL', message='Please enter a valid URL!')
                     return
 
-            url = urlunsplit(url_components)
-            url = self.crawler.gf.sanitise_url(url, base_url='')
+                url = urlunsplit(url_components)
+                url = self.crawler.gf.sanitise_url(url, base_url='')
 
-            self.entry_url_input.entry.delete(0, 'end')
-            self.entry_url_input.entry.insert(0, url)
+                self.entry_url_input.entry.delete(0, 'end')
+                self.entry_url_input.entry.insert(0, url)
 
             self.start_new_crawl(url)
 
@@ -430,10 +430,12 @@ class CrawlTab(ttk.Frame):
             col = self.treeview_table.identify_column(event.x)
             self.selected_column = self.treeview_table.heading(col)['text']
 
-            try:
-                self.popup_menu.tk_popup(event.x_root, event.y_root + 20, 0)
-            finally:
-                self.popup_menu.grab_release()
+            # Only show a context menu if the table is not empty
+            if len(self.treeview_table.get_children()) > 0:
+                try:
+                    self.popup_menu.tk_popup(event.x_root, event.y_root + 20, 0)
+                finally:
+                    self.popup_menu.grab_release()
 
     def show_filter_window(self, label):
         columns = self.get_display_columns()

@@ -4,7 +4,7 @@
 @section LICENSE
 
 Greenflare SEO Web Crawler (https://greenflare.io)
-Copyright (C) 2020  Benjamin Görler. This file is part of
+Copyright (C) 2020-2021 Benjamin Görler. This file is part of
 Greenflare, an open-source project dedicated to delivering
 high quality SEO insights and analysis solutions to the world.
 
@@ -106,7 +106,7 @@ class FilterWindow(Toplevel):
 
         for w in self.widgets:
             children = w.winfo_children()
-            column = children[0].get()
+            column = children[0].get().lower().replace(' ', '_')
             operation = children[1].get()
             values = children[2].get()
 

@@ -4,7 +4,7 @@
 @section LICENSE
 
 Greenflare SEO Web Crawler (https://greenflare.io)
-Copyright (C) 2020  Benjamin Görler. This file is part of
+Copyright (C) 2020-2021 Benjamin Görler. This file is part of
 Greenflare, an open-source project dedicated to delivering
 high quality SEO insights and analysis solutions to the world.
 
@@ -29,7 +29,7 @@ from pathlib import Path
 
 class Defaults:
 
-    version = '0.98'
+    version = '0.98.1'
 
     crawl_items = [
         'url',

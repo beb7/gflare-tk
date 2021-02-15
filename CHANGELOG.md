@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.98.1] - 2021-02-15
+- Fixed filtering of columns
+- Fixed List mode not working
+- Fixed redirects in List mode
+
+
 ## [0.98] - 2021-02-04
 - Added support for password protected sites (basic http auth)
 - Added option to respect/ignore nofollow href links

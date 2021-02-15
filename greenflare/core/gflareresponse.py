@@ -4,7 +4,7 @@
 @section LICENSE
 
 Greenflare SEO Web Crawler (https://greenflare.io)
-Copyright (C) 2020  Benjamin Görler. This file is part of
+Copyright (C) 2020-2021 Benjamin Görler. This file is part of
 Greenflare, an open-source project dedicated to delivering
 high quality SEO insights and analysis solutions to the world.
 
@@ -185,6 +185,9 @@ class GFlareResponse:
         return url
 
     def is_external(self, url):
+        if self.settings.get('MODE') == 'List':
+            return False
+
         domain = self.get_domain(url)
         
         if not domain:
@@ -274,8 +277,9 @@ class GFlareResponse:
             return False
 
         # Filter out external links if needed
-        if "external_links" not in self.settings.get("CRAWL_ITEMS", "") and self.is_external(url):
-            return False
+        if self.settings.get('MODE') != 'List':
+            if "external_links" not in self.settings.get("CRAWL_ITEMS", "") and self.is_external(url):
+                return False
 
         if self.is_excluded(url):
             return False
@@ -495,36 +499,35 @@ class GFlareResponse:
     def has_redirected(self):
         return len(self.response.history) > 0
 
-    # @timing
     def get_redirects(self):
         data = []
         hist = self.response.history
 
-        if len(hist) > 0:
-            for i in range(len(hist)):
-                hob_url = self.sanitise_url(hist[i].url)
 
-                if 'external_links' not in self.settings.get('CRAWL_ITEMS', ''):
-                    if self.is_external(hob_url):
-                        break
+        for i in range(len(hist)):
+            hob_url = self.sanitise_url(hist[i].url)
 
-                robots_status = self.get_robots_txt_status(hob_url)
-                if 'respect_robots_txt' in self.settings.get('CRAWL_ITEMS', '') and 'follow_blocked_redirects' not in self.settings.get('CRAWL_ITEMS', '') and robots_status == 'blocked':
-                    continue
+            if 'external_links' not in self.settings.get('CRAWL_ITEMS', ''):
+                if self.is_external(hob_url):
+                    break
 
-                if i + 1 < len(hist):
-                    redirect_to_url = self.sanitise_url(str(hist[i + 1].url))
-                else:
-                    redirect_to_url = self.get_final_url()
+            robots_status = self.get_robots_txt_status(hob_url)
+            if 'respect_robots_txt' in self.settings.get('CRAWL_ITEMS', '') and 'follow_blocked_redirects' not in self.settings.get('CRAWL_ITEMS', '') and robots_status == 'blocked':
+                continue
 
-                hob_data = {"url": hob_url, "content_type": hist[i].headers.get('Content-Type', ""), 'status_code': hist[i].status_code, 'x_robots_tag': hist[
-                    i].headers.get('X-Robots-Tag', ''), 'redirect_url': redirect_to_url, 'robots_txt': robots_status}
+            if i + 1 < len(hist):
+                redirect_to_url = self.sanitise_url(str(hist[i + 1].url))
+            else:
+                redirect_to_url = self.get_final_url()
 
-                hob_data['crawl_status'] = self.get_full_status(
-                    hob_url, hob_data)
-                hob_row = self.dict_to_row(hob_data)
+            hob_data = {"url": hob_url, "content_type": hist[i].headers.get('Content-Type', ""), 'status_code': hist[i].status_code, 'x_robots_tag': hist[
+                i].headers.get('X-Robots-Tag', ''), 'redirect_url': redirect_to_url, 'robots_txt': robots_status}
 
-                data.append(hob_row)
+            hob_data['crawl_status'] = self.get_full_status(
+                hob_url, hob_data)
+            hob_row = self.dict_to_row(hob_data)
+
+            data.append(hob_row)
 
         return data
 
