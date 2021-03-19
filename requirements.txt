@@ -2,5 +2,5 @@ requests==2.25.0
 lxml==4.6.2
 cssselect==1.1.0
 ua-parser==0.10
-pillow==8.0.1
+pillow==8.1.1
 packaging==20.7
