@@ -44,14 +44,16 @@ import argparse
 
 
 class mainWindow(ttk.Frame):
-
     def __init__(self, root, crawler=None):
         ttk.Frame.__init__(self)
 
         self.root = root
         self.crawler = crawler
         self.tab_parent = ttk.Notebook()
-        self.tab_crawl = CrawlTab(self, crawler, freeze_tabs=self.freeze_tabs, unfreeze_tabs=self.unfreeze_tabs)
+        self.tab_crawl = CrawlTab(self,
+                                  crawler,
+                                  freeze_tabs=self.freeze_tabs,
+                                  unfreeze_tabs=self.unfreeze_tabs)
         self.tab_settings = SettingsTab(crawler)
         self.tab_exclusions = ExclusionsTab(crawler)
         self.tab_extractions = ExtractionsTab(crawler)
@@ -69,8 +71,8 @@ class mainWindow(ttk.Frame):
         self.filemenu.add_command(label="New", command=self.new_crawl)
         self.filemenu.add_command(label="Load Crawl", command=self.load_crawl)
         self.filemenu.add_separator()
-        self.filemenu.add_command(
-            label="Export View", command=self.export_view)
+        self.filemenu.add_command(label="Export View",
+                                  command=self.export_view)
         self.menubar.add_cascade(label="File", menu=self.filemenu)
 
         self.modemenu = Menu(self.menubar, tearoff=0)
@@ -79,22 +81,22 @@ class mainWindow(ttk.Frame):
         self.menubar.add_cascade(label="Mode", menu=self.modemenu)
 
         self.viewmenu = Menu(self.menubar, tearoff=0)
-        self.viewmenu.add_command(
-            label='All Crawl Data', command=self.show_crawl_output)
+        self.viewmenu.add_command(label='All Crawl Data',
+                                  command=self.show_crawl_output)
 
         self.inlinks_menu = Menu(self.viewmenu, tearoff=0)
         self.status_codes_menu = Menu(self.viewmenu, tearoff=0)
         self.content_types_menu = Menu(self.viewmenu, tearoff=0)
         self.crawl_status_menu = Menu(self.viewmenu, tearoff=0)
 
-        self.viewmenu.add_cascade(
-            label='Internal Links', menu=self.inlinks_menu)
-        self.viewmenu.add_cascade(
-            label='Status Codes', menu=self.status_codes_menu)
-        self.viewmenu.add_cascade(
-            label='Content Types', menu=self.content_types_menu)
-        self.viewmenu.add_cascade(
-            label='Crawl Status', menu=self.crawl_status_menu)
+        self.viewmenu.add_cascade(label='Internal Links',
+                                  menu=self.inlinks_menu)
+        self.viewmenu.add_cascade(label='Status Codes',
+                                  menu=self.status_codes_menu)
+        self.viewmenu.add_cascade(label='Content Types',
+                                  menu=self.content_types_menu)
+        self.viewmenu.add_cascade(label='Crawl Status',
+                                  menu=self.crawl_status_menu)
         self.menubar.add_cascade(label='View', menu=self.viewmenu)
 
         self.aboutmenu = Menu(self.menubar, tearoff=0)
@@ -102,28 +104,34 @@ class mainWindow(ttk.Frame):
         self.menubar.add_cascade(label="Help", menu=self.aboutmenu)
 
         inlinks_labels = [
-            'All Non 200', 'Redirects (3xx)', 'Client Error (4xx)', 'Server Error (5xx)']
+            'All Non 200', 'Redirects (3xx)', 'Client Error (4xx)',
+            'Server Error (5xx)'
+        ]
         generate_menu(self.inlinks_menu, inlinks_labels,
                       self.view_broken_inlinks)
 
         status_codes_labels = [
-            'OK (200)', 'Redirects (3xx)', 'Client Error (4xx)', 'Server Error (5xx)']
-        generate_menu(self.status_codes_menu,
-                      status_codes_labels, self.view_status_codes)
+            'OK (200)', 'Redirects (3xx)', 'Client Error (4xx)',
+            'Server Error (5xx)'
+        ]
+        generate_menu(self.status_codes_menu, status_codes_labels,
+                      self.view_status_codes)
 
-        content_types_labels = ['HTML', 'Image',
-                                'CSS', 'Font', 'JSON', 'XML', 'JavaScript']
-        generate_menu(self.content_types_menu,
-                      content_types_labels, self.view_content_types)
+        content_types_labels = [
+            'HTML', 'Image', 'CSS', 'Font', 'JSON', 'XML', 'JavaScript'
+        ]
+        generate_menu(self.content_types_menu, content_types_labels,
+                      self.view_content_types)
 
-        crawl_status_labels = ['OK', 'Not OK',
-                               'Canonicalised', 'Blocked By Robots', 'Noindex']
-        generate_menu(self.crawl_status_menu,
-                      crawl_status_labels, self.view_crawl_status)
+        crawl_status_labels = [
+            'OK', 'Not OK', 'Canonicalised', 'Blocked By Robots', 'Noindex'
+        ]
+        generate_menu(self.crawl_status_menu, crawl_status_labels,
+                      self.view_crawl_status)
 
         self.about_window = None
         self.root.config(menu=self.menubar)
-        
+
         if self.crawler.settings.get('CHECK_FOR_UPDATES', True):
             Thread(target=self.request_current_version).start()
 
@@ -133,7 +141,8 @@ class mainWindow(ttk.Frame):
         self.tab_crawl.filters = []
 
     def load_crawl(self, db_file=None):
-        files = [('Greenflare DB', f'*{Defaults.file_extension}'), ('All files', '.*')]
+        files = [('Greenflare DB', f'*{Defaults.file_extension}'),
+                 ('All files', '.*')]
 
         if not db_file:
             db_file = fd.askopenfilename(filetypes=files)
@@ -145,7 +154,9 @@ class mainWindow(ttk.Frame):
             self.crawler.load_crawl(db_file)
 
             if self.crawler.settings["MODE"] == "Spider":
-                self.master.title(f"{self.crawler.settings['ROOT_DOMAIN']} - {Defaults.window_title}")
+                self.master.title(
+                    f"{self.crawler.settings['ROOT_DOMAIN']} - {Defaults.window_title}"
+                )
             elif self.crawler.settings["MODE"] == "List":
                 self.tab_crawl.show_list_mode()
 
@@ -155,8 +166,11 @@ class mainWindow(ttk.Frame):
             self.show_crawl_output()
             self.tab_crawl.update_bottom_stats()
         except Exception as e:
-            messagebox.showerror(title='Error - Invalid database',
-                                 message=f'Could not load {db_file} as it is invalid, falling back to default settings!')
+            messagebox.showerror(
+                title='Error - Invalid database',
+                message=
+                f'Could not load {db_file} as it is invalid, falling back to default settings!'
+            )
             print(e)
             self.crawler.settings = Defaults.settings.copy()
 
@@ -177,11 +191,13 @@ class mainWindow(ttk.Frame):
         if path.isfile(export_file):
             remove(export_file)
 
-        data = [self.tab_crawl.treeview_table.item(
-            child)['values'] for child in self.tab_crawl.treeview_table.get_children()]
+        data = [
+            self.tab_crawl.treeview_table.item(child)['values']
+            for child in self.tab_crawl.treeview_table.get_children()
+        ]
 
-        export_to_csv(
-            export_file, self.tab_crawl.treeview_table['columns'], data)
+        export_to_csv(export_file, self.tab_crawl.treeview_table['columns'],
+                      data)
 
     def spider_mode(self):
         self.crawler.settings['MODE'] = 'Spider'
@@ -189,7 +205,8 @@ class mainWindow(ttk.Frame):
 
     def list_mode(self):
         lm_wnd = ListModeWindow(crawler=self.crawler,
-                                crawl_tab=self.tab_crawl, root=self.root)
+                                crawl_tab=self.tab_crawl,
+                                root=self.root)
 
     def show_about(self):
         if not self.about_window:
@@ -266,18 +283,18 @@ class mainWindow(ttk.Frame):
         except Exception as e:
             print('ERROR: view_crawl_status failed!')
             print(e)
-    
+
     def request_current_version(self):
         self.crawler.init_crawl_headers()
         self.crawler.init_session()
-        
+
         response = self.crawler.crawl_url(Defaults.latest_release_url)
-        
+
         if isinstance(response, str):
             return
-        
+
         if response.ok:
-            
+
             latest_ver = response.text
             if version.parse(latest_ver) > version.parse(Defaults.version):
                 UpdateWindow('New Version Available!', latest_ver)
@@ -308,6 +325,7 @@ class mainWindow(ttk.Frame):
             if f.endswith(Defaults.file_extension):
                 self.load_crawl(db_file=f)
             break
+
 
 def main():
     # Check if Greenflare has been launched as part of a binary bundle as this
@@ -374,6 +392,7 @@ def main():
 
     root.protocol("WM_DELETE_WINDOW", app.on_closing)
     root.mainloop()
+
 
 if __name__ == "__main__":
     main()
