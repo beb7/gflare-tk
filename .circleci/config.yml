@@ -7,42 +7,29 @@ jobs:
       xcode: "12.0.0"
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - python-build-cache-3.8.6-3
-            # - python-venv-3.8.6-3
       - run:
-          command: |
-              cd macos
-              chmod +x install-custom-python.sh
-              ./install-custom-python.sh
-              cd ..
+          command: curl -O https://www.python.org/ftp/python/3.10.1/python-3.10.1-macos11.pkg
+          name: "Download Python"
+      - run:
+          command: sudo installer -pkg python-3.10.1-macos11.pkg -target /
           name: "Install Python"
-      - save_cache:
-          key: python-build-cache-3.8.6-3
-          paths:
-            - ~/python-build
       - run:
           command: |
-              /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install pip --upgrade
-              /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install wheel==0.35.1
-              /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install -r requirements.txt
-              /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -m pip install py2app==0.22
+              /Library/Frameworks/Python.framework/Versions/3.10/bin/python3 -m pip install pip --upgrade
+              /Library/Frameworks/Python.framework/Versions/3.10/bin/python3 -m pip install wheel==0.35.1
+              /Library/Frameworks/Python.framework/Versions/3.10/bin/python3 -m pip install -r requirements.txt
+              /Library/Frameworks/Python.framework/Versions/3.10/bin/python3 -m pip install py2app==0.22
           name: "Install dependencies"
-      # - save_cache:
-      #     key: python-venv-3.8.6-3
-      #     paths:
-      #       - ~/.venv
       - run:
           command: |
-              /Library/Frameworks/Python.framework/Versions/3.8/bin/python3 setup-py2app.py py2app
+              /Library/Frameworks/Python.framework/Versions/3.10/bin/python3 setup-py2app.py py2app
               chmod +x macos/launch-mac
               cp macos/launch-mac dist/Greenflare.app/Contents/MacOS/
               plutil -replace CFBundleExecutable -string launch-mac dist/Greenflare.app/Contents/Info.plist
           name: "Freeze macOS app"
       - run:
           command: |
-              export GFLAREVER=$(/Library/Frameworks/Python.framework/Versions/3.8/bin/python3 -c "from greenflare.core.defaults import Defaults; print(Defaults.version)")
+              export GFLAREVER=$(/Library/Frameworks/Python.framework/Versions/3.10/bin/python3 -c "from greenflare.core.defaults import Defaults; print(Defaults.version)")
               mkdir results/
               cd dist/
               hdiutil create ./greenflare-${GFLAREVER}-x86_64-1.dmg -srcfolder Greenflare.app -ov
