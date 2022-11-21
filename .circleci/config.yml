@@ -6,6 +6,9 @@ jobs:
     macos:
       xcode: "12.0.0"
     steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "7ZGmMpDVh8L4pH5dCvrEaxm87LpDPG+fUxqv2T7sIjw"
       - checkout
       - run:
           command: curl -O https://www.python.org/ftp/python/3.11.0/python-3.11.0-macos11.pkg
@@ -60,6 +63,9 @@ jobs:
       GFLAREVER: "<< pipeline.parameters.greenflare-release >>"
     executor: win/default
     steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "7ZGmMpDVh8L4pH5dCvrEaxm87LpDPG+fUxqv2T7sIjw"
       - checkout
       - python/load-cache
       - python/save-cache
