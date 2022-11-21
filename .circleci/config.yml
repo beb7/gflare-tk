@@ -8,7 +8,7 @@ jobs:
     steps:
       - add_ssh_keys:
           fingerprints:
-            - "7ZGmMpDVh8L4pH5dCvrEaxm87LpDPG+fUxqv2T7sIjw"
+            - "5b:39:8e:43:9c:7f:4a:a9:dd:9a:1e:cb:15:0b:8b:76"
       - checkout
       - run:
           command: curl -O https://www.python.org/ftp/python/3.11.0/python-3.11.0-macos11.pkg
@@ -65,7 +65,7 @@ jobs:
     steps:
       - add_ssh_keys:
           fingerprints:
-            - "7ZGmMpDVh8L4pH5dCvrEaxm87LpDPG+fUxqv2T7sIjw"
+            - "5b:39:8e:43:9c:7f:4a:a9:dd:9a:1e:cb:15:0b:8b:76"
       - checkout
       - python/load-cache
       - python/save-cache
