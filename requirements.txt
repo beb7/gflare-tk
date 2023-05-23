@@ -1,4 +1,4 @@
-requests==2.28.1
+requests==2.31.0
 lxml==4.9.1
 cssselect==1.2.0
 ua-parser==0.16.1
