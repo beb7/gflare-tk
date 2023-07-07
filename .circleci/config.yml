@@ -5,6 +5,7 @@ jobs:
       GFLAREVER: "<< pipeline.parameters.greenflare-release >>"
     macos:
       xcode: "12.0.0"
+    resource_class: macos.x86.medium.gen2
     steps:
       - checkout
       - run:
