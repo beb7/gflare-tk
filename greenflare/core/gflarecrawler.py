@@ -327,7 +327,7 @@ class GFlareCrawler:
                 url, allow_redirects=True, timeout=timeout)
 
             content_type = header.headers.get('content-type', '')
-            if 'text' in content_type:
+            if ('text' in content_type) or ('application/xml' in content_type):
                 body = self.session.get(
                     url, allow_redirects=True, timeout=timeout)
                 return body

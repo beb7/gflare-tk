@@ -179,7 +179,7 @@ class SettingsTab(ttk.Frame):
 
         # Links Group
         self.checkboxgroup_links = CheckboxGroup(self.frame_second, 'Links', [
-            'Canonicals', 'Pagination', 'Hreflang', 'External Links'], self.crawler.settings, 'CRAWL_ITEMS')
+            'Canonicals', 'Pagination', 'Hreflang', 'External Links', 'XML loc'], self.crawler.settings, 'CRAWL_ITEMS')
         self.checkboxgroup_links.pack(**self.group_args)
 
         # # Directives Group

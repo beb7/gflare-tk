@@ -64,7 +64,8 @@ class GFlareResponse:
             'h2': '//h2/text()',
             'page_title': '/html/head/title/text()',
             'meta_description': '/html/head/meta[@name="description"]/@content',
-            'base_url': '/html/head/base/@href'
+            'base_url': '/html/head/base/@href',
+            'xml_loc': '//loc[parent::url|parent::sitemap]/text()'
         }
 
         self.xpath_link_extraction = self.get_link_extraction_xpath()
@@ -131,6 +132,8 @@ class GFlareResponse:
             xpaths.append(self.xpath_mapping['stylesheets'])
         if 'javascript' in crawl_items:
             xpaths.append(self.xpath_mapping['javascript'])
+        if 'xml_loc' in crawl_items:
+            xpaths.append(self.xpath_mapping['xml_loc'])
 
         return '|'.join(xpaths)
 
